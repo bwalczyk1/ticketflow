@@ -8,8 +8,10 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Services\Auth\LoginUser;
 use App\Services\Auth\RegisterUser;
+use App\Services\Auth\UserSession;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class AuthController extends Controller
 {
@@ -29,6 +31,13 @@ class AuthController extends Controller
         $user = $loginUser->handle($request->validated('email'), $request->validated('password'));
 
         return new UserResource($user);
+    }
+
+    public function logout(UserSession $session): Response
+    {
+        $session->end();
+
+        return response()->noContent();
     }
 
     public function me(Request $request): UserResource

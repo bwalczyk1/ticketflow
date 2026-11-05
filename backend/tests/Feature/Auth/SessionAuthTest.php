@@ -276,5 +276,61 @@ it('reports missing login fields with 400', function () {
         ->toEqualCanonicalizing(['email', 'password']);
 });
 
-it('invalidates the session on logout')->todo();
-it('answers 419 CSRF_TOKEN_MISMATCH for an SPA request without a CSRF token')->todo();
+it('invalidates the session on logout', function () {
+    User::factory()->create(['email' => 'anna@example.com', 'password' => 'correct-horse-battery']);
+
+    $sessionId = continueSessionOf($this->postJson('/api/auth/login', [
+        'email' => 'anna@example.com',
+        'password' => 'correct-horse-battery',
+    ]));
+
+    $this->getJson('/api/me')->assertOk();
+    forgetRequestState();
+
+    $this->postJson('/api/auth/logout')->assertNoContent();
+    forgetRequestState();
+
+    $this->assertDatabaseMissing('sessions', ['id' => $sessionId]);
+    $this->getJson('/api/me')->assertUnauthorized();
+});
+
+it('answers 401 from logout without a session', function () {
+    $this->postJson('/api/auth/logout')
+        ->assertUnauthorized()
+        ->assertJsonPath('error.code', 'UNAUTHENTICATED');
+});
+
+describe('with CSRF protection, which Laravel switches off in the testing environment', function () {
+    beforeEach(function () {
+        app()->detectEnvironment(fn () => 'local');
+
+        User::factory()->create(['email' => 'anna@example.com', 'password' => 'correct-horse-battery']);
+    });
+
+    it('answers 419 CSRF_TOKEN_MISMATCH for an SPA request without a CSRF token', function (array $headers) {
+        $this->withHeaders($headers)
+            ->postJson('/api/auth/login', [
+                'email' => 'anna@example.com',
+                'password' => 'correct-horse-battery',
+            ])
+            ->assertStatus(419)
+            ->assertJsonPath('error.code', 'CSRF_TOKEN_MISMATCH');
+    })->with([
+        'no fetch metadata' => [[]],
+        'cross-site fetch' => [['Sec-Fetch-Site' => 'cross-site']],
+    ]);
+
+    it('accepts an SPA request with the token from /sanctum/csrf-cookie', function () {
+        $csrfResponse = $this->getJson('/sanctum/csrf-cookie')->assertNoContent();
+        $encryptedToken = $csrfResponse->getCookie('XSRF-TOKEN', decrypt: false)->getValue();
+
+        continueSessionOf($csrfResponse);
+
+        $this->withHeader('X-XSRF-TOKEN', $encryptedToken)
+            ->postJson('/api/auth/login', [
+                'email' => 'anna@example.com',
+                'password' => 'correct-horse-battery',
+            ])
+            ->assertOk();
+    });
+});

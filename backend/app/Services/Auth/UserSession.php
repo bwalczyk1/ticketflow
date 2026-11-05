@@ -12,4 +12,11 @@ class UserSession
         Auth::guard('web')->login($user);
         session()->regenerate();
     }
+
+    public function end(): void
+    {
+        Auth::guard('web')->logout();
+        session()->invalidate();
+        session()->regenerateToken();
+    }
 }

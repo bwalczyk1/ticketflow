@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Resources\UserResource;
+use App\Services\Auth\RegisterUser;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class AuthController extends Controller
+{
+    public function register(RegisterRequest $request, RegisterUser $registerUser): JsonResponse
+    {
+        $user = $registerUser->handle(
+            $request->validated('name'),
+            $request->validated('email'),
+            $request->validated('password'),
+        );
+
+        return (new UserResource($user))->response()->setStatusCode(201);
+    }
+
+    public function me(Request $request): UserResource
+    {
+        return new UserResource($request->user());
+    }
+}

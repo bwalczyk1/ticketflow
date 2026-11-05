@@ -9,7 +9,5 @@ class TicketsGenerated implements ShouldDispatchAfterCommit
 {
     use Dispatchable;
 
-    public function __construct(public readonly int $orderId)
-    {
-    }
+    public function __construct(public readonly int $orderId) {}
 }

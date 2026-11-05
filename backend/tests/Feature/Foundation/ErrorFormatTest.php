@@ -24,28 +24,36 @@ beforeEach(function () {
         Route::get('auth', fn () => 'ok')->middleware('auth:sanctum');
         Route::get('role', fn () => 'ok')->middleware(['auth:sanctum', 'role:ADMIN']);
         Route::post('strict', fn (StrictProbeRequest $request) => $request->validated());
+
         Route::get('domain', function () {
             throw new DomainException('Sold out', 'TICKETS_SOLD_OUT', 409);
         });
+
         Route::get('crash', function () {
             throw new RuntimeException('secret detail');
         });
+
         Route::get('model', fn () => User::findOrFail(999999));
+
         Route::get('duplicate', function () {
             $user = User::factory()->create();
             DB::table('users')->insert(['name' => 'x', 'email' => $user->email, 'password' => 'x', 'role' => 'ATTENDEE']);
         });
+
         Route::get('duplicate-other', function () {
             $type = TicketType::factory()->create();
             DB::table('ticket_types')->insert(['event_id' => $type->event_id, 'name' => $type->name, 'price' => 1, 'quantity' => 1]);
         });
+
         Route::get('referenced', function () {
             OrderItem::factory()->create()->ticketType->delete();
         });
+
         Route::get('check', function () {
             $type = TicketType::factory()->create(['quantity' => 5]);
             DB::table('ticket_types')->where('id', $type->id)->update(['sold' => 6]);
         });
+
         Route::get('csrf', function () {
             throw new TokenMismatchException;
         });

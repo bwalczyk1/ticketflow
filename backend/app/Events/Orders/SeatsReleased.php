@@ -9,7 +9,5 @@ class SeatsReleased implements ShouldDispatchAfterCommit
 {
     use Dispatchable;
 
-    public function __construct(public readonly int $ticketTypeId, public readonly int $quantity)
-    {
-    }
+    public function __construct(public readonly int $ticketTypeId, public readonly int $quantity) {}
 }

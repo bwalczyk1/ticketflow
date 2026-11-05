@@ -9,7 +9,5 @@ class WaitlistOfferCreated implements ShouldDispatchAfterCommit
 {
     use Dispatchable;
 
-    public function __construct(public readonly int $waitlistEntryId)
-    {
-    }
+    public function __construct(public readonly int $waitlistEntryId) {}
 }

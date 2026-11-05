@@ -9,7 +9,5 @@ class TicketCheckedIn implements ShouldDispatchAfterCommit
 {
     use Dispatchable;
 
-    public function __construct(public readonly int $ticketId)
-    {
-    }
+    public function __construct(public readonly int $ticketId) {}
 }

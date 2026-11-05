@@ -18,6 +18,7 @@ it('sends once and records the key', function () {
 it('does not send the same key twice', function () {
     $ledger = new NotificationLedger;
     $sent = 0;
+
     $send = function () use (&$sent) {
         $sent++;
     };

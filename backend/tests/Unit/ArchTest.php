@@ -2,7 +2,7 @@
 
 arch('services do not know HTTP')
     ->expect('App\Services')
-    ->not->toUse(['Illuminate\Http\Request', 'Illuminate\Http\Response', 'Illuminate\Http\JsonResponse', 'request', 'response']);
+    ->not->toUse(['Illuminate\Http', 'request', 'response']);
 
 arch('controllers do not touch the database directly')
     ->expect('App\Http\Controllers')

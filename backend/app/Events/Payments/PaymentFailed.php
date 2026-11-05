@@ -9,7 +9,5 @@ class PaymentFailed implements ShouldDispatchAfterCommit
 {
     use Dispatchable;
 
-    public function __construct(public readonly int $orderId, public readonly string $reason)
-    {
-    }
+    public function __construct(public readonly int $orderId, public readonly string $reason) {}
 }

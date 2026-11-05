@@ -9,7 +9,5 @@ class EventCancelled implements ShouldDispatchAfterCommit
 {
     use Dispatchable;
 
-    public function __construct(public readonly int $eventId)
-    {
-    }
+    public function __construct(public readonly int $eventId) {}
 }

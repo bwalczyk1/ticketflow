@@ -9,7 +9,5 @@ class OrderRefunded implements ShouldDispatchAfterCommit
 {
     use Dispatchable;
 
-    public function __construct(public readonly int $orderId, public readonly int $refundId)
-    {
-    }
+    public function __construct(public readonly int $orderId, public readonly int $refundId) {}
 }

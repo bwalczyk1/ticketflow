@@ -63,6 +63,7 @@ it('does not repeat an invoice number within a year and type', function () {
     $invoice = Invoice::factory()->create(['year' => 2026, 'number' => 1]);
 
     violates(fn () => Invoice::factory()->create(['year' => 2026, 'number' => 1]));
+
     expect(Invoice::factory()->create(['year' => 2027, 'number' => 1])->exists)->toBeTrue()
         ->and($invoice->exists)->toBeTrue();
 });

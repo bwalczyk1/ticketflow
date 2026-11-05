@@ -33,6 +33,7 @@ foreach ($queues as $queue => $options) {
         'backoff' => 5,
         'nice' => 0,
     ];
+
     $scaling["supervisor-{$queue}"] = ['maxProcesses' => 2];
 }
 

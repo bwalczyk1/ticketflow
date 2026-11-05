@@ -67,6 +67,9 @@ return [
 
     'timezone' => 'UTC',
 
+    // Calendar rules that follow Polish law, such as the invoice year.
+    'business_timezone' => 'Europe/Warsaw',
+
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration

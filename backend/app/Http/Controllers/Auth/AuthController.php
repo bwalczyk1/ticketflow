@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\UserResource;
+use App\Services\Auth\LoginUser;
 use App\Services\Auth\RegisterUser;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,6 +22,13 @@ class AuthController extends Controller
         );
 
         return (new UserResource($user))->response()->setStatusCode(201);
+    }
+
+    public function login(LoginRequest $request, LoginUser $loginUser): UserResource
+    {
+        $user = $loginUser->handle($request->validated('email'), $request->validated('password'));
+
+        return new UserResource($user);
     }
 
     public function me(Request $request): UserResource

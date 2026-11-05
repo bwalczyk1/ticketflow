@@ -2,6 +2,7 @@
 
 use App\Enums\Role;
 use App\Models\User;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Testing\TestResponse;
 
@@ -141,9 +142,139 @@ it('answers 401 from GET /api/me without a session', function () {
         ->assertJsonPath('error.code', 'UNAUTHENTICATED');
 });
 
-it('logs in and returns the current user from GET /api/me')->todo();
-it('changes the session id on login')->todo();
-it('gives the same 401 INVALID_CREDENTIALS for a wrong email and a wrong password')->todo();
-it('compares against a dummy hash when the user does not exist')->todo();
+it('logs in and returns the current user from GET /api/me', function () {
+    $user = User::factory()->organizer()->create([
+        'name' => 'Olivia Kowalska',
+        'email' => 'olivia@example.com',
+        'password' => 'correct-horse-battery',
+    ]);
+
+    $expected = [
+        'id' => $user->id,
+        'name' => 'Olivia Kowalska',
+        'email' => 'olivia@example.com',
+        'role' => 'ORGANIZER',
+    ];
+
+    $response = $this->postJson('/api/auth/login', [
+        'email' => 'olivia@example.com',
+        'password' => 'correct-horse-battery',
+    ]);
+
+    $response->assertOk()->assertExactJson($expected);
+
+    continueSessionOf($response);
+
+    $this->getJson('/api/me')->assertOk()->assertExactJson($expected);
+});
+
+it('finds the user regardless of the letter case of the login email', function () {
+    User::factory()->create(['email' => 'anna@example.com', 'password' => 'correct-horse-battery']);
+
+    $this->postJson('/api/auth/login', [
+        'email' => 'ANNA@Example.com',
+        'password' => 'correct-horse-battery',
+    ])->assertOk();
+});
+
+it('changes the session id on login', function () {
+    User::factory()->create(['email' => 'anna@example.com', 'password' => 'correct-horse-battery']);
+
+    $guestSessionId = continueSessionOf($this->getJson('/sanctum/csrf-cookie'));
+
+    $response = $this->postJson('/api/auth/login', [
+        'email' => 'anna@example.com',
+        'password' => 'correct-horse-battery',
+    ])->assertOk();
+
+    expect(continueSessionOf($response))->not->toBe($guestSessionId);
+
+    $this->assertDatabaseMissing('sessions', ['id' => $guestSessionId]);
+});
+
+it('does not start a session for a client outside the SPA', function () {
+    User::factory()->create(['email' => 'anna@example.com', 'password' => 'correct-horse-battery']);
+
+    $this->flushHeaders();
+
+    $response = $this->postJson('/api/auth/login', [
+        'email' => 'anna@example.com',
+        'password' => 'correct-horse-battery',
+    ]);
+
+    $response->assertOk();
+
+    expect($response->headers->getCookies())->toBeEmpty();
+});
+
+it('gives the same 401 INVALID_CREDENTIALS for a wrong email and a wrong password', function () {
+    User::factory()->create(['email' => 'anna@example.com', 'password' => 'correct-horse-battery']);
+
+    $wrongEmail = $this->postJson('/api/auth/login', [
+        'email' => 'nobody@example.com',
+        'password' => 'correct-horse-battery',
+    ]);
+
+    $wrongPassword = $this->postJson('/api/auth/login', [
+        'email' => 'anna@example.com',
+        'password' => 'wrong-horse-battery',
+    ]);
+
+    $wrongEmail->assertUnauthorized()->assertJsonPath('error.code', 'INVALID_CREDENTIALS');
+    $wrongPassword->assertUnauthorized();
+
+    expect(Arr::except($wrongEmail->json('error'), 'requestId'))
+        ->toBe(Arr::except($wrongPassword->json('error'), 'requestId'));
+});
+
+it('does not start a session after failed credentials', function () {
+    User::factory()->create(['email' => 'anna@example.com', 'password' => 'correct-horse-battery']);
+
+    $response = $this->postJson('/api/auth/login', [
+        'email' => 'anna@example.com',
+        'password' => 'wrong-horse-battery',
+    ]);
+
+    continueSessionOf($response);
+
+    $this->getJson('/api/me')->assertUnauthorized();
+});
+
+it('compares against a dummy hash when the user does not exist', function () {
+    Hash::shouldReceive('check')
+        ->once()
+        ->withArgs(function (string $password, string $hash) {
+            $info = password_get_info($hash);
+
+            return $password === 'correct-horse-battery'
+                && $info['algoName'] === 'bcrypt'
+                && $info['options']['cost'] === 12;
+        })
+        ->andReturnFalse();
+
+    $this->postJson('/api/auth/login', [
+        'email' => 'nobody@example.com',
+        'password' => 'correct-horse-battery',
+    ])->assertUnauthorized();
+});
+
+it('refuses a missing user even when the dummy hash matches', function () {
+    Hash::shouldReceive('check')->once()->andReturnTrue();
+
+    $this->postJson('/api/auth/login', [
+        'email' => 'nobody@example.com',
+        'password' => 'correct-horse-battery',
+    ])
+        ->assertUnauthorized()
+        ->assertJsonPath('error.code', 'INVALID_CREDENTIALS');
+});
+
+it('reports missing login fields with 400', function () {
+    $response = $this->postJson('/api/auth/login', [])->assertStatus(400);
+
+    expect(array_column($response->json('error.details'), 'field'))
+        ->toEqualCanonicalizing(['email', 'password']);
+});
+
 it('invalidates the session on logout')->todo();
 it('answers 419 CSRF_TOKEN_MISMATCH for an SPA request without a CSRF token')->todo();

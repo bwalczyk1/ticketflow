@@ -13,7 +13,7 @@ class DompdfTicketPdfGenerator implements TicketPdfGenerator
     public function generate(Ticket $ticket): string
     {
         $path = DocumentPaths::ticket($ticket->code);
-        $pdf = Pdf::loadHTML($this->html($ticket))->setPaper('a5')->output();
+        $pdf = Pdf::loadHTML($this->html($ticket))->setPaper('a5')->setOption('enable_font_subsetting', true)->output();
 
         // A half-written file must never sit under the final name, so a retry can safely overwrite it.
         $disk = Storage::disk('local');

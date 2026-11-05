@@ -14,7 +14,7 @@ class DompdfInvoicePdfGenerator implements InvoicePdfGenerator
     public function generate(Invoice $invoice): string
     {
         $path = DocumentPaths::invoice($invoice->year, $invoice->type, $invoice->number);
-        $pdf = Pdf::loadHTML($this->html($invoice))->setPaper('a4')->output();
+        $pdf = Pdf::loadHTML($this->html($invoice))->setPaper('a4')->setOption('enable_font_subsetting', true)->output();
 
         // A half-written file must never sit under the final name, so a retry can safely overwrite it.
         $disk = Storage::disk('local');

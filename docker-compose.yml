@@ -3,7 +3,10 @@ name: ticketflow
 
 x-backend: &backend
   image: ticketflow-app
-  env_file: .env
+  # Optional, so docker compose exec also works from a git worktree without its own .env.
+  env_file:
+    - path: .env
+      required: false
   environment:
     TZ: UTC
   volumes:

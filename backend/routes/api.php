@@ -1,8 +1,6 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+// Every module keeps its routes in routes/api/<module>.php, so modules never edit a shared file.
+foreach (glob(__DIR__.'/api/*.php') as $routes) {
+    require $routes;
+}

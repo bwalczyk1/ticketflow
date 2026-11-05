@@ -7,8 +7,8 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Services\Auth\LoginUser;
+use App\Services\Auth\LogoutUser;
 use App\Services\Auth\RegisterUser;
-use App\Services\Auth\UserSession;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -33,9 +33,9 @@ class AuthController extends Controller
         return new UserResource($user);
     }
 
-    public function logout(UserSession $session): Response
+    public function logout(Request $request, LogoutUser $logoutUser): Response
     {
-        $session->end();
+        $logoutUser->handle($request->user());
 
         return response()->noContent();
     }

@@ -55,3 +55,12 @@ it('stops accepting the token after 60 minutes', function () {
 
     $this->withToken($token)->getJson('/api/me')->assertUnauthorized();
 });
+
+it('revokes the token on logout', function () {
+    $token = issueTokenFor(User::factory()->create());
+
+    $this->withToken($token)->postJson('/api/auth/logout')->assertNoContent();
+    app('auth')->forgetGuards();
+
+    $this->withToken($token)->getJson('/api/me')->assertUnauthorized();
+});

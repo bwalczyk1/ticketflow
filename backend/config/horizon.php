@@ -2,6 +2,40 @@
 
 use Illuminate\Support\Str;
 
+// Each queue has its own supervisor, so a slow consumer never blocks the others.
+// The timeout must stay below queue.connections.redis.retry_after (see QueueConfigTest).
+$queues = [
+    'orders' => ['tries' => 5, 'timeout' => 30],
+    'payments' => ['tries' => 3, 'timeout' => 60],
+    'tickets' => ['tries' => 5, 'timeout' => 30],
+    'documents' => ['tries' => 3, 'timeout' => 80],
+    'mail' => ['tries' => 5, 'timeout' => 60],
+    'stats' => ['tries' => 3, 'timeout' => 30],
+    'notifications' => ['tries' => 3, 'timeout' => 30],
+    'waitlist' => ['tries' => 5, 'timeout' => 30],
+    'refunds' => ['tries' => 5, 'timeout' => 60],
+];
+
+$supervisors = [];
+$scaling = [];
+
+foreach ($queues as $queue => $options) {
+    $supervisors["supervisor-{$queue}"] = [
+        'connection' => 'redis',
+        'queue' => [$queue],
+        'balance' => 'simple',
+        'maxProcesses' => 2,
+        'maxTime' => 0,
+        'maxJobs' => 0,
+        'memory' => 128,
+        'tries' => $options['tries'],
+        'timeout' => $options['timeout'],
+        'backoff' => 5,
+        'nice' => 0,
+    ];
+    $scaling["supervisor-{$queue}"] = ['maxProcesses' => 2];
+}
+
 return [
 
     /*
@@ -196,36 +230,11 @@ return [
     |
     */
 
-    'defaults' => [
-        'supervisor-1' => [
-            'connection' => 'redis',
-            'queue' => ['default'],
-            'balance' => 'auto',
-            'autoScalingStrategy' => 'time',
-            'maxProcesses' => 1,
-            'maxTime' => 0,
-            'maxJobs' => 0,
-            'memory' => 128,
-            'tries' => 1,
-            'timeout' => 60,
-            'nice' => 0,
-        ],
-    ],
+    'defaults' => $supervisors,
 
     'environments' => [
-        'production' => [
-            'supervisor-1' => [
-                'maxProcesses' => 10,
-                'balanceMaxShift' => 1,
-                'balanceCooldown' => 3,
-            ],
-        ],
-
-        'local' => [
-            'supervisor-1' => [
-                'maxProcesses' => 3,
-            ],
-        ],
+        'production' => $scaling,
+        'local' => $scaling,
     ],
 
     /*

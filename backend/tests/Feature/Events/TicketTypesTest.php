@@ -211,6 +211,13 @@ it('answers 409 EVENT_CLOSED for changes in a closed event', function (string $s
         ->assertJsonPath('error.code', 'EVENT_CLOSED');
 })->with(['cancelled', 'finished']);
 
+it('answers 404 before 409 for an unknown ticket type in a closed event', function (string $method) {
+    $event = Event::factory()->cancelled()->for($this->organizer, 'organizer')->create();
+
+    $this->json($method, "/api/organizer/events/{$event->id}/ticket-types/999999")
+        ->assertNotFound();
+})->with(['PATCH', 'DELETE']);
+
 it('answers 403 for a ticket type of another organizer', function (string $method, string $suffix, array $body) {
     $ticketType = TicketType::factory()->create(['price' => 1000]);
     $path = "/api/organizer/events/{$ticketType->event_id}/ticket-types{$suffix}";

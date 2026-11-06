@@ -54,11 +54,10 @@ class TicketTypes
      */
     public function update(Event $event, int $id, array $data): TicketType
     {
-        EventPublication::ensureEditable($event->status);
-
         for ($attempt = 1; $attempt <= self::MAX_ATTEMPTS; $attempt++) {
             $ticketType = $this->find($event, $id);
 
+            EventPublication::ensureEditable($event->status);
             PoolProtection::ensureQuantity($data['quantity'] ?? $ticketType->quantity, $ticketType->sold, $ticketType->held);
 
             $updated = TicketType::query()
@@ -84,10 +83,12 @@ class TicketTypes
      */
     public function delete(Event $event, int $id): void
     {
+        $ticketType = $this->find($event, $id);
+
         EventPublication::ensureEditable($event->status);
 
         $deleted = TicketType::query()
-            ->whereKey($this->find($event, $id)->id)
+            ->whereKey($ticketType->id)
             ->where('sold', 0)
             ->where('held', 0)
             ->delete();

@@ -10,5 +10,6 @@ Route::middleware(['auth:sanctum', 'role:ATTENDEE'])
         Route::get('/', [OrderController::class, 'index']);
         Route::post('/', [OrderController::class, 'store']);
         Route::get('{id}', [OrderController::class, 'show']);
+        Route::post('{id}/pay', [OrderController::class, 'pay']);
         Route::post('{id}/cancel', [OrderController::class, 'cancel']);
     });

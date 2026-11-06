@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Services\Orders\CancelOrder;
 use App\Services\Orders\CustomerOrders;
 use App\Services\Orders\ReserveTickets;
+use App\Services\Payments\StartPayment;
 use App\Support\Pagination;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
@@ -49,6 +50,21 @@ class OrderController extends Controller
     public function show(string $id): OrderResource
     {
         return new OrderResource($this->ownOrder($id));
+    }
+
+    /**
+     * Pay for an own order.
+     *
+     * Payments are processed in the background: the answer is 202 and the result appears in
+     * `status` and `paymentStatus` of the order.
+     */
+    public function pay(string $id, StartPayment $startPayment): JsonResponse
+    {
+        $order = $this->ownOrder($id);
+
+        $startPayment->handle($order);
+
+        return (new OrderResource($this->orders->find($order->id)))->response()->setStatusCode(202);
     }
 
     /**

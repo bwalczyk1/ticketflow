@@ -19,4 +19,6 @@ Route::middleware(['auth:sanctum', 'role:ORGANIZER'])
         Route::get('{event}', [OrganizerEventController::class, 'show']);
         Route::patch('{event}', [OrganizerEventController::class, 'update']);
         Route::delete('{event}', [OrganizerEventController::class, 'destroy']);
+        Route::post('{event}/publish', [OrganizerEventController::class, 'publish']);
+        Route::post('{event}/cancel', [OrganizerEventController::class, 'cancel']);
     });

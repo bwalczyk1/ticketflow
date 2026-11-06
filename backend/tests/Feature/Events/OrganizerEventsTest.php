@@ -1,10 +1,14 @@
 <?php
 
 use App\Enums\EventStatus;
+use App\Events\Catalog\EventCancelled;
+use App\Exceptions\Domain\InvalidStatusTransition;
 use App\Models\Event;
 use App\Models\Order;
 use App\Models\TicketType;
 use App\Models\User;
+use App\Services\Events\OrganizerEvents;
+use Illuminate\Support\Facades\Event as EventBus;
 
 function eventPayload(array $overrides = []): array
 {
@@ -236,6 +240,8 @@ it('answers 403 for an event of another organizer', function (string $method, st
     ['GET', '/api/organizer/events/%d'],
     ['PATCH', '/api/organizer/events/%d'],
     ['DELETE', '/api/organizer/events/%d'],
+    ['POST', '/api/organizer/events/%d/publish'],
+    ['POST', '/api/organizer/events/%d/cancel'],
 ]);
 
 it('answers 404 for an unknown event', function () {
@@ -279,4 +285,98 @@ it('checks in the order 401, 403 role, 400, 404, 403 ownership, 409', function (
     $this->patchJson($path.'999999', $valid)->assertNotFound();
     $this->patchJson($path.$foreign->id, $valid)->assertForbidden();
     $this->patchJson($path.$closed->id, $valid)->assertConflict();
+});
+
+it('publishes a draft event with at least one ticket type', function () {
+    TicketType::factory()->for($this->event)->create();
+
+    $this->actingAs($this->organizer)
+        ->postJson("/api/organizer/events/{$this->event->id}/publish")
+        ->assertOk()
+        ->assertJsonPath('status', 'PUBLISHED');
+
+    $this->getJson("/api/events/{$this->event->id}")->assertOk();
+});
+
+it('answers 409 EVENT_NOT_PUBLISHABLE without ticket types', function () {
+    $this->actingAs($this->organizer)
+        ->postJson("/api/organizer/events/{$this->event->id}/publish")
+        ->assertConflict()
+        ->assertJsonPath('error.code', 'EVENT_NOT_PUBLISHABLE');
+
+    expect($this->event->fresh()->status)->toBe(EventStatus::Draft);
+});
+
+it('answers 409 EVENT_NOT_PUBLISHABLE for a past start date', function () {
+    TicketType::factory()->for($this->event)->create();
+    $this->travelTo($this->event->starts_at);
+
+    $this->actingAs($this->organizer)
+        ->postJson("/api/organizer/events/{$this->event->id}/publish")
+        ->assertConflict()
+        ->assertJsonPath('error.code', 'EVENT_NOT_PUBLISHABLE');
+});
+
+it('answers 409 INVALID_STATUS_TRANSITION for a forbidden status change', function (string $state, string $action) {
+    EventBus::fake([EventCancelled::class]);
+
+    $event = Event::factory()->{$state}()->for($this->organizer, 'organizer')->create();
+    TicketType::factory()->for($event)->create();
+
+    $this->actingAs($this->organizer)
+        ->postJson("/api/organizer/events/{$event->id}/{$action}")
+        ->assertConflict()
+        ->assertJsonPath('error.code', 'INVALID_STATUS_TRANSITION');
+
+    EventBus::assertNotDispatched(EventCancelled::class);
+})->with([
+    ['published', 'publish'],
+    ['cancelled', 'publish'],
+    ['finished', 'publish'],
+    ['draft', 'cancel'],
+    ['cancelled', 'cancel'],
+    ['finished', 'cancel'],
+]);
+
+it('cancels a published event and dispatches EventCancelled', function () {
+    EventBus::fake([EventCancelled::class]);
+
+    $event = Event::factory()->published()->for($this->organizer, 'organizer')->create();
+
+    $this->actingAs($this->organizer)
+        ->postJson("/api/organizer/events/{$event->id}/cancel")
+        ->assertOk()
+        ->assertJsonPath('status', 'CANCELLED');
+
+    EventBus::assertDispatched(EventCancelled::class, fn (EventCancelled $cancelled) => $cancelled->eventId === $event->id);
+    EventBus::assertDispatchedTimes(EventCancelled::class, 1);
+
+    $this->getJson("/api/events/{$event->id}")->assertNotFound();
+});
+
+it('cancels an event with sold tickets', function () {
+    EventBus::fake([EventCancelled::class]);
+
+    $event = Event::factory()->published()->for($this->organizer, 'organizer')->create();
+    TicketType::factory()->for($event)->create(['sold' => 5]);
+
+    $this->actingAs($this->organizer)
+        ->postJson("/api/organizer/events/{$event->id}/cancel")
+        ->assertOk();
+
+    EventBus::assertDispatched(EventCancelled::class);
+});
+
+it('lets only the first of two parallel cancellations dispatch EventCancelled', function () {
+    EventBus::fake([EventCancelled::class]);
+
+    $event = Event::factory()->published()->for($this->organizer, 'organizer')->create();
+    $stale = $event->fresh();
+    $events = app(OrganizerEvents::class);
+
+    $events->cancel($event);
+
+    expect(fn () => $events->cancel($stale))->toThrow(InvalidStatusTransition::class);
+
+    EventBus::assertDispatchedTimes(EventCancelled::class, 1);
 });

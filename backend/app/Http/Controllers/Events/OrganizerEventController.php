@@ -65,4 +65,20 @@ class OrganizerEventController extends OrganizerController
 
         return response()->noContent();
     }
+
+    /**
+     * Publish a draft event.
+     */
+    public function publish(int $event): EventManagementResource
+    {
+        return new EventManagementResource($this->events->publish($this->ownedEvent($event)));
+    }
+
+    /**
+     * Cancel a published event.
+     */
+    public function cancel(int $event): EventManagementResource
+    {
+        return new EventManagementResource($this->events->cancel($this->ownedEvent($event)));
+    }
 }

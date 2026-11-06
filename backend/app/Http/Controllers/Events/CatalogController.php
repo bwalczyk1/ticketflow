@@ -19,7 +19,7 @@ class CatalogController extends Controller
      *
      * @unauthenticated
      *
-     * @response array{data: EventResource[], meta: array{page: int, limit: int, total: int, totalPages: int}}
+     * @return array{data: list<EventResource>, meta: array{page: int, limit: int, total: int, totalPages: int}}
      */
     public function index(ListCatalogEventsRequest $request): array
     {

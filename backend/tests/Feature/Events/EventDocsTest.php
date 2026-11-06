@@ -69,6 +69,19 @@ it('documents the shape of lists', function (string $path) {
     '/organizer/events/{id}/ticket-types',
 ]);
 
+it('documents the item types of lists', function (string $path, string $schema) {
+    $this->getJson('/docs/api.json')
+        ->assertOk()
+        ->assertJsonPath(
+            "paths.{$path}.get.responses.200.content.application/json.schema.properties.data.items.\$ref",
+            "#/components/schemas/{$schema}",
+        );
+})->with([
+    ['/events', 'EventResource'],
+    ['/organizer/events', 'EventManagementResource'],
+    ['/organizer/events/{id}/ticket-types', 'TicketTypeManagementResource'],
+]);
+
 it('documents ids in the path as integers', function (string $path, string $method) {
     $parameters = collect($this->spec['paths'][$path][$method]['parameters'])->where('in', 'path');
 

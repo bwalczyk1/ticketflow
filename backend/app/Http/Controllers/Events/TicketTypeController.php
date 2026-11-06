@@ -17,7 +17,7 @@ class TicketTypeController extends OrganizerController
     /**
      * List the ticket types of an own event.
      *
-     * @response array{data: TicketTypeManagementResource[], meta: array{page: int, limit: int, total: int, totalPages: int}}
+     * @return array{data: list<TicketTypeManagementResource>, meta: array{page: int, limit: int, total: int, totalPages: int}}
      */
     public function index(ListTicketTypesRequest $request, string $id): array
     {

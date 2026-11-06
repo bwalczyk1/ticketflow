@@ -18,7 +18,7 @@ class OrganizerEventController extends OrganizerController
     /**
      * List own events in every status.
      *
-     * @response array{data: EventManagementResource[], meta: array{page: int, limit: int, total: int, totalPages: int}}
+     * @return array{data: list<EventManagementResource>, meta: array{page: int, limit: int, total: int, totalPages: int}}
      *
      * @throws AuthorizationException
      */

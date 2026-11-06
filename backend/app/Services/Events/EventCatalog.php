@@ -7,6 +7,7 @@ use App\Models\Event;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class EventCatalog
 {
@@ -28,6 +29,9 @@ class EventCatalog
         return $query->paginate(perPage: $limit, page: $page);
     }
 
+    /**
+     * @throws ModelNotFoundException
+     */
     public function find(int $id): Event
     {
         return Event::query()

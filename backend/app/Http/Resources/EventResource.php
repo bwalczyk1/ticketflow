@@ -25,7 +25,17 @@ class EventResource extends JsonResource
             'city' => $this->city,
             'category' => $this->category,
             'timezone' => $this->timezone,
+            /**
+             * @var string
+             *
+             * @format date-time
+             */
             'startsAt' => ApiDate::format($this->starts_at),
+            /**
+             * @var string
+             *
+             * @format date-time
+             */
             'endsAt' => ApiDate::format($this->ends_at),
             'status' => $this->status,
             'ticketTypes' => TicketTypeResource::collection($this->whenLoaded('ticketTypes')),

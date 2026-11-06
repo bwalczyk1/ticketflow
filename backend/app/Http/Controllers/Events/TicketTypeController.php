@@ -38,6 +38,7 @@ class TicketTypeController extends OrganizerController
      */
     public function store(StoreTicketTypeRequest $request, int $event): TicketTypeManagementResource
     {
+        /** @status 201 */
         return new TicketTypeManagementResource($this->ticketTypes->create($this->ownedEvent($event), $request->validated()));
     }
 

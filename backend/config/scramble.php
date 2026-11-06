@@ -1,5 +1,7 @@
 <?php
 
+use App\Docs\DomainExceptionToResponseExtension;
+use App\Docs\FrameworkExceptionToResponseExtension;
 use Dedoc\Scramble\Http\Middleware\RestrictedDocsAccess;
 use Dedoc\Scramble\OpenApiVersion;
 
@@ -162,7 +164,10 @@ return [
         RestrictedDocsAccess::class,
     ],
 
-    'extensions' => [],
+    'extensions' => [
+        FrameworkExceptionToResponseExtension::class,
+        DomainExceptionToResponseExtension::class,
+    ],
 
     /*
      * Automatically document API security (OpenAPI `security` / `securitySchemes`) based on route

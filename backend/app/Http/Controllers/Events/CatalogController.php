@@ -18,8 +18,6 @@ class CatalogController extends Controller
      * `price_max` is in grosz, like all prices in the API.
      *
      * @unauthenticated
-     *
-     * @return array{data: list<EventResource>, meta: array{page: int, limit: int, total: int, totalPages: int}}
      */
     public function index(ListCatalogEventsRequest $request): array
     {

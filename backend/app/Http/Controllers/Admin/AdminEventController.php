@@ -10,9 +10,6 @@ use App\Support\Pagination;
 
 class AdminEventController extends Controller
 {
-    /**
-     * @return array{data: list<AdminEventResource>, meta: array{page: int, limit: int, total: int, totalPages: int}}
-     */
     public function index(ListEventsRequest $request, ListEvents $listEvents): array
     {
         $events = $listEvents->handle($request->sortColumn(), $request->limit(), $request->page());

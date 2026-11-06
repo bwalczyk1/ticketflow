@@ -22,8 +22,6 @@ class OrderController extends Controller
 
     /**
      * List own orders.
-     *
-     * @return array{data: list<OrderResource>, meta: array{page: int, limit: int, total: int, totalPages: int}}
      */
     public function index(ListOrdersRequest $request): array
     {

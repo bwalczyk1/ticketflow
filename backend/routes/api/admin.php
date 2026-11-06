@@ -6,4 +6,5 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->middleware(['auth:sanctum', 'role:'.Role::Admin->value])->group(function () {
     Route::get('users', [AdminUserController::class, 'index']);
+    Route::patch('users/{id}/role', [AdminUserController::class, 'updateRole'])->whereNumber('id');
 });

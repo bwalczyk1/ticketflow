@@ -4,6 +4,7 @@ use App\Enums\EventStatus;
 use App\Exceptions\Domain\EventClosed;
 use App\Exceptions\Domain\EventHasSales;
 use App\Exceptions\Domain\EventNotPublishable;
+use App\Exceptions\Domain\InvalidEventDates;
 use App\Exceptions\Domain\InvalidStatusTransition;
 use App\Services\Events\EventPublication;
 use Carbon\CarbonImmutable;
@@ -45,6 +46,17 @@ it('refuses to delete an event with sales', function (int $sold, int $held) {
 
 it('allows deleting an event without sales', function () {
     EventPublication::ensureDeletable(0, 0);
+})->throwsNoExceptions();
+
+it('requires the end after the start', function (string $endsAt) {
+    EventPublication::ensureDatesInOrder(CarbonImmutable::parse('2026-12-01T12:00:00Z'), CarbonImmutable::parse($endsAt));
+})->with([
+    'equal' => ['2026-12-01T12:00:00Z'],
+    'earlier' => ['2026-12-01T11:59:59Z'],
+])->throws(InvalidEventDates::class);
+
+it('accepts an end after the start', function () {
+    EventPublication::ensureDatesInOrder(CarbonImmutable::parse('2026-12-01T12:00:00Z'), CarbonImmutable::parse('2026-12-01T12:00:01Z'));
 })->throwsNoExceptions();
 
 it('refuses changes to a closed event', function (EventStatus $status) {

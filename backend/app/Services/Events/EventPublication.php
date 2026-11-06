@@ -6,6 +6,7 @@ use App\Enums\EventStatus;
 use App\Exceptions\Domain\EventClosed;
 use App\Exceptions\Domain\EventHasSales;
 use App\Exceptions\Domain\EventNotPublishable;
+use App\Exceptions\Domain\InvalidEventDates;
 use App\Exceptions\Domain\InvalidStatusTransition;
 use Carbon\CarbonImmutable;
 
@@ -37,6 +38,16 @@ class EventPublication
     {
         if ($sold + $held > 0) {
             throw new EventHasSales;
+        }
+    }
+
+    /**
+     * @throws InvalidEventDates
+     */
+    public static function ensureDatesInOrder(CarbonImmutable $startsAt, CarbonImmutable $endsAt): void
+    {
+        if ($endsAt <= $startsAt) {
+            throw new InvalidEventDates;
         }
     }
 

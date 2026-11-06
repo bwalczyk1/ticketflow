@@ -2,7 +2,9 @@
 # Fires parallel reservations through nginx and php-fpm, then checks the database with SQL.
 #
 # Scenario 1: 20 people ask for one ticket each while only 5 exist.
-# Scenario 2: one person sends 10 parallel requests for one ticket against the limit of 6.
+# Scenario 2: one person sends 10 parallel requests for one ticket against the limit of 6. They
+# alternate between two pools of one event, because the version check of a single pool would
+# serialise them and hide a missing lock on the user row.
 #
 # Usage: scripts/oversell.sh (with the stack running: docker compose up -d)
 #   BASE_URL   address of nginx, by default http://localhost:8080
@@ -73,24 +75,49 @@ SELECT @event_id, LAST_INSERT_ID();
 SQL
 }
 
-# Starts one background request. The answer lands in <dir>/<name>.status and <dir>/<name>.body.
-reserve() {
+# Prints the id of one more pool of the event.
+add_pool() {
+    local event_id=$1
+    local quantity=$2
+
+    sql <<SQL
+INSERT INTO ticket_types (event_id, name, price, quantity, created_at, updated_at)
+VALUES ($event_id, 'Second', 10000, $quantity, UTC_TIMESTAMP(), UTC_TIMESTAMP());
+SELECT LAST_INSERT_ID();
+SQL
+}
+
+# Adds one request to <dir>/requests. Its body lands in <dir>/<name>.body.
+add_request() {
     local dir=$1
     local name=$2
     local token=$3
     local event_id=$4
     local ticket_type_id=$5
 
-    curl -s -o "$dir/$name.body" -w '%{http_code}\n' -X POST "$base_url/api/orders" \
-        -H "Authorization: Bearer $token" \
-        -H 'Accept: application/json' \
-        -H 'Content-Type: application/json' \
-        -d "{\"eventId\":$event_id,\"items\":[{\"ticketTypeId\":$ticket_type_id,\"quantity\":1}]}" \
-        > "$dir/$name.status" &
+    if [ -s "$dir/requests" ]; then
+        echo next >> "$dir/requests"
+    fi
+
+    cat >> "$dir/requests" <<CONFIG
+url = "$base_url/api/orders"
+request = "POST"
+header = "Authorization: Bearer $token"
+header = "Accept: application/json"
+header = "Content-Type: application/json"
+data = "{\"eventId\":$event_id,\"items\":[{\"ticketTypeId\":$ticket_type_id,\"quantity\":1}]}"
+output = "$dir/$name.body"
+write-out = "%{http_code}\n"
+CONFIG
+}
+
+# One curl process opens all connections at once, so the requests really overlap on the server.
+fire_requests() {
+    curl -s --parallel --parallel-immediate --parallel-max 50 --config "$1/requests" > "$1/statuses"
 }
 
 count_status() {
-    cat "$1"/*.status | grep -c "^$2\$" || true
+    grep -c "^$2\$" "$1/statuses" || true
 }
 
 count_code() {
@@ -99,7 +126,7 @@ count_code() {
 
 print_answers() {
     echo "  answers:"
-    cat "$1"/*.status | sort | uniq -c | sed 's/^/    /'
+    sort "$1/statuses" | uniq -c | sed 's/^/    /'
 
     cat "$1"/*.body | grep -o '"code":"[A-Z_]*"' | sort | uniq -c | sed 's/^/    /' || true
 }
@@ -147,10 +174,10 @@ for i in $(seq 1 20); do
 done
 
 for i in $(seq 1 20); do
-    reserve "$dir" "$i" "${tokens[$((i - 1))]}" "$event_id" "$ticket_type_id"
+    add_request "$dir" "$i" "${tokens[$((i - 1))]}" "$event_id" "$ticket_type_id"
 done
 
-wait
+fire_requests "$dir"
 print_answers "$dir"
 
 created=$(count_status "$dir" 201)
@@ -181,19 +208,21 @@ fi
 echo "Scenario 2: one person, 10 parallel requests, limit of 6"
 
 read -r event_id ticket_type_id <<< "$(create_pool "$organizer_id" 100)"
+second_ticket_type_id=$(add_pool "$event_id" 100)
 dir="$work_dir/limit"
 mkdir -p "$dir"
 create_user limit-buyer ATTENDEE > /dev/null
 token=$(issue_token limit-buyer)
 
-for i in $(seq 1 10); do
-    reserve "$dir" "$i" "$token" "$event_id" "$ticket_type_id"
+for i in $(seq 1 5); do
+    add_request "$dir" "first-$i" "$token" "$event_id" "$ticket_type_id"
+    add_request "$dir" "second-$i" "$token" "$event_id" "$second_ticket_type_id"
 done
 
-wait
+fire_requests "$dir"
 print_answers "$dir"
 
-read -r held <<< "$(echo "SELECT held FROM ticket_types WHERE id = $ticket_type_id;" | sql)"
+held=$(echo "SELECT SUM(held) FROM ticket_types WHERE id IN ($ticket_type_id, $second_ticket_type_id);" | sql)
 
 reserved=$(sql <<SQL
 SELECT COALESCE(SUM(order_items.quantity), 0)

@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Contracts\PaymentGateway;
+use App\Contracts\PaymentResultHandler;
 use App\Services\Payments\FakePaymentGateway;
+use App\Services\Payments\SettlePayment;
 use Illuminate\Support\ServiceProvider;
 use RuntimeException;
 
@@ -11,6 +13,8 @@ class PaymentsServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->bind(PaymentResultHandler::class, SettlePayment::class);
+
         $this->app->bind(PaymentGateway::class, function () {
             $gateway = config('ticketflow.payment_gateway');
 

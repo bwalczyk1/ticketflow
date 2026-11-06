@@ -13,7 +13,7 @@ class CatalogController extends Controller
     public function __construct(private EventCatalog $catalog) {}
 
     /**
-     * List published events.
+     * List published events that have not started yet.
      *
      * `price_max` is in grosz, like all prices in the API.
      *
@@ -32,7 +32,7 @@ class CatalogController extends Controller
     }
 
     /**
-     * Show a published event with its ticket types and their availability.
+     * Show a published event that has not started yet, with its ticket types and their availability.
      *
      * @unauthenticated
      */

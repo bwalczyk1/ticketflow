@@ -49,25 +49,25 @@ class OrganizerEventController extends OrganizerController
     /**
      * Show an own event.
      */
-    public function show(int $event): EventManagementResource
+    public function show(string $id): EventManagementResource
     {
-        return new EventManagementResource($this->ownedEvent($event)->load('ticketTypes'));
+        return new EventManagementResource($this->ownedEvent($id)->load('ticketTypes'));
     }
 
     /**
      * Update an own event.
      */
-    public function update(UpdateEventRequest $request, int $event): EventManagementResource
+    public function update(UpdateEventRequest $request, string $id): EventManagementResource
     {
-        return new EventManagementResource($this->events->update($this->ownedEvent($event), $request->eventData()));
+        return new EventManagementResource($this->events->update($this->ownedEvent($id), $request->eventData()));
     }
 
     /**
      * Delete an own event without sales.
      */
-    public function destroy(int $event): Response
+    public function destroy(string $id): Response
     {
-        $this->events->delete($this->ownedEvent($event));
+        $this->events->delete($this->ownedEvent($id));
 
         return response()->noContent();
     }
@@ -75,16 +75,16 @@ class OrganizerEventController extends OrganizerController
     /**
      * Publish a draft event.
      */
-    public function publish(int $event): EventManagementResource
+    public function publish(string $id): EventManagementResource
     {
-        return new EventManagementResource($this->events->publish($this->ownedEvent($event)));
+        return new EventManagementResource($this->events->publish($this->ownedEvent($id)));
     }
 
     /**
      * Cancel a published event.
      */
-    public function cancel(int $event): EventManagementResource
+    public function cancel(string $id): EventManagementResource
     {
-        return new EventManagementResource($this->events->cancel($this->ownedEvent($event)));
+        return new EventManagementResource($this->events->cancel($this->ownedEvent($id)));
     }
 }

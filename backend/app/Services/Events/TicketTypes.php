@@ -25,7 +25,7 @@ class TicketTypes
             ->paginate(perPage: $limit, page: $page);
     }
 
-    public function find(Event $event, int $id): TicketType
+    public function find(Event $event, string $id): TicketType
     {
         return $event->ticketTypes()->findOrFail($id);
     }
@@ -52,7 +52,7 @@ class TicketTypes
      * @throws PoolProtected
      * @throws ReservationConflict
      */
-    public function update(Event $event, int $id, array $data): TicketType
+    public function update(Event $event, string $id, array $data): TicketType
     {
         for ($attempt = 1; $attempt <= self::MAX_ATTEMPTS; $attempt++) {
             $ticketType = $this->find($event, $id);
@@ -81,7 +81,7 @@ class TicketTypes
      * @throws EventClosed
      * @throws PoolProtected
      */
-    public function delete(Event $event, int $id): void
+    public function delete(Event $event, string $id): void
     {
         $ticketType = $this->find($event, $id);
 

@@ -246,6 +246,12 @@ it('answers 404 for a ticket type of another event', function (string $method) {
     $this->assertModelExists($foreign);
 })->with(['GET', 'PATCH', 'DELETE']);
 
+it('answers 404 for a ticket type id that cannot exist', function (string $id) {
+    $this->getJson("{$this->path}/{$id}")
+        ->assertNotFound()
+        ->assertJsonPath('error.code', 'NOT_FOUND');
+})->with(['abc', '99999999999999999999999']);
+
 it('answers 403 for an attendee', function () {
     $this->actingAs(User::factory()->create())
         ->getJson($this->path)

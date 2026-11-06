@@ -26,31 +26,31 @@ it('describes bearer security for the organizer endpoints only', function () {
         ->and($this->spec['security'])->toBe([['http' => []]])
         ->and($this->spec['paths']['/organizer/events']['post'])->not->toHaveKey('security')
         ->and($this->spec['paths']['/events']['get']['security'])->toBe([])
-        ->and($this->spec['paths']['/events/{event}']['get']['security'])->toBe([]);
+        ->and($this->spec['paths']['/events/{id}']['get']['security'])->toBe([]);
 });
 
 it('documents the 409 responses of the organizer endpoints', function (string $method, string $path, array $codes) {
     expect(documentedErrorCodes($this->spec, $method, $path, 409))->toEqualCanonicalizing($codes);
 })->with([
-    ['patch', '/organizer/events/{event}', ['EVENT_CLOSED']],
-    ['delete', '/organizer/events/{event}', ['EVENT_HAS_SALES']],
-    ['post', '/organizer/events/{event}/publish', ['INVALID_STATUS_TRANSITION', 'EVENT_NOT_PUBLISHABLE']],
-    ['post', '/organizer/events/{event}/cancel', ['INVALID_STATUS_TRANSITION']],
-    ['post', '/organizer/events/{event}/ticket-types', ['EVENT_CLOSED']],
-    ['patch', '/organizer/events/{event}/ticket-types/{ticketType}', ['EVENT_CLOSED', 'POOL_PROTECTED', 'RESERVATION_CONFLICT']],
-    ['delete', '/organizer/events/{event}/ticket-types/{ticketType}', ['EVENT_CLOSED', 'POOL_PROTECTED']],
+    ['patch', '/organizer/events/{id}', ['EVENT_CLOSED']],
+    ['delete', '/organizer/events/{id}', ['EVENT_HAS_SALES']],
+    ['post', '/organizer/events/{id}/publish', ['INVALID_STATUS_TRANSITION', 'EVENT_NOT_PUBLISHABLE']],
+    ['post', '/organizer/events/{id}/cancel', ['INVALID_STATUS_TRANSITION']],
+    ['post', '/organizer/events/{id}/ticket-types', ['EVENT_CLOSED']],
+    ['patch', '/organizer/events/{id}/ticket-types/{ticketTypeId}', ['EVENT_CLOSED', 'POOL_PROTECTED', 'RESERVATION_CONFLICT']],
+    ['delete', '/organizer/events/{id}/ticket-types/{ticketTypeId}', ['EVENT_CLOSED', 'POOL_PROTECTED']],
 ]);
 
 it('documents errors in the format the API really answers with', function (string $method, string $path, int $status, string $code) {
     expect(documentedErrorCodes($this->spec, $method, $path, $status))->toContain($code);
 })->with([
     ['get', '/events', 400, 'VALIDATION_ERROR'],
-    ['get', '/events/{event}', 404, 'NOT_FOUND'],
+    ['get', '/events/{id}', 404, 'NOT_FOUND'],
     ['post', '/organizer/events', 400, 'VALIDATION_ERROR'],
     ['post', '/organizer/events', 401, 'UNAUTHENTICATED'],
     ['post', '/organizer/events', 403, 'FORBIDDEN'],
-    ['patch', '/organizer/events/{event}', 403, 'FORBIDDEN'],
-    ['patch', '/organizer/events/{event}', 404, 'NOT_FOUND'],
+    ['patch', '/organizer/events/{id}', 403, 'FORBIDDEN'],
+    ['patch', '/organizer/events/{id}', 404, 'NOT_FOUND'],
 ]);
 
 it('does not document the default 422 of Laravel', function () {
@@ -66,15 +66,29 @@ it('documents the shape of lists', function (string $path) {
 })->with([
     '/events',
     '/organizer/events',
-    '/organizer/events/{event}/ticket-types',
+    '/organizer/events/{id}/ticket-types',
+]);
+
+it('documents ids in the path as integers', function (string $path, string $method) {
+    $parameters = collect($this->spec['paths'][$path][$method]['parameters'])->where('in', 'path');
+
+    expect($parameters)->not->toBeEmpty();
+
+    foreach ($parameters as $parameter) {
+        expect($parameter['schema']['type'])->toBe('integer');
+    }
+})->with([
+    ['/events/{id}', 'get'],
+    ['/organizer/events/{id}', 'patch'],
+    ['/organizer/events/{id}/ticket-types/{ticketTypeId}', 'patch'],
 ]);
 
 it('documents the success statuses', function (string $method, string $path, int $status) {
     expect($this->spec['paths'][$path][$method]['responses'])->toHaveKey($status);
 })->with([
     ['post', '/organizer/events', 201],
-    ['post', '/organizer/events/{event}/ticket-types', 201],
-    ['delete', '/organizer/events/{event}', 204],
+    ['post', '/organizer/events/{id}/ticket-types', 201],
+    ['delete', '/organizer/events/{id}', 204],
 ]);
 
 it('documents camelCase event fields', function () {

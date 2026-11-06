@@ -19,10 +19,10 @@ class TicketTypeController extends OrganizerController
      *
      * @response array{data: TicketTypeManagementResource[], meta: array{page: int, limit: int, total: int, totalPages: int}}
      */
-    public function index(ListTicketTypesRequest $request, int $event): array
+    public function index(ListTicketTypesRequest $request, string $id): array
     {
         $ticketTypes = $this->ticketTypes->list(
-            $this->ownedEvent($event),
+            $this->ownedEvent($id),
             $request->sortColumn(),
             $request->limit(),
             $request->page(),
@@ -36,18 +36,18 @@ class TicketTypeController extends OrganizerController
      *
      * `price` is in grosz, like all prices in the API.
      */
-    public function store(StoreTicketTypeRequest $request, int $event): TicketTypeManagementResource
+    public function store(StoreTicketTypeRequest $request, string $id): TicketTypeManagementResource
     {
         /** @status 201 */
-        return new TicketTypeManagementResource($this->ticketTypes->create($this->ownedEvent($event), $request->validated()));
+        return new TicketTypeManagementResource($this->ticketTypes->create($this->ownedEvent($id), $request->validated()));
     }
 
     /**
      * Show a ticket type of an own event.
      */
-    public function show(int $event, int $ticketType): TicketTypeManagementResource
+    public function show(string $id, string $ticketTypeId): TicketTypeManagementResource
     {
-        return new TicketTypeManagementResource($this->ticketTypes->find($this->ownedEvent($event), $ticketType));
+        return new TicketTypeManagementResource($this->ticketTypes->find($this->ownedEvent($id), $ticketTypeId));
     }
 
     /**
@@ -55,17 +55,17 @@ class TicketTypeController extends OrganizerController
      *
      * `quantity` cannot go below the sold and held tickets.
      */
-    public function update(UpdateTicketTypeRequest $request, int $event, int $ticketType): TicketTypeManagementResource
+    public function update(UpdateTicketTypeRequest $request, string $id, string $ticketTypeId): TicketTypeManagementResource
     {
-        return new TicketTypeManagementResource($this->ticketTypes->update($this->ownedEvent($event), $ticketType, $request->validated()));
+        return new TicketTypeManagementResource($this->ticketTypes->update($this->ownedEvent($id), $ticketTypeId, $request->validated()));
     }
 
     /**
      * Delete a ticket type without sales.
      */
-    public function destroy(int $event, int $ticketType): Response
+    public function destroy(string $id, string $ticketTypeId): Response
     {
-        $this->ticketTypes->delete($this->ownedEvent($event), $ticketType);
+        $this->ticketTypes->delete($this->ownedEvent($id), $ticketTypeId);
 
         return response()->noContent();
     }

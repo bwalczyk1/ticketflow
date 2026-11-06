@@ -32,7 +32,7 @@ class EventCatalog
     /**
      * @throws ModelNotFoundException
      */
-    public function find(int $id): Event
+    public function find(string $id): Event
     {
         return Event::query()
             ->with('ticketTypes')

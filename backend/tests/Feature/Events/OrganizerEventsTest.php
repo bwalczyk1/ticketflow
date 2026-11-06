@@ -244,11 +244,12 @@ it('answers 403 for an event of another organizer', function (string $method, st
     ['POST', '/api/organizer/events/%d/cancel'],
 ]);
 
-it('answers 404 for an unknown event', function () {
+it('answers 404 for an unknown event', function (string $id) {
     $this->actingAs($this->organizer)
-        ->getJson('/api/organizer/events/999999')
-        ->assertNotFound();
-});
+        ->getJson("/api/organizer/events/{$id}")
+        ->assertNotFound()
+        ->assertJsonPath('error.code', 'NOT_FOUND');
+})->with(['999999', 'abc', '99999999999999999999999']);
 
 it('answers 403 for an attendee', function () {
     $this->actingAs(User::factory()->create())
@@ -286,6 +287,19 @@ it('checks in the order 401, 403 role, 400, 404, 403 ownership, 409', function (
     $this->patchJson($path.$foreign->id, $valid)->assertForbidden();
     $this->patchJson($path.$closed->id, $valid)->assertConflict();
 });
+
+it('answers 403 before 404 for an attendee on a missing event', function (string $method, string $suffix) {
+    $this->actingAs(User::factory()->create())
+        ->json($method, "/api/organizer/events/999999{$suffix}")
+        ->assertForbidden();
+})->with([
+    ['GET', ''],
+    ['DELETE', ''],
+    ['POST', '/publish'],
+    ['POST', '/cancel'],
+    ['GET', '/ticket-types'],
+    ['GET', '/ticket-types/999999'],
+]);
 
 it('publishes a draft event with at least one ticket type', function () {
     TicketType::factory()->for($this->event)->create();

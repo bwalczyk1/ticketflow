@@ -38,8 +38,8 @@ class CatalogController extends Controller
      *
      * @unauthenticated
      */
-    public function show(int $event): EventResource
+    public function show(string $id): EventResource
     {
-        return new EventResource($this->catalog->find($event));
+        return new EventResource($this->catalog->find($id));
     }
 }

@@ -7,6 +7,7 @@ use App\Http\Requests\Orders\ListOrdersRequest;
 use App\Http\Requests\Orders\StoreOrderRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
+use App\Services\Orders\CancelOrder;
 use App\Services\Orders\CustomerOrders;
 use App\Services\Orders\ReserveTickets;
 use App\Support\Pagination;
@@ -48,6 +49,20 @@ class OrderController extends Controller
     public function show(string $id): OrderResource
     {
         return new OrderResource($this->ownOrder($id));
+    }
+
+    /**
+     * Cancel an own order before paying.
+     *
+     * The held seats go back to the pool at once.
+     */
+    public function cancel(string $id, CancelOrder $cancelOrder): OrderResource
+    {
+        $order = $this->ownOrder($id);
+
+        $cancelOrder->handle($order);
+
+        return new OrderResource($this->orders->find($order->id));
     }
 
     /**

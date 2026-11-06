@@ -45,6 +45,33 @@ it('does not expire an order paid after the scheduler listed it', function () {
     Event::assertNotDispatched(ReservationExpired::class);
 });
 
+it('keeps the order locked until the expiry is committed', function () {
+    $this->travelTo($this->order->expires_at);
+
+    $locked = false;
+
+    Interleave::before('update `orders`', function () use (&$locked) {
+        $locked = Interleave::rowIsLocked($this->other, 'orders', $this->order->id);
+    });
+
+    app(ExpireReservations::class)->handle();
+
+    expect($locked)->toBeTrue();
+});
+
+it('keeps the order locked until the payment result is committed', function (string $result) {
+    $payment = Payment::factory()->for($this->order)->create();
+    $locked = false;
+
+    Interleave::before('update `payments`', function () use (&$locked) {
+        $locked = Interleave::rowIsLocked($this->other, 'orders', $this->order->id);
+    });
+
+    app(PaymentResultHandler::class)->{$result}($payment, 'ref_1');
+
+    expect($locked)->toBeTrue();
+})->with(['succeeded', 'failed']);
+
 it('does not pay an order expired just before the payment result arrived', function () {
     $payment = Payment::factory()->for($this->order)->create();
 

@@ -7,7 +7,6 @@ use App\Models\Payment;
 use App\Models\TicketType;
 use App\Services\Orders\CancelOrder;
 use App\Services\Payments\StartPayment;
-use Illuminate\Database\QueryException;
 use Tests\Feature\Orders\OrderFixtures;
 use Tests\Integration\Orders\Interleave;
 
@@ -36,23 +35,15 @@ it('answers PAYMENT_ALREADY_STARTED to the loser of two parallel pays', function
 });
 
 it('keeps the order locked until the payment is committed', function () {
-    $this->other->statement('SET SESSION innodb_lock_wait_timeout = 1');
+    $locked = false;
 
-    $blocked = false;
-
-    Interleave::before('insert into `payments`', function () use (&$blocked) {
-        try {
-            $this->other->transaction(function () {
-                $this->other->table('orders')->where('id', $this->order->id)->lockForUpdate()->first();
-            });
-        } catch (QueryException) {
-            $blocked = true;
-        }
+    Interleave::before('insert into `payments`', function () use (&$locked) {
+        $locked = Interleave::rowIsLocked($this->other, 'orders', $this->order->id);
     });
 
     app(StartPayment::class)->handle($this->order);
 
-    expect($blocked)->toBeTrue();
+    expect($locked)->toBeTrue();
 });
 
 it('refuses to cancel when a payment committed just before the lock', function () {
@@ -62,4 +53,16 @@ it('refuses to cancel when a payment committed just before the lock', function (
 
     expect($this->order->fresh()->status)->toBe(OrderStatus::Pending)
         ->and($this->pool->fresh()->held)->toBe(2);
+});
+
+it('keeps the order locked until the cancellation is committed', function () {
+    $locked = false;
+
+    Interleave::before('update `orders`', function () use (&$locked) {
+        $locked = Interleave::rowIsLocked($this->other, 'orders', $this->order->id);
+    });
+
+    app(CancelOrder::class)->handle($this->order);
+
+    expect($locked)->toBeTrue();
 });

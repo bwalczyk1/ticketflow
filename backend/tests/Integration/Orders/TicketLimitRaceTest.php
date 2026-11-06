@@ -6,7 +6,6 @@ use App\Models\Order;
 use App\Models\TicketType;
 use App\Models\User;
 use App\Services\Orders\ReserveTickets;
-use Illuminate\Database\QueryException;
 use Tests\Integration\Orders\Interleave;
 
 beforeEach(function () {
@@ -48,42 +47,26 @@ it('sees an order committed by another request of the same user while waiting fo
 });
 
 it('keeps the user row locked from counting until the commit', function () {
-    $this->other->statement('SET SESSION innodb_lock_wait_timeout = 1');
+    $locked = false;
 
-    $blocked = false;
-
-    Interleave::before('update `ticket_types`', function () use (&$blocked) {
-        try {
-            $this->other->transaction(function () {
-                $this->other->table('users')->where('id', $this->buyer->id)->lockForUpdate()->first();
-            });
-        } catch (QueryException) {
-            $blocked = true;
-        }
+    Interleave::before('update `ticket_types`', function () use (&$locked) {
+        $locked = Interleave::rowIsLocked($this->other, 'users', $this->buyer->id);
     });
 
     app(ReserveTickets::class)->handle($this->buyer, $this->pool->event_id, $this->items);
 
-    expect($blocked)->toBeTrue();
+    expect($locked)->toBeTrue();
 });
 
 it('lets two different users reserve at the same time', function () {
-    $this->other->statement('SET SESSION innodb_lock_wait_timeout = 1');
-
     $otherUser = User::factory()->create();
-    $blocked = false;
+    $locked = true;
 
-    Interleave::before('update `ticket_types`', function () use ($otherUser, &$blocked) {
-        try {
-            $this->other->transaction(function () use ($otherUser) {
-                $this->other->table('users')->where('id', $otherUser->id)->lockForUpdate()->first();
-            });
-        } catch (QueryException) {
-            $blocked = true;
-        }
+    Interleave::before('update `ticket_types`', function () use ($otherUser, &$locked) {
+        $locked = Interleave::rowIsLocked($this->other, 'users', $otherUser->id);
     });
 
     app(ReserveTickets::class)->handle($this->buyer, $this->pool->event_id, $this->items);
 
-    expect($blocked)->toBeFalse();
+    expect($locked)->toBeFalse();
 });

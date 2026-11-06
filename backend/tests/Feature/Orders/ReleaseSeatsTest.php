@@ -60,6 +60,9 @@ it('releases only once when it runs twice', function () {
     $order = OrderFixtures::holding($this->pool, 3, attributes: ['status' => OrderStatus::Failed]);
 
     app(ReleaseOrderSeats::class)->handle($order->id);
+
+    $this->travel(1)->minute();
+
     app(ReleaseOrderSeats::class)->handle($order->id);
 
     expect($this->pool->fresh()->held)->toBe(1)
@@ -106,6 +109,9 @@ it('compensates once when both a failed payment and an expiry arrive', function 
     $order = OrderFixtures::holding($this->pool, 3, attributes: ['status' => OrderStatus::Failed]);
 
     event(new PaymentFailed($order->id, 'Card declined'));
+
+    $this->travel(1)->minute();
+
     event(new ReservationExpired($order->id));
 
     expect($this->pool->fresh()->held)->toBe(0);

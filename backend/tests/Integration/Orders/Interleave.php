@@ -6,6 +6,7 @@ use App\Enums\PaymentStatus;
 use App\Models\Order;
 use Closure;
 use Illuminate\Database\Connection;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -34,6 +35,24 @@ class Interleave
                 $step();
             }
         });
+    }
+
+    /**
+     * Whether another client has to wait for this row, checked with a one second lock timeout.
+     */
+    public static function rowIsLocked(Connection $connection, string $table, int $id): bool
+    {
+        $connection->statement('SET SESSION innodb_lock_wait_timeout = 1');
+
+        try {
+            $connection->transaction(function () use ($connection, $table, $id) {
+                $connection->table($table)->where('id', $id)->lockForUpdate()->first();
+            });
+        } catch (QueryException) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

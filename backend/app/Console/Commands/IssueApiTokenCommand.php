@@ -20,7 +20,7 @@ class IssueApiTokenCommand extends Command
             return self::FAILURE;
         }
 
-        $user = User::firstWhere('email', $this->argument('email'));
+        $user = User::query()->where('email', $this->argument('email'))->first(['id']);
 
         if ($user === null) {
             $this->error('No user with this email.');

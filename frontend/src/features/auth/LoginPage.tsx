@@ -1,6 +1,9 @@
 import { useMutation } from '@tanstack/react-query'
 import type { FormEvent } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
+import { PAGE_TITLE } from '@/lib/styles'
 import { getFieldErrors } from '../../api/errors'
 import { ErrorBanner } from '../../components/ErrorBanner'
 import { FormField } from '../../components/FormField'
@@ -24,38 +27,49 @@ export function LoginPage() {
   }
 
   return (
-    <section className="card card--narrow">
-      <h1>Logowanie</h1>
-      <ErrorBanner error={mutation.error} />
+    <Card className="mx-auto w-full max-w-sm">
+      <CardHeader>
+        <h1 className={PAGE_TITLE}>Logowanie</h1>
+      </CardHeader>
 
-      <form className="form" onSubmit={handleSubmit}>
-        <FormField
-          label="E-mail"
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          error={fieldErrors.email}
-        />
-        <FormField
-          label="Hasło"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          required
-          error={fieldErrors.password}
-        />
-        <button className="button" type="submit" disabled={mutation.isPending}>
-          {mutation.isPending ? 'Logowanie…' : 'Zaloguj się'}
-        </button>
-      </form>
+      <CardContent>
+        <ErrorBanner error={mutation.error} />
 
-      <p className="muted">
-        Nie masz konta?{' '}
-        <Link to="/register" state={location.state}>
-          Załóż konto
-        </Link>
-      </p>
-    </section>
+        <form className="grid gap-4" onSubmit={handleSubmit}>
+          <FormField
+            label="E-mail"
+            name="email"
+            type="email"
+            autoComplete="email"
+            required
+            error={fieldErrors.email}
+          />
+          <FormField
+            label="Hasło"
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            required
+            error={fieldErrors.password}
+          />
+          <Button className="w-full" type="submit" disabled={mutation.isPending}>
+            {mutation.isPending ? 'Logowanie…' : 'Zaloguj się'}
+          </Button>
+        </form>
+      </CardContent>
+
+      <CardFooter>
+        <p className="text-sm text-muted-foreground">
+          Nie masz konta?{' '}
+          <Link
+            className="font-medium text-foreground underline underline-offset-4"
+            to="/register"
+            state={location.state}
+          >
+            Załóż konto
+          </Link>
+        </p>
+      </CardFooter>
+    </Card>
   )
 }

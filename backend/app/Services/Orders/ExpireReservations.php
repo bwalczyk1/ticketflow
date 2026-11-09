@@ -42,7 +42,7 @@ class ExpireReservations
     private function expire(int $orderId, CarbonImmutable $now): bool
     {
         return DB::transaction(function () use ($orderId, $now) {
-            $order = Order::query()->whereKey($orderId)->lockForUpdate()->firstOrFail();
+            $order = Order::query()->whereKey($orderId)->lockForUpdate()->firstOrFail(['id', 'status']);
 
             if ($order->status !== OrderStatus::Pending || $this->paymentInProgress($order, $now)) {
                 return false;
@@ -58,7 +58,7 @@ class ExpireReservations
 
     private function paymentInProgress(Order $order, CarbonImmutable $now): bool
     {
-        $payment = $order->payment()->first();
+        $payment = $order->payment()->first(['id', 'status', 'created_at']);
 
         return $payment?->status === PaymentStatus::Pending
             && $payment->created_at > $now->subMinutes(self::PAYMENT_GRACE_MINUTES);

@@ -69,9 +69,9 @@ class ReserveTickets
     {
         // This must stay the first statement of the transaction. The snapshot starts at the first
         // plain SELECT, so a read before the lock would hide orders committed while waiting for it.
-        User::query()->whereKey($user->id)->lockForUpdate()->firstOrFail();
+        User::query()->whereKey($user->id)->lockForUpdate()->firstOrFail(['id']);
 
-        $event = Event::query()->findOrFail($eventId);
+        $event = Event::query()->findOrFail($eventId, ['id', 'status', 'starts_at']);
         $ticketTypes = $this->ticketTypes($event, $items);
 
         TicketAvailability::ensureOnSale($event->status, $event->starts_at, now());
@@ -96,7 +96,11 @@ class ReserveTickets
     private function ticketTypes(Event $event, array $items): Collection
     {
         $ids = array_column($items, 'ticketTypeId');
-        $ticketTypes = $event->ticketTypes()->whereIn('id', $ids)->get()->keyBy('id');
+
+        $ticketTypes = $event->ticketTypes()
+            ->whereIn('id', $ids)
+            ->get(['id', 'price', 'quantity', 'sold', 'held', 'version'])
+            ->keyBy('id');
 
         if ($ticketTypes->count() !== count($ids)) {
             throw (new ModelNotFoundException)->setModel(TicketType::class, $ids);
@@ -174,7 +178,9 @@ class ReserveTickets
      */
     private function ensureSeatsRemain(array $items): void
     {
-        $ticketTypes = TicketType::query()->findMany(array_column($items, 'ticketTypeId'))->keyBy('id');
+        $ticketTypes = TicketType::query()
+            ->findMany(array_column($items, 'ticketTypeId'), ['id', 'quantity', 'sold', 'held'])
+            ->keyBy('id');
 
         foreach ($items as $item) {
             $ticketType = $ticketTypes[$item['ticketTypeId']];

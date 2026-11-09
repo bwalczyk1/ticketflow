@@ -62,7 +62,7 @@ export function EventDetailsPage() {
                 </div>
               </div>
               <strong>{formatPrice(ticketType.price)}</strong>
-              {/* WAVE 3: the buy action (quantity picker and "Kup bilet") goes here. */}
+              {/* The buy action (quantity picker and "Kup bilet") goes here. */}
             </li>
           ))}
         </ul>

@@ -1,3 +1,5 @@
+import { CircleAlert } from 'lucide-react'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { ApiError, getErrorMessage } from '../api/errors'
 
 interface ErrorBannerProps {
@@ -12,9 +14,10 @@ export function ErrorBanner({ error }: ErrorBannerProps) {
   const requestId = error instanceof ApiError && error.status >= 500 ? error.requestId : null
 
   return (
-    <div className="banner" role="alert">
-      <p>{getErrorMessage(error)}</p>
-      {requestId && <p className="banner__request-id">Identyfikator błędu: {requestId}</p>}
-    </div>
+    <Alert variant="destructive" className="mb-4">
+      <CircleAlert />
+      <AlertTitle className="line-clamp-none">{getErrorMessage(error)}</AlertTitle>
+      {requestId && <AlertDescription>Identyfikator błędu: {requestId}</AlertDescription>}
+    </Alert>
   )
 }

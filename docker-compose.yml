@@ -1,0 +1,106 @@
+name: ticketflow
+
+
+x-backend: &backend
+  image: ticketflow-app
+  # Optional, so docker compose exec also works from a git worktree without its own .env.
+  env_file:
+    - path: .env
+      required: false
+  environment:
+    TZ: UTC
+  volumes:
+    - ./backend:/var/www/html
+  restart: unless-stopped
+
+services:
+  app:
+    <<: *backend
+    build: ./backend
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "test", "-f", "vendor/autoload.php"]
+      interval: 3s
+      timeout: 3s
+      retries: 60
+
+  horizon:
+    <<: *backend
+    command: ["php", "artisan", "horizon"]
+    depends_on:
+      app:
+        condition: service_healthy
+
+  scheduler:
+    <<: *backend
+    command: ["php", "artisan", "schedule:work"]
+    depends_on:
+      app:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.31-alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./backend/public:/var/www/html/public:ro
+    depends_on:
+      - app
+      - frontend
+    restart: unless-stopped
+
+  frontend:
+    image: node:24-alpine
+    working_dir: /app
+    command: ["sh", "-c", "npm install --no-audit --no-fund && npm run dev -- --host 0.0.0.0"]
+    volumes:
+      - ./frontend:/app
+      - frontend-modules:/app/node_modules
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.4
+    command: ["--default-time-zone=+00:00"]
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      TZ: UTC
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./docker/mysql/init.sh:/docker-entrypoint-initdb.d/init.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+    restart: unless-stopped
+
+  redis:
+    image: redis:8.8-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  mailpit:
+    image: axllent/mailpit:v1.33
+    ports:
+      - "8025:8025"
+    restart: unless-stopped
+
+volumes:
+  mysql-data:
+  redis-data:
+  frontend-modules:

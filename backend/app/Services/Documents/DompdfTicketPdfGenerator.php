@@ -27,7 +27,13 @@ class DompdfTicketPdfGenerator implements TicketPdfGenerator
 
     public function html(Ticket $ticket): string
     {
-        $ticket->loadMissing('orderItem.ticketType', 'orderItem.order.event', 'orderItem.order.user');
+        $ticket->loadMissing([
+            'orderItem:id,order_id,ticket_type_id',
+            'orderItem.ticketType:id,name',
+            'orderItem.order:id,user_id,event_id',
+            'orderItem.order.event:id,title,venue,city,timezone,starts_at',
+            'orderItem.order.user:id,name',
+        ]);
 
         $item = $ticket->orderItem;
         $event = $item->order->event;

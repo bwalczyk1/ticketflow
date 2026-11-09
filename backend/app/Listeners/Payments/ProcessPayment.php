@@ -43,7 +43,7 @@ class ProcessPayment implements ShouldQueue
      */
     public function handle(OrderPlaced $event): void
     {
-        $payment = Payment::query()->firstWhere('order_id', $event->orderId);
+        $payment = Payment::query()->where('order_id', $event->orderId)->first(['id', 'order_id', 'status']);
 
         if ($payment?->status !== PaymentStatus::Pending) {
             return;

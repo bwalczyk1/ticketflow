@@ -14,7 +14,7 @@ enum OrderStatus: string
     /**
      * @return list<self>
      */
-    public function allowedTransitions(): array
+    private function allowedTransitions(): array
     {
         return match ($this) {
             self::Pending => [self::Paid, self::Expired, self::Failed, self::Cancelled],

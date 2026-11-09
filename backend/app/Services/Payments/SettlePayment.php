@@ -68,7 +68,7 @@ class SettlePayment implements PaymentResultHandler
      */
     private function lockOrder(Payment $payment): Order
     {
-        return Order::query()->whereKey($payment->order_id)->lockForUpdate()->firstOrFail();
+        return Order::query()->whereKey($payment->order_id)->lockForUpdate()->firstOrFail(['id', 'status']);
     }
 
     /**
@@ -86,7 +86,7 @@ class SettlePayment implements PaymentResultHandler
 
     private function moveSeatsToSold(Order $order): void
     {
-        $items = OrderItem::query()->where('order_id', $order->id)->orderBy('ticket_type_id')->get();
+        $items = OrderItem::query()->where('order_id', $order->id)->orderBy('ticket_type_id')->get(['id', 'ticket_type_id', 'quantity']);
 
         foreach ($items as $item) {
             TicketType::query()->whereKey($item->ticket_type_id)->update([

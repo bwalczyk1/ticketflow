@@ -33,7 +33,7 @@ class ReleaseOrderSeats
                 return;
             }
 
-            $items = OrderItem::query()->where('order_id', $orderId)->orderBy('ticket_type_id')->get();
+            $items = OrderItem::query()->where('order_id', $orderId)->orderBy('ticket_type_id')->get(['id', 'ticket_type_id', 'quantity']);
 
             foreach ($items as $item) {
                 TicketType::query()

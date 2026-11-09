@@ -26,6 +26,6 @@ class ListUsers
             })
             ->orderBy($column, $direction)
             ->orderBy('id')
-            ->paginate(perPage: $limit, page: $page);
+            ->paginate(perPage: $limit, columns: ['id', 'name', 'email', 'role'], page: $page);
     }
 }

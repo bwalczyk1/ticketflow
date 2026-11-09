@@ -16,7 +16,8 @@ class ListEvents
         [$column, $direction] = $sort;
 
         return Event::query()
-            ->with('organizer')
+            ->select(['id', 'organizer_id', 'title', 'status', 'venue', 'city', 'category', 'timezone', 'starts_at', 'ends_at'])
+            ->with('organizer:id,name,email,role')
             ->orderBy($column, $direction)
             ->orderBy('id')
             ->paginate(perPage: $limit, page: $page);

@@ -1,6 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Plus } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { Button } from '@/components/ui/button'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { PAGE_TITLE } from '@/lib/styles'
 import type { EventStatus, ManagedEvent } from '../../api/types'
+import { ConfirmButton } from '../../components/ConfirmButton'
 import { ErrorBanner } from '../../components/ErrorBanner'
 import { Pagination } from '../../components/Pagination'
 import { LoadingPage } from '../../components/StatusPages'
@@ -15,6 +28,8 @@ import {
   organizerKey,
   publishEvent,
 } from './organizerApi'
+
+const IRREVERSIBLE = 'Tej operacji nie można cofnąć.'
 
 const STATUS_FILTERS: { value: EventStatus | ''; label: string }[] = [
   { value: '', label: 'Wszystkie' },
@@ -47,14 +62,6 @@ export function MyEventsPage() {
       ]),
   })
 
-  function run(confirmation: string | null, action: () => Promise<unknown>) {
-    if (confirmation && !window.confirm(confirmation)) {
-      return
-    }
-
-    actionMutation.mutate(action)
-  }
-
   function changeStatus(value: string) {
     setParams(value ? { status: value } : {})
   }
@@ -71,56 +78,46 @@ export function MyEventsPage() {
     const busy = actionMutation.isPending
 
     return (
-      <div className="actions">
-        <Link className="button button--secondary" to={`/organizer/events/${event.id}/ticket-types`}>
-          Pule biletów
-        </Link>
+      <div className="flex justify-end gap-2">
+        <Button variant="outline" size="sm" asChild>
+          <Link to={`/organizer/events/${event.id}/ticket-types`}>Pule biletów</Link>
+        </Button>
 
         {allowed.edit && (
-          <Link className="button button--secondary" to={`/organizer/events/${event.id}/edit`}>
-            Edytuj
-          </Link>
+          <Button variant="outline" size="sm" asChild>
+            <Link to={`/organizer/events/${event.id}/edit`}>Edytuj</Link>
+          </Button>
         )}
 
         {allowed.publish && (
-          <button
-            className="button"
+          <Button
+            size="sm"
             type="button"
             disabled={busy}
-            onClick={() => run(null, () => publishEvent(event.id))}
+            onClick={() => actionMutation.mutate(() => publishEvent(event.id))}
           >
             Opublikuj
-          </button>
+          </Button>
         )}
 
         {allowed.cancel && (
-          <button
-            className="button button--danger"
-            type="button"
+          <ConfirmButton
+            label="Odwołaj"
+            title={`Odwołać wydarzenie „${event.title}”?`}
+            description={IRREVERSIBLE}
             disabled={busy}
-            onClick={() =>
-              run(`Odwołać wydarzenie „${event.title}”? Tej operacji nie można cofnąć.`, () =>
-                cancelEvent(event.id),
-              )
-            }
-          >
-            Odwołaj
-          </button>
+            onConfirm={() => actionMutation.mutate(() => cancelEvent(event.id))}
+          />
         )}
 
         {allowed.delete && (
-          <button
-            className="button button--danger"
-            type="button"
+          <ConfirmButton
+            label="Usuń"
+            title={`Usunąć wydarzenie „${event.title}”?`}
+            description={IRREVERSIBLE}
             disabled={busy}
-            onClick={() =>
-              run(`Usunąć wydarzenie „${event.title}”? Tej operacji nie można cofnąć.`, () =>
-                deleteEvent(event.id),
-              )
-            }
-          >
-            Usuń
-          </button>
+            onConfirm={() => actionMutation.mutate(() => deleteEvent(event.id))}
+          />
         )}
       </div>
     )
@@ -128,27 +125,25 @@ export function MyEventsPage() {
 
   return (
     <section>
-      <div className="page-head">
-        <h1>Moje wydarzenia</h1>
-        <Link className="button" to="/organizer/events/new">
-          Nowe wydarzenie
-        </Link>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <h1 className={PAGE_TITLE}>Moje wydarzenia</h1>
+        <Button asChild>
+          <Link to="/organizer/events/new">
+            <Plus />
+            Nowe wydarzenie
+          </Link>
+        </Button>
       </div>
 
-      <div className="field field--inline">
-        <label htmlFor="status-filter">Status</label>
-        <select
-          id="status-filter"
-          value={status ?? ''}
-          onChange={(event) => changeStatus(event.target.value)}
-        >
+      <Tabs className="mb-4 max-w-full overflow-x-auto" value={status ?? ''} onValueChange={changeStatus}>
+        <TabsList aria-label="Status">
           {STATUS_FILTERS.map((filter) => (
-            <option key={filter.value} value={filter.value}>
+            <TabsTrigger key={filter.value} value={filter.value}>
               {filter.label}
-            </option>
+            </TabsTrigger>
           ))}
-        </select>
-      </div>
+        </TabsList>
+      </Tabs>
 
       <ErrorBanner error={error} />
       <ErrorBanner error={actionMutation.error} />
@@ -156,25 +151,39 @@ export function MyEventsPage() {
       {isPending && !error && <LoadingPage />}
 
       {data && data.data.length === 0 && (
-        <p className="muted">Nie masz jeszcze żadnych wydarzeń w tym widoku.</p>
+        <p className="text-muted-foreground">Nie masz jeszcze żadnych wydarzeń w tym widoku.</p>
       )}
 
       {data && data.data.length > 0 && (
         <>
-          <ul className="item-list">
-            {data.data.map((event) => (
-              <li key={event.id} className="card">
-                <div className="item-list__head">
-                  <h2>{event.title}</h2>
-                  <StatusBadge status={event.status} />
-                </div>
-                <p className="muted">
-                  {formatDateTime(event.startsAt, event.timezone)} · {event.venue}, {event.city}
-                </p>
-                {renderActions(event)}
-              </li>
-            ))}
-          </ul>
+          <div className="rounded-xl border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="pl-4">Wydarzenie</TableHead>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Miejsce</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="pr-4 text-right">Akcje</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.data.map((event) => (
+                  <TableRow key={event.id}>
+                    <TableCell className="pl-4 font-medium">{event.title}</TableCell>
+                    <TableCell>{formatDateTime(event.startsAt, event.timezone)}</TableCell>
+                    <TableCell>
+                      {event.venue}, {event.city}
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge status={event.status} />
+                    </TableCell>
+                    <TableCell className="pr-4">{renderActions(event)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
           <Pagination meta={data.meta} onPageChange={changePage} />
         </>
       )}

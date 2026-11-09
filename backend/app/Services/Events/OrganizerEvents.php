@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\DB;
 
 class OrganizerEvents
 {
+    private const TICKET_TYPES = 'ticketTypes:id,event_id,name,price,quantity,sold,held';
+
     /**
      * @param  array{0: string, 1: 'asc'|'desc'}  $sort
      * @return LengthAwarePaginator<int, Event>
@@ -23,7 +25,8 @@ class OrganizerEvents
     public function list(User $organizer, ?string $status, array $sort, int $limit, int $page): LengthAwarePaginator
     {
         return $organizer->organizedEvents()
-            ->with('ticketTypes')
+            ->select(['id', 'organizer_id', 'title', 'description', 'venue', 'city', 'category', 'timezone', 'starts_at', 'ends_at', 'status'])
+            ->with(self::TICKET_TYPES)
             ->when($status, fn ($query) => $query->where('status', $status))
             ->orderBy(...$sort)
             ->orderBy('id')
@@ -43,7 +46,7 @@ class OrganizerEvents
 
         $organizer->organizedEvents()->save($event);
 
-        return $event->load('ticketTypes');
+        return $event->load(self::TICKET_TYPES);
     }
 
     /**
@@ -62,7 +65,7 @@ class OrganizerEvents
 
         $event->save();
 
-        return $event->load('ticketTypes');
+        return $event->load(self::TICKET_TYPES);
     }
 
     /**
@@ -73,7 +76,7 @@ class OrganizerEvents
     public function delete(Event $event): void
     {
         DB::transaction(function () use ($event) {
-            $ticketTypes = $event->ticketTypes()->lockForUpdate()->get();
+            $ticketTypes = $event->ticketTypes()->lockForUpdate()->get(['id', 'sold', 'held']);
 
             EventPublication::ensureDeletable((int) $ticketTypes->sum('sold'), (int) $ticketTypes->sum('held'));
 
@@ -96,7 +99,7 @@ class OrganizerEvents
 
         $this->changeStatus($event, EventStatus::Published);
 
-        return $event->load('ticketTypes');
+        return $event->load(self::TICKET_TYPES);
     }
 
     /**
@@ -108,7 +111,7 @@ class OrganizerEvents
 
         EventCancelled::dispatch($event->id);
 
-        return $event->load('ticketTypes');
+        return $event->load(self::TICKET_TYPES);
     }
 
     /**

@@ -11,6 +11,12 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class EventCatalog
 {
+    private const EVENT_COLUMNS = [
+        'id', 'title', 'description', 'venue', 'city', 'category', 'timezone', 'starts_at', 'ends_at', 'status',
+    ];
+
+    private const TICKET_TYPES = 'ticketTypes:id,event_id,name,price,quantity,sold,held';
+
     /**
      * @param  array{q?: ?string, city?: ?string, category?: ?string, from?: ?string, to?: ?string, price_max?: ?string}  $criteria
      * @param  array{0: string, 1: 'asc'|'desc'}  $sort
@@ -19,7 +25,8 @@ class EventCatalog
     public function search(array $criteria, array $sort, int $limit, int $page): LengthAwarePaginator
     {
         $query = Event::query()
-            ->with('ticketTypes')
+            ->select(self::EVENT_COLUMNS)
+            ->with(self::TICKET_TYPES)
             ->where('status', EventStatus::Published)
             ->orderBy(...$sort)
             ->orderBy('id');
@@ -35,9 +42,9 @@ class EventCatalog
     public function find(string $id): Event
     {
         return Event::query()
-            ->with('ticketTypes')
+            ->with(self::TICKET_TYPES)
             ->where('status', EventStatus::Published)
-            ->findOrFail($id);
+            ->findOrFail($id, self::EVENT_COLUMNS);
     }
 
     /**

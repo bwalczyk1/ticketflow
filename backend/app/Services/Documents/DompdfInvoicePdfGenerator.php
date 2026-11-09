@@ -28,7 +28,15 @@ class DompdfInvoicePdfGenerator implements InvoicePdfGenerator
 
     public function html(Invoice $invoice): string
     {
-        $invoice->loadMissing('order.user', 'order.event', 'order.items.ticketType', 'refund', 'corrects');
+        $invoice->loadMissing([
+            'order:id,user_id,event_id,total',
+            'order.user:id,name,email',
+            'order.event:id,title',
+            'order.items:id,order_id,ticket_type_id,quantity,unit_price',
+            'order.items.ticketType:id,name',
+            'refund:id,amount,reason',
+            'corrects:id,number,year',
+        ]);
 
         $isCorrection = $invoice->type === InvoiceType::Correction;
 

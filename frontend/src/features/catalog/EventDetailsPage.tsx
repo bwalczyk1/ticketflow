@@ -66,7 +66,7 @@ export function EventDetailsPage() {
                     </p>
                   </div>
                   <p className="font-semibold">{formatPrice(ticketType.price)}</p>
-                  {/* WAVE 3: the buy action (quantity picker and "Kup bilet") goes here. */}
+                  {/* The buy action (quantity picker and "Kup bilet") goes here. */}
                 </CardContent>
               </Card>
             </li>

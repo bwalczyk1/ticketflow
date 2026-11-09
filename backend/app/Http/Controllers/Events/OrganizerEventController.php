@@ -49,7 +49,7 @@ class OrganizerEventController extends OrganizerController
      */
     public function show(string $id): EventManagementResource
     {
-        return new EventManagementResource($this->ownedEvent($id)->load('ticketTypes'));
+        return new EventManagementResource($this->ownedEvent($id)->load('ticketTypes:id,event_id,name,price,quantity,sold,held'));
     }
 
     /**

@@ -22,15 +22,17 @@ class TicketTypes
         return $event->ticketTypes()
             ->orderBy(...$sort)
             ->orderBy('id')
-            ->paginate(perPage: $limit, page: $page);
+            ->paginate(perPage: $limit, columns: ['id', 'name', 'price', 'quantity', 'sold', 'held'], page: $page);
     }
 
     public function find(Event $event, string $id): TicketType
     {
-        return $event->ticketTypes()->findOrFail($id);
+        return $event->ticketTypes()->findOrFail($id, ['id', 'event_id', 'name', 'price', 'quantity', 'sold', 'held', 'version']);
     }
 
     /**
+     * A new pool starts empty, so the counters are set here and the row needs no second read.
+     *
      * @param  array{name: string, price: int, quantity: int}  $data
      *
      * @throws EventClosed
@@ -39,7 +41,11 @@ class TicketTypes
     {
         EventPublication::ensureEditable($event->status);
 
-        return $event->ticketTypes()->create($data)->refresh();
+        $ticketType = (new TicketType($data))->forceFill(['sold' => 0, 'held' => 0, 'version' => 0]);
+
+        $event->ticketTypes()->save($ticketType);
+
+        return $ticketType;
     }
 
     /**
@@ -66,7 +72,7 @@ class TicketTypes
                 ->update([...$data, 'version' => $ticketType->version + 1]);
 
             if ($updated === 1) {
-                return $ticketType->refresh();
+                return $this->find($event, $id);
             }
 
             usleep(random_int(10_000, 50_000));

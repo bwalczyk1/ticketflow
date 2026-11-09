@@ -27,7 +27,10 @@ class StartPayment
     public function handle(Order $order): void
     {
         DB::transaction(function () use ($order) {
-            $locked = Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
+            $locked = Order::query()
+                ->whereKey($order->id)
+                ->lockForUpdate()
+                ->firstOrFail(['id', 'event_id', 'status', 'total', 'expires_at']);
 
             $this->ensurePayable($locked);
 
@@ -55,7 +58,7 @@ class StartPayment
             throw new ReservationExpired;
         }
 
-        $event = $order->event()->firstOrFail();
+        $event = $order->event()->firstOrFail(['id', 'status', 'starts_at']);
 
         TicketAvailability::ensureOnSale($event->status, $event->starts_at, now());
     }

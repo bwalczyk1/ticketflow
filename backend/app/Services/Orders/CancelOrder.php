@@ -24,7 +24,7 @@ class CancelOrder
     public function handle(Order $order): void
     {
         DB::transaction(function () use ($order) {
-            $locked = Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
+            $locked = Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail(['id', 'status']);
 
             if ($locked->status->holdsSeats() && $locked->payment()->exists()) {
                 throw new PaymentAlreadyStarted;

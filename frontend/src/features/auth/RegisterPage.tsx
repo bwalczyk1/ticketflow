@@ -1,6 +1,9 @@
 import { useMutation } from '@tanstack/react-query'
 import type { FormEvent } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
+import { PAGE_TITLE } from '@/lib/styles'
 import { getFieldErrors } from '../../api/errors'
 import { ErrorBanner } from '../../components/ErrorBanner'
 import { FormField } from '../../components/FormField'
@@ -25,46 +28,57 @@ export function RegisterPage() {
   }
 
   return (
-    <section className="card card--narrow">
-      <h1>Rejestracja</h1>
-      <ErrorBanner error={mutation.error} />
+    <Card className="mx-auto w-full max-w-sm">
+      <CardHeader>
+        <h1 className={PAGE_TITLE}>Rejestracja</h1>
+      </CardHeader>
 
-      <form className="form" onSubmit={handleSubmit}>
-        <FormField
-          label="Imię i nazwisko"
-          name="name"
-          autoComplete="name"
-          required
-          error={fieldErrors.name}
-        />
-        <FormField
-          label="E-mail"
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          error={fieldErrors.email}
-        />
-        <FormField
-          label="Hasło"
-          name="password"
-          type="password"
-          autoComplete="new-password"
-          required
-          hint="Od 10 do 72 znaków."
-          error={fieldErrors.password}
-        />
-        <button className="button" type="submit" disabled={mutation.isPending}>
-          {mutation.isPending ? 'Tworzenie konta…' : 'Załóż konto'}
-        </button>
-      </form>
+      <CardContent>
+        <ErrorBanner error={mutation.error} />
 
-      <p className="muted">
-        Masz już konto?{' '}
-        <Link to="/login" state={location.state}>
-          Zaloguj się
-        </Link>
-      </p>
-    </section>
+        <form className="grid gap-4" onSubmit={handleSubmit}>
+          <FormField
+            label="Imię i nazwisko"
+            name="name"
+            autoComplete="name"
+            required
+            error={fieldErrors.name}
+          />
+          <FormField
+            label="E-mail"
+            name="email"
+            type="email"
+            autoComplete="email"
+            required
+            error={fieldErrors.email}
+          />
+          <FormField
+            label="Hasło"
+            name="password"
+            type="password"
+            autoComplete="new-password"
+            required
+            hint="Od 10 do 72 znaków."
+            error={fieldErrors.password}
+          />
+          <Button className="w-full" type="submit" disabled={mutation.isPending}>
+            {mutation.isPending ? 'Tworzenie konta…' : 'Załóż konto'}
+          </Button>
+        </form>
+      </CardContent>
+
+      <CardFooter>
+        <p className="text-sm text-muted-foreground">
+          Masz już konto?{' '}
+          <Link
+            className="font-medium text-foreground underline underline-offset-4"
+            to="/login"
+            state={location.state}
+          >
+            Zaloguj się
+          </Link>
+        </p>
+      </CardFooter>
+    </Card>
   )
 }

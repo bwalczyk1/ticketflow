@@ -1,6 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { PAGE_TITLE } from '@/lib/styles'
 import { ApiError, getFieldErrors } from '../../api/errors'
 import type { ManagedEvent } from '../../api/types'
 import { ErrorBanner } from '../../components/ErrorBanner'
@@ -88,89 +91,97 @@ function EventForm({ event }: EventFormProps) {
   }
 
   return (
-    <form className="form card" onSubmit={handleSubmit}>
-      <ErrorBanner error={mutation.error} />
+    <Card className="max-w-3xl">
+      <CardContent>
+        <ErrorBanner error={mutation.error} />
 
-      <FormField
-        label="Tytuł"
-        name="title"
-        defaultValue={event?.title}
-        maxLength={160}
-        required
-        error={fieldErrors.title}
-      />
-      <TextAreaField
-        label="Opis"
-        name="description"
-        defaultValue={event?.description}
-        maxLength={5000}
-        required
-        error={fieldErrors.description}
-      />
-      <FormField
-        label="Miejsce"
-        name="venue"
-        defaultValue={event?.venue}
-        maxLength={160}
-        required
-        error={fieldErrors.venue}
-      />
-      <FormField
-        label="Miasto"
-        name="city"
-        defaultValue={event?.city}
-        maxLength={100}
-        required
-        error={fieldErrors.city}
-      />
-      <FormField
-        label="Kategoria"
-        name="category"
-        list="category-suggestions"
-        defaultValue={event?.category}
-        maxLength={50}
-        required
-        error={fieldErrors.category}
-      />
-      <datalist id="category-suggestions">
-        {CATEGORY_SUGGESTIONS.map((category) => (
-          <option key={category} value={category} />
-        ))}
-      </datalist>
-      <FormField
-        label="Strefa czasowa"
-        name="timezone"
-        defaultValue={timeZone}
-        hint="Daty poniżej są podawane w tej strefie (nazwa IANA, np. Europe/Warsaw)."
-        required
-        error={fieldErrors.timezone}
-      />
-      <FormField
-        label="Początek"
-        name="startsAt"
-        type="datetime-local"
-        defaultValue={event ? utcIsoToZonedLocal(event.startsAt, timeZone) : undefined}
-        required
-        error={fieldErrors.startsAt}
-      />
-      <FormField
-        label="Koniec"
-        name="endsAt"
-        type="datetime-local"
-        defaultValue={event ? utcIsoToZonedLocal(event.endsAt, timeZone) : undefined}
-        required
-        error={fieldErrors.endsAt}
-      />
+        <form className="grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit}>
+          <div className="sm:col-span-2">
+            <FormField
+              label="Tytuł"
+              name="title"
+              defaultValue={event?.title}
+              maxLength={160}
+              required
+              error={fieldErrors.title}
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <TextAreaField
+              label="Opis"
+              name="description"
+              defaultValue={event?.description}
+              maxLength={5000}
+              required
+              error={fieldErrors.description}
+            />
+          </div>
+          <FormField
+            label="Miejsce"
+            name="venue"
+            defaultValue={event?.venue}
+            maxLength={160}
+            required
+            error={fieldErrors.venue}
+          />
+          <FormField
+            label="Miasto"
+            name="city"
+            defaultValue={event?.city}
+            maxLength={100}
+            required
+            error={fieldErrors.city}
+          />
+          <FormField
+            label="Kategoria"
+            name="category"
+            list="category-suggestions"
+            defaultValue={event?.category}
+            maxLength={50}
+            required
+            error={fieldErrors.category}
+          />
+          <datalist id="category-suggestions">
+            {CATEGORY_SUGGESTIONS.map((category) => (
+              <option key={category} value={category} />
+            ))}
+          </datalist>
+          <FormField
+            label="Strefa czasowa"
+            name="timezone"
+            defaultValue={timeZone}
+            hint="Daty poniżej są podawane w tej strefie (nazwa IANA, np. Europe/Warsaw)."
+            required
+            error={fieldErrors.timezone}
+          />
+          <FormField
+            label="Początek"
+            name="startsAt"
+            type="datetime-local"
+            defaultValue={event ? utcIsoToZonedLocal(event.startsAt, timeZone) : undefined}
+            required
+            error={fieldErrors.startsAt}
+          />
+          <FormField
+            label="Koniec"
+            name="endsAt"
+            type="datetime-local"
+            defaultValue={event ? utcIsoToZonedLocal(event.endsAt, timeZone) : undefined}
+            required
+            error={fieldErrors.endsAt}
+          />
 
-      <div className="actions">
-        <button className="button" type="submit" disabled={mutation.isPending}>
-          {mutation.isPending ? 'Zapisywanie…' : 'Zapisz'}
-        </button>
-        <Link className="button button--secondary" to="/organizer">
-          Anuluj
-        </Link>
-      </div>
-    </form>
+          <div className="flex gap-2 sm:col-span-2">
+            <Button type="submit" disabled={mutation.isPending}>
+              {mutation.isPending ? 'Zapisywanie…' : 'Zapisz'}
+            </Button>
+            <Button variant="outline" asChild>
+              <Link to="/organizer">Anuluj</Link>
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -188,7 +199,7 @@ export function EventFormPage() {
   if (id === undefined) {
     return (
       <section>
-        <h1>Nowe wydarzenie</h1>
+        <h1 className={`${PAGE_TITLE} mb-6`}>Nowe wydarzenie</h1>
         <EventForm />
       </section>
     )
@@ -208,12 +219,12 @@ export function EventFormPage() {
 
   return (
     <section>
-      <h1>Edycja: {event.title}</h1>
+      <h1 className={`${PAGE_TITLE} mb-6 break-words`}>Edycja: {event.title}</h1>
 
       {getAllowedActions(event.status).edit ? (
         <EventForm event={event} />
       ) : (
-        <p className="muted">To wydarzenie jest zakończone lub odwołane, więc nie można go edytować.</p>
+        <p className="text-muted-foreground">To wydarzenie jest zakończone lub odwołane, więc nie można go edytować.</p>
       )}
     </section>
   )

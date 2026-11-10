@@ -1,6 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
+import { PAGE_TITLE } from '@/lib/styles'
 import { ApiError } from '../../api/errors'
+import { BackLink } from '../../components/BackLink'
 import { ErrorBanner } from '../../components/ErrorBanner'
 import { LoadingPage, NotFoundPage } from '../../components/StatusPages'
 import { formatDateTime } from '../../lib/dates'
@@ -31,38 +35,40 @@ export function EventDetailsPage() {
 
   return (
     <article>
-      <p>
-        <Link to="/">← Wszystkie wydarzenia</Link>
-      </p>
+      <BackLink to="/" label="Wszystkie wydarzenia" />
 
-      <h1>{event.title}</h1>
+      <h1 className={`${PAGE_TITLE} break-words`}>{event.title}</h1>
 
-      <p className="muted">
+      <p className="mt-2 text-muted-foreground">
         {formatDateTime(event.startsAt, event.timezone)} – {formatDateTime(event.endsAt, event.timezone)}
       </p>
-      <p>
-        {event.venue}, {event.city} <span className="badge">{event.category}</span>
+      <p className="mt-1 flex flex-wrap items-center gap-2">
+        {event.venue}, {event.city} <Badge variant="secondary">{event.category}</Badge>
       </p>
-      <p className="event-description">{event.description}</p>
+      <p className="mt-6 max-w-prose whitespace-pre-line break-words">{event.description}</p>
 
-      <h2>Bilety</h2>
+      <h2 className="mt-8 mb-4 text-xl font-semibold tracking-tight">Bilety</h2>
 
-      {ticketTypes.length === 0 && <p className="muted">Brak biletów w sprzedaży.</p>}
+      {ticketTypes.length === 0 && <p className="text-muted-foreground">Brak biletów w sprzedaży.</p>}
 
       {ticketTypes.length > 0 && (
-        <ul className="ticket-list">
+        <ul className="grid gap-3">
           {ticketTypes.map((ticketType) => (
-            <li key={ticketType.id} className="card ticket-list__item">
-              <div>
-                <strong>{ticketType.name}</strong>
-                <div className="muted">
-                  {ticketType.available > 0
-                    ? `Dostępne: ${ticketType.available}`
-                    : 'Wyprzedane'}
-                </div>
-              </div>
-              <strong>{formatPrice(ticketType.price)}</strong>
-              {/* The buy action (quantity picker and "Kup bilet") goes here. */}
+            <li key={ticketType.id}>
+              <Card className="py-4">
+                <CardContent className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 sm:px-5">
+                  <div>
+                    <p className="font-medium">{ticketType.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {ticketType.available > 0
+                        ? `Dostępne: ${ticketType.available}`
+                        : 'Wyprzedane'}
+                    </p>
+                  </div>
+                  <p className="font-semibold">{formatPrice(ticketType.price)}</p>
+                  {/* The buy action (quantity picker and "Kup bilet") goes here. */}
+                </CardContent>
+              </Card>
             </li>
           ))}
         </ul>

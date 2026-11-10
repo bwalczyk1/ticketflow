@@ -26,9 +26,27 @@ class ApiExceptionRenderer
 
     private const MYSQL_CHECK_VIOLATION = 3819;
 
+    private const MYSQL_CONSTRAINT_ERRORS = [
+        self::MYSQL_DUPLICATE,
+        self::MYSQL_ROW_IS_REFERENCED,
+        self::MYSQL_NO_REFERENCED_ROW,
+        self::MYSQL_CHECK_VIOLATION,
+    ];
+
+    /**
+     * The message of a QueryException holds the bindings, so a client error must not reach the logs.
+     * Outside the API nothing answers the client, so jobs and commands keep reporting these errors.
+     */
+    public static function isClientConstraintError(Throwable $e, Request $request): bool
+    {
+        return $e instanceof QueryException
+            && self::isApiRequest($request)
+            && in_array(self::driverCode($e), self::MYSQL_CONSTRAINT_ERRORS, true);
+    }
+
     public function __invoke(Throwable $e, Request $request): ?JsonResponse
     {
-        if (! $request->is('api/*', 'sanctum/*')) {
+        if (! self::isApiRequest($request)) {
             return null;
         }
 
@@ -47,6 +65,16 @@ class ApiExceptionRenderer
         };
     }
 
+    private static function isApiRequest(Request $request): bool
+    {
+        return $request->is('api/*', 'sanctum/*');
+    }
+
+    private static function driverCode(QueryException $e): int
+    {
+        return (int) ($e->errorInfo[1] ?? 0);
+    }
+
     private function validation(Request $request, ValidationException $e): JsonResponse
     {
         $details = [];
@@ -62,9 +90,7 @@ class ApiExceptionRenderer
 
     private function database(Request $request, QueryException $e): JsonResponse
     {
-        $driverCode = (int) ($e->errorInfo[1] ?? 0);
-
-        return match ($driverCode) {
+        return match (self::driverCode($e)) {
             self::MYSQL_DUPLICATE => str_contains($e->getMessage(), 'users_email_unique')
                 ? $this->error($request, 409, 'EMAIL_TAKEN', 'Email is already registered')
                 : $this->error($request, 409, 'UNIQUE_VIOLATION', 'Resource already exists'),

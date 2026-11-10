@@ -12,7 +12,7 @@ enum EventStatus: string
     /**
      * @return list<self>
      */
-    public function allowedTransitions(): array
+    private function allowedTransitions(): array
     {
         return match ($this) {
             self::Draft => [self::Published],

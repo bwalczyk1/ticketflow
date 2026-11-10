@@ -27,5 +27,6 @@ return Application::configure(basePath: dirname(__DIR__))
         );
 
         $exceptions->dontReport(DomainException::class);
+        $exceptions->dontReportWhen(fn (Throwable $e) => ApiExceptionRenderer::isClientConstraintError($e, request()));
         $exceptions->render(new ApiExceptionRenderer);
     })->create();

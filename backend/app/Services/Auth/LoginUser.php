@@ -18,7 +18,7 @@ class LoginUser
 
     public function handle(string $email, string $password): User
     {
-        $user = User::firstWhere('email', $email);
+        $user = User::query()->where('email', $email)->first(['id', 'name', 'email', 'role', 'password']);
         $passwordMatches = Hash::check($password, $user->password ?? self::DUMMY_HASH);
 
         if ($user === null || ! $passwordMatches) {

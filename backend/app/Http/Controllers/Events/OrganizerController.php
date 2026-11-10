@@ -19,7 +19,9 @@ abstract class OrganizerController extends Controller
      */
     protected function ownedEvent(string $id): Event
     {
-        $event = Event::query()->findOrFail($id);
+        $event = Event::query()->findOrFail($id, [
+            'id', 'organizer_id', 'title', 'description', 'venue', 'city', 'category', 'timezone', 'starts_at', 'ends_at', 'status',
+        ]);
 
         Gate::authorize('manage', $event);
 

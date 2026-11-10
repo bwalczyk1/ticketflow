@@ -222,3 +222,19 @@ it('answers 404 for an id that cannot exist', function (string $id) {
         ->assertNotFound()
         ->assertJsonPath('error.code', 'NOT_FOUND');
 })->with(['999999', 'abc', '99999999999999999999999']);
+
+it('hides events that already started', function (string $startsAt, bool $visible) {
+    $this->travelTo('2026-11-20 18:00:00');
+
+    $event = Event::factory()->create(['starts_at' => $startsAt, 'ends_at' => '2026-11-20 23:00:00']);
+
+    $this->getJson('/api/events')
+        ->assertOk()
+        ->assertJsonCount($visible ? 1 : 0, 'data');
+
+    $this->getJson("/api/events/{$event->id}")->assertStatus($visible ? 200 : 404);
+})->with([
+    'one second before the start' => ['2026-11-20 18:00:01', true],
+    'exactly at the start' => ['2026-11-20 18:00:00', false],
+    'still going on' => ['2026-11-20 17:00:00', false],
+]);

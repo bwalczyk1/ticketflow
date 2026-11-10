@@ -18,8 +18,6 @@ class OrganizerEventController extends OrganizerController
     /**
      * List own events in every status.
      *
-     * @return array{data: list<EventManagementResource>, meta: array{page: int, limit: int, total: int, totalPages: int}}
-     *
      * @throws AuthorizationException
      */
     public function index(ListOrganizerEventsRequest $request): array
@@ -51,7 +49,7 @@ class OrganizerEventController extends OrganizerController
      */
     public function show(string $id): EventManagementResource
     {
-        return new EventManagementResource($this->ownedEvent($id)->load('ticketTypes'));
+        return new EventManagementResource($this->ownedEvent($id)->load('ticketTypes:id,event_id,name,price,quantity,sold,held'));
     }
 
     /**

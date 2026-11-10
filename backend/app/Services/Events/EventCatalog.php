@@ -24,10 +24,7 @@ class EventCatalog
      */
     public function search(array $criteria, array $sort, int $limit, int $page): LengthAwarePaginator
     {
-        $query = Event::query()
-            ->select(self::EVENT_COLUMNS)
-            ->with(self::TICKET_TYPES)
-            ->where('status', EventStatus::Published)
+        $query = $this->upcoming()
             ->orderBy(...$sort)
             ->orderBy('id');
 
@@ -41,10 +38,21 @@ class EventCatalog
      */
     public function find(string $id): Event
     {
+        return $this->upcoming()->findOrFail($id);
+    }
+
+    /**
+     * The catalog shows only what can still be bought, and sales end at the start of an event.
+     *
+     * @return Builder<Event>
+     */
+    private function upcoming(): Builder
+    {
         return Event::query()
+            ->select(self::EVENT_COLUMNS)
             ->with(self::TICKET_TYPES)
             ->where('status', EventStatus::Published)
-            ->findOrFail($id, self::EVENT_COLUMNS);
+            ->where('starts_at', '>', now());
     }
 
     /**

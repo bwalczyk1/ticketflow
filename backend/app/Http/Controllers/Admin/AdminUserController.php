@@ -13,9 +13,6 @@ use App\Support\Pagination;
 
 class AdminUserController extends Controller
 {
-    /**
-     * @return array{data: list<UserResource>, meta: array{page: int, limit: int, total: int, totalPages: int}}
-     */
     public function index(ListUsersRequest $request, ListUsers $listUsers): array
     {
         $users = $listUsers->handle(

@@ -17,6 +17,12 @@ const ERROR_MESSAGES: Record<string, string> = {
   SALES_CLOSED: 'Sprzedaż biletów na to wydarzenie jest zamknięta.',
   REFUND_NOT_ALLOWED: 'Zwrot jest możliwy tylko do 48 godzin przed wydarzeniem.',
   TICKET_ALREADY_USED: 'Ten bilet został już wykorzystany.',
+  POOL_PROTECTED: 'Nie można zmniejszyć puli poniżej liczby sprzedanych i zablokowanych biletów.',
+  EVENT_HAS_SALES: 'Nie można usunąć wydarzenia, na które sprzedano lub zablokowano bilety.',
+  EVENT_CLOSED: 'To wydarzenie jest zakończone lub odwołane, więc nie można go zmieniać.',
+  EVENT_NOT_PUBLISHABLE:
+    'Nie można opublikować wydarzenia: potrzebuje co najmniej jednej puli biletów i daty startu w przyszłości.',
+  INVALID_STATUS_TRANSITION: 'Ta zmiana statusu wydarzenia jest niedozwolona.',
   INTERNAL_ERROR: 'Błąd serwera. Spróbuj ponownie później.',
   NETWORK_ERROR: 'Brak połączenia z serwerem. Spróbuj ponownie.',
 }

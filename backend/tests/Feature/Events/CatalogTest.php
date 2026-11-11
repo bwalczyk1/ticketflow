@@ -189,6 +189,7 @@ it('returns dates in UTC with Z and the event timezone', function () {
 
 it('shows the details of a published event with its ticket types', function () {
     $event = Event::factory()->create();
+
     $ticketType = TicketType::factory()->for($event)->create([
         'name' => 'Standard',
         'price' => 12000,

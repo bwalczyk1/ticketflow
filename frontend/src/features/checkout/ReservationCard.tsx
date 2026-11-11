@@ -50,13 +50,15 @@ export function ReservationCard({ order, now, isPaying, isBusy, onPay, onCancel 
           </>
         )}
 
-        <div className="grid gap-2">
-          <Button type="button" disabled={isPaying || isBusy} onClick={onPay}>
-            Zapłać {formatPrice(order.total)}
-          </Button>
+        {!isPaying && (
+          <div className="grid gap-2">
+            <Button type="button" disabled={isBusy} onClick={onPay}>
+              Zapłać {formatPrice(order.total)}
+            </Button>
 
-          <CancelOrderDialog disabled={isPaying || isBusy} onConfirm={onCancel} />
-        </div>
+            <CancelOrderDialog disabled={isBusy} onConfirm={onCancel} />
+          </div>
+        )}
 
         <p className="text-sm text-muted-foreground">Po upływie czasu miejsca wracają do puli.</p>
       </CardContent>

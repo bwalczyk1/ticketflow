@@ -19,6 +19,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(RequestId::class);
         $middleware->statefulApi();
+
+        // There is no login page to redirect to, so guests get 401 whatever the Accept header says.
+        $middleware->redirectGuestsTo(null);
         $middleware->alias(['role' => EnsureRole::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

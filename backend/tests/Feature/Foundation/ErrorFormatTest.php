@@ -72,6 +72,10 @@ it('returns 401 without authentication', function () {
     assertErrorEnvelope($this->getJson('/api/probe/auth'), 401, 'UNAUTHENTICATED');
 });
 
+it('returns 401 to a guest that does not ask for JSON', function (string $path) {
+    assertErrorEnvelope($this->get($path, ['Accept' => 'text/html']), 401, 'UNAUTHENTICATED');
+})->with(['/api/probe/auth', '/api/me', '/api/tickets/1/pdf']);
+
 it('returns 403 for a wrong role', function () {
     $this->actingAs(User::factory()->create());
 
@@ -95,6 +99,40 @@ it('rejects unknown body fields', function () {
 
     assertErrorEnvelope($response, 400, 'VALIDATION_ERROR');
     $response->assertJsonPath('error.details.0.field', 'role');
+});
+
+it('answers validation details in English by default', function () {
+    $missing = $this->postJson('/api/probe/strict', []);
+
+    $missing->assertStatus(400)
+        ->assertJsonPath('error.details.0.message', 'The name field is required.')
+        ->assertHeader('Content-Language', 'en')
+        ->assertHeader('Vary', 'Accept-Language');
+
+    $this->postJson('/api/probe/strict', ['name' => 'a', 'role' => 'ADMIN'])
+        ->assertJsonPath('error.details.0.message', 'This field is not allowed.');
+});
+
+it('answers validation details in Polish when the client asks for it', function (string $header) {
+    $missing = $this->postJson('/api/probe/strict', [], ['Accept-Language' => $header]);
+
+    $missing->assertStatus(400)
+        ->assertJsonPath('error.message', 'Invalid request data')
+        ->assertJsonPath('error.details.0.message', 'Pole imię i nazwisko jest wymagane.')
+        ->assertHeader('Content-Language', 'pl');
+
+    $unknown = $this->postJson('/api/probe/strict', ['name' => 'a', 'role' => 'ADMIN'], ['Accept-Language' => $header]);
+
+    $unknown->assertStatus(400)
+        ->assertJsonPath('error.details.0.field', 'role')
+        ->assertJsonPath('error.details.0.message', 'To pole jest niedozwolone.');
+})->with(['pl', 'pl-PL,pl;q=0.9']);
+
+it('falls back to English for an unsupported language', function () {
+    $response = $this->postJson('/api/probe/strict', [], ['Accept-Language' => 'de']);
+
+    $response->assertJsonPath('error.details.0.message', 'The name field is required.')
+        ->assertHeader('Content-Language', 'en');
 });
 
 it('renders domain exceptions with their code and status', function () {

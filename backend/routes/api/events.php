@@ -3,6 +3,7 @@
 use App\Http\Controllers\Events\CatalogController;
 use App\Http\Controllers\Events\OrganizerEventController;
 use App\Http\Controllers\Events\TicketTypeController;
+use App\Http\Controllers\Tickets\TicketSalesController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('events', [CatalogController::class, 'index']);
@@ -25,4 +26,6 @@ Route::middleware(['auth:sanctum', 'role:ORGANIZER'])
         Route::get('{id}/ticket-types/{ticketTypeId}', [TicketTypeController::class, 'show']);
         Route::patch('{id}/ticket-types/{ticketTypeId}', [TicketTypeController::class, 'update']);
         Route::delete('{id}/ticket-types/{ticketTypeId}', [TicketTypeController::class, 'destroy']);
+
+        Route::get('{id}/sales', [TicketSalesController::class, 'show']);
     });

@@ -1,6 +1,8 @@
 import type { RouteObject } from 'react-router-dom'
-import { PlaceholderPage } from '../../components/StatusPages'
+import { OrderPage } from './OrderPage'
+import { OrdersPage } from './OrdersPage'
 
 export const checkoutRoutes: RouteObject[] = [
-  { path: 'orders', element: <PlaceholderPage title="Moje zamówienia" /> },
+  { path: 'orders', element: <OrdersPage /> },
+  { path: 'orders/:id', element: <OrderPage /> },
 ]

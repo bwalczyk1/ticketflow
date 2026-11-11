@@ -4,11 +4,14 @@ use App\Contracts\PaymentResultHandler;
 use App\Enums\QueueName;
 use App\Enums\TicketStatus;
 use App\Events\Orders\OrderPaid;
+use App\Events\Payments\PaymentFailed;
 use App\Events\Refunds\OrderRefunded;
 use App\Events\Tickets\TicketCheckedIn;
 use App\Events\Tickets\TicketsGenerated;
 use App\Listeners\Documents\IssueInvoice;
 use App\Listeners\Notifications\NotifyOrganizer;
+use App\Listeners\Orders\ReleaseSeats;
+use App\Listeners\Payments\SendPaymentFailedEmail;
 use App\Listeners\Stats\UpdateSalesSummary;
 use App\Listeners\Tickets\IssueTickets;
 use App\Listeners\Tickets\SendTicketsEmail;
@@ -37,6 +40,8 @@ dataset('consumers', [
     'UpdateSalesSummary after a payment' => [OrderPaid::class, UpdateSalesSummary::class, QueueName::Stats],
     'NotifyOrganizer' => [OrderPaid::class, NotifyOrganizer::class, QueueName::Notifications],
     'SendTicketsEmail' => [TicketsGenerated::class, SendTicketsEmail::class, QueueName::Mail],
+    'ReleaseSeats after a failed payment' => [PaymentFailed::class, ReleaseSeats::class, QueueName::Orders],
+    'SendPaymentFailedEmail' => [PaymentFailed::class, SendPaymentFailedEmail::class, QueueName::Mail],
     'UpdateSalesSummary after a refund' => [OrderRefunded::class, UpdateSalesSummary::class, QueueName::Stats],
     'UpdateSalesSummary after a check-in' => [TicketCheckedIn::class, UpdateSalesSummary::class, QueueName::Stats],
 ]);
@@ -48,6 +53,7 @@ function fanOutEvent(string $event): object
 {
     return match ($event) {
         OrderRefunded::class => new OrderRefunded(1, 1),
+        PaymentFailed::class => new PaymentFailed(1, 'Card declined'),
         TicketCheckedIn::class => new TicketCheckedIn(1),
         default => new $event(1),
     };

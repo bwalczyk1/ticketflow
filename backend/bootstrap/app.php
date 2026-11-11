@@ -4,6 +4,7 @@ use App\Exceptions\ApiExceptionRenderer;
 use App\Exceptions\Domain\DomainException;
 use App\Http\Middleware\EnsureRole;
 use App\Http\Middleware\RequestId;
+use App\Http\Middleware\SetLocaleFromHeader;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(RequestId::class);
         $middleware->statefulApi();
+        $middleware->api(prepend: [SetLocaleFromHeader::class]);
 
         // There is no login page to redirect to, so guests get 401 whatever the Accept header says.
         $middleware->redirectGuestsTo(null);

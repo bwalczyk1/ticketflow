@@ -32,7 +32,7 @@ class CatalogController extends Controller
     }
 
     /**
-     * Show a published event that has not started yet, with its ticket types and their availability.
+     * Show a published event with its ticket types and their availability, also after it started.
      *
      * @unauthenticated
      */

@@ -223,16 +223,19 @@ it('answers 404 for an id that cannot exist', function (string $id) {
         ->assertJsonPath('error.code', 'NOT_FOUND');
 })->with(['999999', 'abc', '99999999999999999999999']);
 
-it('hides events that already started', function (string $startsAt, bool $visible) {
+it('hides started events from the list but still shows them by id', function (string $startsAt, bool $listed) {
     $this->travelTo('2026-11-20 18:00:00');
 
     $event = Event::factory()->create(['starts_at' => $startsAt, 'ends_at' => '2026-11-20 23:00:00']);
 
     $this->getJson('/api/events')
         ->assertOk()
-        ->assertJsonCount($visible ? 1 : 0, 'data');
+        ->assertJsonCount($listed ? 1 : 0, 'data');
 
-    $this->getJson("/api/events/{$event->id}")->assertStatus($visible ? 200 : 404);
+    // Orders and tickets keep linking to the event after it starts.
+    $this->getJson("/api/events/{$event->id}")
+        ->assertOk()
+        ->assertJsonPath('id', $event->id);
 })->with([
     'one second before the start' => ['2026-11-20 18:00:01', true],
     'exactly at the start' => ['2026-11-20 18:00:00', false],

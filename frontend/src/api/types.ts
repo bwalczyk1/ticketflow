@@ -60,6 +60,17 @@ export interface CatalogEvent {
   endsAt: string
   status: EventStatus
   ticketTypes?: TicketType[]
+  /**
+   * Hand-written ahead of the backend change that adds it to GET /api/events/{id}; check against
+   * the OpenAPI docs once they are regenerated. Null for guests and users who are not attendees.
+   */
+  purchaseLimit?: PurchaseLimit | null
+}
+
+/** How many tickets the attendee may hold for one event and how many they already have. */
+export interface PurchaseLimit {
+  max: number
+  used: number
 }
 
 export interface ManagedEvent extends Omit<CatalogEvent, 'ticketTypes'> {

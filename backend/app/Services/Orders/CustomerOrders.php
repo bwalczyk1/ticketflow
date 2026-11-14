@@ -63,4 +63,16 @@ class CustomerOrders
 
         return $order->invoice;
     }
+
+    /**
+     * @throws InvoiceNotFound
+     */
+    public function correctionInvoice(Order $order): Invoice
+    {
+        if ($order->correctionInvoice?->pdf_path === null) {
+            throw new InvoiceNotFound('This order has no correction invoice yet');
+        }
+
+        return $order->correctionInvoice;
+    }
 }

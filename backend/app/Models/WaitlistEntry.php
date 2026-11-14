@@ -45,4 +45,14 @@ class WaitlistEntry extends Model
     {
         return $this->belongsTo(TicketType::class);
     }
+
+    /**
+     * The order an accepted offer became.
+     *
+     * @return BelongsTo<Order, $this>
+     */
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class);
+    }
 }

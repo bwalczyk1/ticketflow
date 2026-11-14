@@ -67,6 +67,7 @@ dataset('factory states', [
     'offered entry' => [fn () => WaitlistEntry::factory()->offered()->create()->status, WaitlistStatus::Offered],
     'converted entry' => [fn () => WaitlistEntry::factory()->converted()->create()->status, WaitlistStatus::Converted],
     'expired entry' => [fn () => WaitlistEntry::factory()->expired()->create()->status, WaitlistStatus::Expired],
+    'cancelled entry' => [fn () => WaitlistEntry::factory()->cancelled()->create()->status, WaitlistStatus::Cancelled],
     'invoice' => [fn () => Invoice::factory()->create()->type, InvoiceType::Invoice],
 ]);
 

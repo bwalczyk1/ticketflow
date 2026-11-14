@@ -8,6 +8,7 @@ Route::middleware(['auth:sanctum', 'role:'.Role::Attendee->value])
     ->whereNumber('id')
     ->group(function () {
         Route::get('waitlist', [WaitlistController::class, 'index']);
+        Route::post('waitlist/{id}/accept', [WaitlistController::class, 'accept']);
         Route::post('ticket-types/{id}/waitlist', [WaitlistController::class, 'store']);
         Route::delete('ticket-types/{id}/waitlist', [WaitlistController::class, 'destroy']);
     });

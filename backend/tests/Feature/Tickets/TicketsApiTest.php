@@ -12,6 +12,9 @@ use Tests\Feature\Tickets\TicketFixtures;
 beforeEach(function () {
     Storage::fake('local');
 
+    // The tickets of one order share a creation second, so the list order does not depend on the clock.
+    $this->freezeTime();
+
     $this->attendee = User::factory()->create();
     $this->order = TicketFixtures::paidOrder([2], $this->attendee);
     $this->tickets = TicketFixtures::issueTickets($this->order);
@@ -82,6 +85,17 @@ it('filters by order and by status', function () {
 
     expect($this->getJson("/api/tickets?orderId={$other->id}")->json('data.*.orderId'))->toBe([$other->id]);
     expect($this->getJson('/api/tickets?status=VOID')->json('data.*.id'))->toBe([$this->tickets->first()->id]);
+});
+
+it('lists newer tickets first and tickets of the same second by id', function () {
+    $this->travel(1)->second();
+
+    $newer = TicketFixtures::issueTickets(TicketFixtures::paidOrder([1], $this->attendee));
+
+    $this->actingAs($this->attendee)
+        ->getJson('/api/tickets')
+        ->assertOk()
+        ->assertJsonPath('data.*.id', [$newer->first()->id, ...$this->tickets->pluck('id')->all()]);
 });
 
 it('rejects an unknown filter value or sort with 400', function (string $query, string $field) {

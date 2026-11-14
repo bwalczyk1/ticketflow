@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { PAGE_TITLE } from '@/lib/styles'
@@ -42,6 +43,9 @@ function EventForm({ event }: EventFormProps) {
         queryClient.invalidateQueries({ queryKey: eventsKey }),
       ])
 
+      toast.success(
+        event ? `Zapisano wydarzenie „${saved.title}”.` : `Utworzono wydarzenie „${saved.title}”. Dodaj pule biletów.`,
+      )
       navigate(event ? '/organizer' : `/organizer/events/${saved.id}/ticket-types`)
     },
   })

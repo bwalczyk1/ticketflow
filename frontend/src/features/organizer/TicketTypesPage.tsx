@@ -1,10 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PAGE_TITLE } from '@/lib/styles'
 import { ApiError } from '../../api/errors'
+import type { ManagedTicketType } from '../../api/types'
 import { BackLink } from '../../components/BackLink'
 import { ConfirmButton } from '../../components/ConfirmButton'
 import { ErrorBanner } from '../../components/ErrorBanner'
@@ -32,7 +34,8 @@ export function TicketTypesPage() {
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (ticketTypeId: number) => deleteTicketType(id, ticketTypeId),
+    mutationFn: (ticketType: ManagedTicketType) => deleteTicketType(id, ticketType.id),
+    onSuccess: (_, ticketType) => toast.success(`Usunięto pulę „${ticketType.name}”.`),
     onSettled: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: organizerKey }),
@@ -111,7 +114,7 @@ export function TicketTypesPage() {
                             description="Tej operacji nie można cofnąć."
                             disabled={deleteMutation.isPending}
                             onOpen={() => deleteMutation.reset()}
-                            onConfirm={() => deleteMutation.mutate(ticketType.id)}
+                            onConfirm={() => deleteMutation.mutate(ticketType)}
                           />
                         </div>
                       )}

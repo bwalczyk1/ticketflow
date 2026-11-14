@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -33,9 +34,15 @@ import {
 
 const IRREVERSIBLE = 'Tej operacji nie można cofnąć.'
 
-const CONFIRM_TEXTS: Record<ConfirmedAction, { label: string; title: string }> = {
-  cancel: { label: 'Odwołaj', title: 'Odwołać wydarzenie' },
-  delete: { label: 'Usuń', title: 'Usunąć wydarzenie' },
+const CONFIRM_TEXTS: Record<ConfirmedAction, { label: string; title: string; done: string }> = {
+  cancel: { label: 'Odwołaj', title: 'Odwołać wydarzenie', done: 'Odwołano wydarzenie' },
+  delete: { label: 'Usuń', title: 'Usunąć wydarzenie', done: 'Usunięto wydarzenie' },
+}
+
+interface EventAction {
+  run: () => Promise<unknown>
+  /** Shown in a toast once the action succeeds. */
+  done: string
 }
 
 const STATUS_FILTERS: { value: EventStatus | ''; label: string }[] = [
@@ -62,7 +69,8 @@ export function MyEventsPage() {
   })
 
   const actionMutation = useMutation({
-    mutationFn: (action: () => Promise<unknown>) => action(),
+    mutationFn: ({ run }: EventAction) => run(),
+    onSuccess: (_, { done }) => toast.success(done),
     onSettled: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: organizerKey }),
@@ -94,7 +102,10 @@ export function MyEventsPage() {
 
     const { action, event } = confirm
 
-    actionMutation.mutate(() => (action === 'cancel' ? cancelEvent(event.id) : deleteEvent(event.id)))
+    actionMutation.mutate({
+      run: () => (action === 'cancel' ? cancelEvent(event.id) : deleteEvent(event.id)),
+      done: `${CONFIRM_TEXTS[action].done} „${event.title}”.`,
+    })
   }
 
   function renderActions(event: ManagedEvent) {
@@ -102,7 +113,12 @@ export function MyEventsPage() {
       <EventActionsMenu
         event={event}
         disabled={actionMutation.isPending}
-        onPublish={() => actionMutation.mutate(() => publishEvent(event.id))}
+        onPublish={() =>
+          actionMutation.mutate({
+            run: () => publishEvent(event.id),
+            done: `Opublikowano wydarzenie „${event.title}”.`,
+          })
+        }
         onConfirm={(action) => openConfirm(action, event)}
       />
     )

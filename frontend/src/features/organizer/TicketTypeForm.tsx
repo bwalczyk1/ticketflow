@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
+import { toast } from 'sonner'
 import { getFieldErrors } from '../../api/errors'
 import { Button } from '@/components/ui/button'
 import type { ManagedTicketType } from '../../api/types'
@@ -30,12 +31,13 @@ export function TicketTypeForm({ eventId, ticketType, onDone }: TicketTypeFormPr
       ticketType
         ? updateTicketType(eventId, ticketType.id, payload)
         : createTicketType(eventId, payload),
-    onSuccess: async () => {
+    onSuccess: async (saved) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: organizerKey }),
         queryClient.invalidateQueries({ queryKey: eventsKey }),
       ])
 
+      toast.success(ticketType ? `Zapisano pulę „${saved.name}”.` : `Dodano pulę „${saved.name}”.`)
       onDone()
     },
   })

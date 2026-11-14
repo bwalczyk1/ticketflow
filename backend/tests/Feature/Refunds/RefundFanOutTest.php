@@ -3,6 +3,7 @@
 use App\Enums\QueueName;
 use App\Events\Refunds\OrderRefunded;
 use App\Listeners\Documents\IssueCorrectionInvoice;
+use App\Listeners\Orders\ReleaseRefundedSeats;
 use App\Listeners\Payments\RefundPayment;
 use App\Listeners\Tickets\VoidTickets;
 use Illuminate\Events\CallQueuedListener;
@@ -18,6 +19,7 @@ dataset('refund consumers', [
     'RefundPayment' => [fn () => new OrderRefunded(1, 1), RefundPayment::class, QueueName::Payments],
     'VoidTickets' => [fn () => new OrderRefunded(1, 1), VoidTickets::class, QueueName::Tickets],
     'IssueCorrectionInvoice' => [fn () => new OrderRefunded(1, 1), IssueCorrectionInvoice::class, QueueName::Documents],
+    'ReleaseRefundedSeats' => [fn () => new OrderRefunded(1, 1), ReleaseRefundedSeats::class, QueueName::Orders],
 ]);
 
 it('registers every consumer of the event', function (object $event, string $listener) {

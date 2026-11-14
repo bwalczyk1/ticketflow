@@ -9,6 +9,7 @@ use App\Models\TicketType;
 use App\Models\User;
 use App\Services\Events\OrganizerEvents;
 use Illuminate\Support\Facades\Event as EventBus;
+use Illuminate\Support\Str;
 
 function eventPayload(array $overrides = []): array
 {
@@ -172,6 +173,95 @@ it('compares a new end with the stored start', function () {
         ->assertJsonPath('error.code', 'VALIDATION_ERROR')
         ->assertJsonPath('error.details.0.field', 'endsAt');
 });
+
+it('answers that a field is required when an update empties it', function (string $field, mixed $value, string $label) {
+    $this->actingAs($this->organizer)
+        ->patchJson("/api/organizer/events/{$this->event->id}", [$field => $value])
+        ->assertStatus(400)
+        ->assertJsonPath('error.details.0.field', $field)
+        ->assertJsonPath('error.details.0.message', "The {$label} field is required.");
+
+    expect($this->event->fresh()->{Str::snake($field)})->not->toBeNull();
+})->with([
+    ['title', '', 'title'],
+    ['description', '', 'description'],
+    ['venue', '   ', 'venue'],
+    ['city', '', 'city'],
+    ['category', '', 'category'],
+    ['timezone', '', 'timezone'],
+    ['startsAt', '', 'starts at'],
+    ['endsAt', null, 'ends at'],
+]);
+
+it('answers in Polish that an emptied title is required', function () {
+    $this->actingAs($this->organizer)
+        ->patchJson("/api/organizer/events/{$this->event->id}", ['title' => ''], ['Accept-Language' => 'pl'])
+        ->assertStatus(400)
+        ->assertJsonPath('error.details.0.message', 'Pole tytuł jest wymagane.');
+});
+
+it('rejects a new event that does not start in the future', function (array $headers, string $message) {
+    $this->travelTo('2027-03-01T18:00:00Z');
+
+    $this->actingAs($this->organizer)
+        ->postJson('/api/organizer/events', eventPayload(['startsAt' => '2027-03-01T19:00:00+01:00']), $headers)
+        ->assertStatus(400)
+        ->assertJsonPath('error.code', 'VALIDATION_ERROR')
+        ->assertJsonPath('error.details.0.field', 'startsAt')
+        ->assertJsonPath('error.details.0.message', $message);
+
+    expect(Event::count())->toBe(1);
+})->with([
+    'English by default' => [[], 'The start must be in the future.'],
+    'Polish on request' => [['Accept-Language' => 'pl'], 'Data rozpoczęcia musi być w przyszłości.'],
+]);
+
+it('accepts a new event that starts one second from now', function () {
+    $this->travelTo('2027-03-01T17:59:59Z');
+
+    $this->actingAs($this->organizer)
+        ->postJson('/api/organizer/events', eventPayload(['startsAt' => '2027-03-01T19:00:00+01:00']))
+        ->assertCreated();
+});
+
+it('rejects moving the start of an event into the past', function () {
+    $this->travelTo('2027-03-01T12:00:00Z');
+    $this->event->update(['starts_at' => '2027-03-05 18:00:00', 'ends_at' => '2027-03-05 20:00:00']);
+
+    $this->actingAs($this->organizer)
+        ->patchJson("/api/organizer/events/{$this->event->id}", ['startsAt' => '2027-03-01T11:00:00Z'])
+        ->assertStatus(400)
+        ->assertJsonPath('error.details.0.field', 'startsAt');
+
+    expect($this->event->fresh()->starts_at->toIso8601ZuluString())->toBe('2027-03-05T18:00:00Z');
+});
+
+it('accepts an update that repeats the stored start of an event that already started', function () {
+    $this->travelTo('2027-03-01T19:00:00Z');
+    $this->event->update(['starts_at' => '2027-03-01 18:00:00', 'ends_at' => '2027-03-01 21:00:00']);
+
+    $this->actingAs($this->organizer)
+        ->patchJson("/api/organizer/events/{$this->event->id}", [
+            'venue' => 'Klub Studio',
+            'startsAt' => '2027-03-01T19:00:00+01:00',
+            'endsAt' => '2027-03-01T22:30:00+01:00',
+        ])
+        ->assertOk()
+        ->assertJsonPath('venue', 'Klub Studio')
+        ->assertJsonPath('endsAt', '2027-03-01T21:30:00Z');
+});
+
+it('translates the message for an end before the start', function (array $headers, string $message) {
+    $this->actingAs($this->organizer)
+        ->postJson('/api/organizer/events', eventPayload(['endsAt' => '2027-03-01T18:00:00+01:00']), $headers)
+        ->assertStatus(400)
+        ->assertJsonPath('error.code', 'VALIDATION_ERROR')
+        ->assertJsonPath('error.details.0.field', 'endsAt')
+        ->assertJsonPath('error.details.0.message', $message);
+})->with([
+    'English by default' => [[], 'The end must be after the start.'],
+    'Polish on request' => [['Accept-Language' => 'pl'], 'Data zakończenia musi być późniejsza niż data rozpoczęcia.'],
+]);
 
 it('rejects status in an update with 400', function () {
     $this->actingAs($this->organizer)

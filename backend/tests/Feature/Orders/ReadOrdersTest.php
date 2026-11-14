@@ -45,6 +45,26 @@ it('paginates and sorts the list by a whitelisted field', function () {
         ->assertJsonPath('meta.totalPages', 2);
 });
 
+it('filters own orders by status', function () {
+    $paid = orderOf($this->attendee, ['status' => 'PAID']);
+
+    orderOf($this->attendee);
+    orderOf(User::factory()->create(), ['status' => 'PAID']);
+
+    $this->getJson('/api/orders?status=PAID')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $paid->id)
+        ->assertJsonPath('meta.total', 1);
+});
+
+it('rejects an unknown status filter with 400', function (string $status) {
+    $this->getJson("/api/orders?status={$status}")
+        ->assertStatus(400)
+        ->assertJsonPath('error.code', 'VALIDATION_ERROR')
+        ->assertJsonPath('error.details.0.field', 'status');
+})->with(['SHIPPED', 'paid']);
+
 it('rejects a sort outside the whitelist', function () {
     $this->getJson('/api/orders?sort=user_id')->assertStatus(400);
 });

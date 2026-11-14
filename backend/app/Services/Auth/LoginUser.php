@@ -16,6 +16,9 @@ class LoginUser
 
     public function __construct(private UserSession $session) {}
 
+    /**
+     * @throws InvalidCredentials
+     */
     public function handle(string $email, string $password): User
     {
         $user = User::query()->where('email', $email)->first(['id', 'name', 'email', 'role', 'password']);

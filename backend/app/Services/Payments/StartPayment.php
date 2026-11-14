@@ -4,7 +4,7 @@ namespace App\Services\Payments;
 
 use App\Enums\OrderStatus;
 use App\Events\Orders\OrderPlaced;
-use App\Exceptions\Domain\InvalidStatusTransition;
+use App\Exceptions\Domain\OrderNotPayable;
 use App\Exceptions\Domain\PaymentAlreadyStarted;
 use App\Exceptions\Domain\ReservationExpired;
 use App\Exceptions\Domain\SalesClosed;
@@ -21,7 +21,7 @@ class StartPayment
      *
      * @throws ReservationExpired
      * @throws PaymentAlreadyStarted
-     * @throws InvalidStatusTransition
+     * @throws OrderNotPayable
      * @throws SalesClosed
      */
     public function handle(Order $order): void
@@ -40,18 +40,22 @@ class StartPayment
         });
     }
 
+    /**
+     * Only an order that may still become PAID can be paid. An expired one answers 410, like a
+     * hold that ended before the scheduler noticed it.
+     */
     private function ensurePayable(Order $order): void
     {
         if ($order->status === OrderStatus::Expired) {
             throw new ReservationExpired;
         }
 
-        if ($order->payment()->exists()) {
-            throw new PaymentAlreadyStarted;
+        if (! $order->status->canTransitionTo(OrderStatus::Paid)) {
+            throw new OrderNotPayable;
         }
 
-        if ($order->status !== OrderStatus::Pending) {
-            throw new InvalidStatusTransition;
+        if ($order->payment()->exists()) {
+            throw new PaymentAlreadyStarted;
         }
 
         if (TicketAvailability::holdEnded($order->expires_at, now())) {

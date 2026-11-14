@@ -18,7 +18,7 @@ import type { EventStatus, ManagedEvent } from '../../api/types'
 import { ConfirmDialog } from '../../components/ConfirmButton'
 import { ErrorBanner } from '../../components/ErrorBanner'
 import { Pagination } from '../../components/Pagination'
-import { LoadingPage } from '../../components/StatusPages'
+import { LoadingPage, RefreshingArea } from '../../components/StatusPages'
 import { eventsKey } from '../catalog/catalogApi'
 import { formatDateTime } from '../../lib/dates'
 import { EventActionsMenu, type ConfirmedAction } from './EventActionsMenu'
@@ -55,7 +55,7 @@ export function MyEventsPage() {
   const page = Number(params.get('page')) || 1
   const [confirm, setConfirm] = useState<{ action: ConfirmedAction; event: ManagedEvent } | null>(null)
 
-  const { data, error, isPending } = useQuery({
+  const { data, error, isPending, isPlaceholderData } = useQuery({
     queryKey: [...organizerKey, 'events', status, page],
     queryFn: () => fetchMyEvents(status, page),
     placeholderData: (previous) => previous,
@@ -135,67 +135,69 @@ export function MyEventsPage() {
 
       {isPending && !error && <LoadingPage />}
 
-      {data && data.data.length === 0 && (
-        <p className="text-muted-foreground">Nie masz jeszcze żadnych wydarzeń w tym widoku.</p>
-      )}
+      <RefreshingArea active={isPlaceholderData}>
+        {data && data.data.length === 0 && (
+          <p className="text-muted-foreground">Nie masz jeszcze żadnych wydarzeń w tym widoku.</p>
+        )}
 
-      {data && data.data.length > 0 && (
-        <>
-          <div className="hidden rounded-xl border md:block">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="pl-4">Wydarzenie</TableHead>
-                  <TableHead>Data</TableHead>
-                  <TableHead>Miejsce</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="pr-4 text-right">Akcje</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {data.data.map((event) => (
-                  <TableRow key={event.id}>
-                    <TableCell className="pl-4 font-medium whitespace-normal">{event.title}</TableCell>
-                    <TableCell>{formatDateTime(event.startsAt, event.timezone)}</TableCell>
-                    <TableCell className="whitespace-normal">
-                      {event.venue}, {event.city}
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge status={event.status} />
-                    </TableCell>
-                    <TableCell className="pr-4 text-right">{renderActions(event)}</TableCell>
+        {data && data.data.length > 0 && (
+          <>
+            <div className="hidden rounded-xl border md:block">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="pl-4">Wydarzenie</TableHead>
+                    <TableHead>Data</TableHead>
+                    <TableHead>Miejsce</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="pr-4 text-right">Akcje</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                </TableHeader>
+                <TableBody>
+                  {data.data.map((event) => (
+                    <TableRow key={event.id}>
+                      <TableCell className="pl-4 font-medium whitespace-normal">{event.title}</TableCell>
+                      <TableCell>{formatDateTime(event.startsAt, event.timezone)}</TableCell>
+                      <TableCell className="whitespace-normal">
+                        {event.venue}, {event.city}
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge status={event.status} />
+                      </TableCell>
+                      <TableCell className="pr-4 text-right">{renderActions(event)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
 
-          <ul className="grid gap-3 md:hidden">
-            {data.data.map((event) => (
-              <li key={event.id}>
-                <Card className="py-4">
-                  <CardContent className="grid gap-2 px-4">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="min-w-0 font-medium break-words">{event.title}</p>
-                      {renderActions(event)}
-                    </div>
+            <ul className="grid gap-3 md:hidden">
+              {data.data.map((event) => (
+                <li key={event.id}>
+                  <Card className="py-4">
+                    <CardContent className="grid gap-2 px-4">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="min-w-0 font-medium break-words">{event.title}</p>
+                        {renderActions(event)}
+                      </div>
 
-                    <p className="text-sm text-muted-foreground">
-                      {formatDateTime(event.startsAt, event.timezone)} · {event.venue}, {event.city}
-                    </p>
+                      <p className="text-sm text-muted-foreground">
+                        {formatDateTime(event.startsAt, event.timezone)} · {event.venue}, {event.city}
+                      </p>
 
-                    <div>
-                      <StatusBadge status={event.status} />
-                    </div>
-                  </CardContent>
-                </Card>
-              </li>
-            ))}
-          </ul>
+                      <div>
+                        <StatusBadge status={event.status} />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </li>
+              ))}
+            </ul>
 
-          <Pagination meta={data.meta} onPageChange={changePage} />
-        </>
-      )}
+            <Pagination meta={data.meta} onPageChange={changePage} />
+          </>
+        )}
+      </RefreshingArea>
 
       {confirm && (
         <ConfirmDialog

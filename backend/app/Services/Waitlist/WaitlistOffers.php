@@ -45,6 +45,24 @@ class WaitlistOffers
     }
 
     /**
+     * Gives the seats of a closed offer back to the pool and, unless told otherwise, straight to the
+     * next people in line. Call it in the transaction that closes the offer, so the seats are
+     * never free for a normal purchase while someone waits for them.
+     *
+     * @throws ReservationConflict
+     */
+    public function returnSeats(int $ticketTypeId, int $quantity, bool $offerToNext = true): void
+    {
+        TicketType::query()
+            ->whereKey($ticketTypeId)
+            ->decrement('held', $quantity, ['version' => DB::raw('version + 1')]);
+
+        if ($offerToNext) {
+            $this->offerFreeSeats($ticketTypeId);
+        }
+    }
+
+    /**
      * @return list<int>
      *
      * @throws ReservationConflict

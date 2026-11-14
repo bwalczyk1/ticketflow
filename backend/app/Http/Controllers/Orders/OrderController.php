@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Orders;
 
+use App\Enums\OrderStatus;
 use App\Exceptions\Domain\InvoiceNotFound;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Orders\ListOrdersRequest;
@@ -29,7 +30,13 @@ class OrderController extends Controller
      */
     public function index(ListOrdersRequest $request): array
     {
-        $orders = $this->orders->list($request->user(), $request->sortColumn(), $request->limit(), $request->page());
+        $orders = $this->orders->list(
+            $request->user(),
+            $request->enum('status', OrderStatus::class),
+            $request->sortColumn(),
+            $request->limit(),
+            $request->page(),
+        );
 
         return Pagination::response($orders, OrderResource::class);
     }

@@ -2,6 +2,7 @@
 
 namespace App\Services\Orders;
 
+use App\Enums\OrderStatus;
 use App\Exceptions\Domain\InvoiceNotFound;
 use App\Models\Invoice;
 use App\Models\Order;
@@ -28,11 +29,12 @@ class CustomerOrders
      * @param  array{0: string, 1: 'asc'|'desc'}  $sort
      * @return LengthAwarePaginator<int, Order>
      */
-    public function list(User $user, array $sort, int $limit, int $page): LengthAwarePaginator
+    public function list(User $user, ?OrderStatus $status, array $sort, int $limit, int $page): LengthAwarePaginator
     {
         return $user->orders()
             ->select(self::COLUMNS)
             ->with(self::RELATIONS)
+            ->when($status, fn ($query) => $query->where('status', $status))
             ->orderBy(...$sort)
             ->orderBy('id')
             ->paginate(perPage: $limit, page: $page);

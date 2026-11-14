@@ -120,6 +120,22 @@ it('moves a refunded order from revenue to refunds', function () {
     ]);
 });
 
+it('does not count the refund of a late payment, which was never revenue', function () {
+    $kept = TicketFixtures::paidOrder([1], event: $this->event);
+    $late = Order::factory()->expired()->create(['event_id' => $this->event->id, 'total' => 9000]);
+
+    Refund::factory()->for($late)->succeeded()->create(['amount' => 9000]);
+
+    app(UpdateSalesSummary::class)->handle(new OrderPaid($kept->id));
+
+    expect(salesSummaryOf($this->event))->toBe([
+        'tickets_sold' => 1,
+        'revenue' => $kept->total,
+        'refunds' => 0,
+        'checked_in' => 0,
+    ]);
+});
+
 it('does not count a failed refund', function () {
     $order = TicketFixtures::paidOrder([2], event: $this->event);
     $refund = Refund::factory()->for($order)->create(['amount' => $order->total, 'status' => RefundStatus::Failed]);

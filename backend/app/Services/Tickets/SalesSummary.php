@@ -34,8 +34,9 @@ class SalesSummary
                 'event_id' => $eventId,
                 'tickets_sold' => (int) OrderItem::query()->whereHas('order', $this->paidOrdersOf($eventId))->sum('quantity'),
                 'revenue' => (int) Order::query()->where($this->paidOrdersOf($eventId))->sum('total'),
+                // Only refunds of paid orders, which are REFUNDED now; a returned late payment was never revenue.
                 'refunds' => (int) Refund::query()
-                    ->whereHas('order', fn (Builder $orders) => $orders->where('event_id', $eventId))
+                    ->whereHas('order', fn (Builder $orders) => $orders->where('event_id', $eventId)->where('status', OrderStatus::Refunded))
                     ->where('status', '!=', RefundStatus::Failed)
                     ->sum('amount'),
                 'checked_in' => Ticket::query()

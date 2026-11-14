@@ -5,6 +5,7 @@ use App\Events\Refunds\OrderRefunded;
 use App\Listeners\Documents\IssueCorrectionInvoice;
 use App\Listeners\Orders\ReleaseRefundedSeats;
 use App\Listeners\Payments\RefundPayment;
+use App\Listeners\Refunds\SendRefundEmail;
 use App\Listeners\Tickets\VoidTickets;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\Event;
@@ -20,6 +21,7 @@ dataset('refund consumers', [
     'VoidTickets' => [fn () => new OrderRefunded(1, 1), VoidTickets::class, QueueName::Tickets],
     'IssueCorrectionInvoice' => [fn () => new OrderRefunded(1, 1), IssueCorrectionInvoice::class, QueueName::Documents],
     'ReleaseRefundedSeats' => [fn () => new OrderRefunded(1, 1), ReleaseRefundedSeats::class, QueueName::Orders],
+    'SendRefundEmail' => [fn () => new OrderRefunded(1, 1), SendRefundEmail::class, QueueName::Mail],
 ]);
 
 it('registers every consumer of the event', function (object $event, string $listener) {

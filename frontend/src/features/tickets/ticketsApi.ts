@@ -13,3 +13,9 @@ export function fetchOrderTickets(orderId: number): Promise<Paginated<Ticket>> {
 export function downloadTicketPdf(ticket: Ticket): Promise<void> {
   return downloadFile(`/api/tickets/${ticket.id}/pdf`, `bilet-${ticket.code}.pdf`)
 }
+
+export const TICKETS_PAGE_SIZE = 20
+
+export function fetchTickets(page: number): Promise<Paginated<Ticket>> {
+  return api.get<Paginated<Ticket>>('/api/tickets', { page, limit: TICKETS_PAGE_SIZE })
+}

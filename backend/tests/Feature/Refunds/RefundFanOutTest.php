@@ -3,6 +3,7 @@
 use App\Enums\QueueName;
 use App\Events\Refunds\OrderRefunded;
 use App\Listeners\Payments\RefundPayment;
+use App\Listeners\Tickets\VoidTickets;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Queue;
  */
 dataset('refund consumers', [
     'RefundPayment' => [fn () => new OrderRefunded(1, 1), RefundPayment::class, QueueName::Payments],
+    'VoidTickets' => [fn () => new OrderRefunded(1, 1), VoidTickets::class, QueueName::Tickets],
 ]);
 
 it('registers every consumer of the event', function (object $event, string $listener) {

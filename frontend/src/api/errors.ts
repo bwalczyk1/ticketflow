@@ -24,6 +24,10 @@ const ERROR_MESSAGES: Record<string, string> = {
   EVENT_NOT_PUBLISHABLE:
     'Nie można opublikować wydarzenia: potrzebuje co najmniej jednej puli biletów i daty startu w przyszłości.',
   INVALID_STATUS_TRANSITION: 'Ta zmiana statusu wydarzenia jest niedozwolona.',
+  ORDER_NOT_PAYABLE: 'Tego zamówienia nie można już opłacić.',
+  INVOICE_NOT_FOUND: 'Faktura nie została jeszcze wystawiona. Spróbuj za chwilę.',
+  TICKET_PDF_NOT_READY: 'Bilet w PDF jest jeszcze przygotowywany. Spróbuj za chwilę.',
+  TICKET_VOID: 'Ten bilet został unieważniony.',
   INTERNAL_ERROR: 'Błąd serwera. Spróbuj ponownie później.',
   NETWORK_ERROR: 'Brak połączenia z serwerem. Spróbuj ponownie.',
 }

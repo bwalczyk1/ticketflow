@@ -16,6 +16,10 @@ import { StatusBadge } from './eventStatus'
 import { deleteTicketType, fetchMyEvent, organizerKey } from './organizerApi'
 import { TicketTypeForm } from './TicketTypeForm'
 
+const DELETE_ERRORS = {
+  POOL_PROTECTED: 'Nie można usunąć puli, w której sprzedano lub zablokowano bilety.',
+}
+
 export function TicketTypesPage() {
   const { id = '' } = useParams()
   const queryClient = useQueryClient()
@@ -60,7 +64,7 @@ export function TicketTypesPage() {
         <StatusBadge status={event.status} />
       </div>
 
-      <ErrorBanner error={deleteMutation.error} />
+      <ErrorBanner error={deleteMutation.error} messages={DELETE_ERRORS} />
 
       {ticketTypes.length === 0 && (
         <p className="mb-6 text-muted-foreground">To wydarzenie nie ma jeszcze żadnych pul.</p>

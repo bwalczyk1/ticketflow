@@ -18,6 +18,11 @@ import { isHoldOver, isPaymentInProgress } from './orderState'
 import { ReservationCard } from './ReservationCard'
 import { useNow } from './useCountdown'
 
+// The general text speaks of events; on this page the code means the order moved on.
+const ORDER_ERRORS = {
+  INVALID_STATUS_TRANSITION: 'Tego zamówienia nie można już zmienić. Odśwież stronę, aby zobaczyć jego status.',
+}
+
 const POLL_INTERVAL_MS = 1500
 const POLL_TIMEOUT_MS = 30_000
 
@@ -95,8 +100,8 @@ export function OrderPage() {
 
       <h1 className={`${PAGE_TITLE} mb-6`}>Zamówienie #{order.id}</h1>
 
-      <ErrorBanner error={payMutation.error} />
-      <ErrorBanner error={cancelMutation.error} />
+      <ErrorBanner error={payMutation.error} messages={ORDER_ERRORS} />
+      <ErrorBanner error={cancelMutation.error} messages={ORDER_ERRORS} />
 
       <div className="grid items-start gap-6 lg:grid-cols-[1fr_22rem]">
         <div className="grid gap-4">

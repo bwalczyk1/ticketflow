@@ -68,12 +68,18 @@ export async function toApiError(response: Response): Promise<ApiError> {
   )
 }
 
-export function getErrorMessage(error: unknown): string {
+/**
+ * Wording for codes that several actions share, keyed by the error code. It replaces the
+ * general message, e.g. POOL_PROTECTED reads differently when a pool is deleted than when it shrinks.
+ */
+export type ErrorMessages = Record<string, string>
+
+export function getErrorMessage(error: unknown, messages: ErrorMessages = {}): string {
   if (!(error instanceof ApiError)) {
     return GENERIC_MESSAGE
   }
 
-  return ERROR_MESSAGES[error.code] ?? error.message
+  return messages[error.code] ?? ERROR_MESSAGES[error.code] ?? error.message
 }
 
 /** Returns the first message for each field, keyed by the field name. */

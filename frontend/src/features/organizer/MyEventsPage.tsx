@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
+import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   Table,
   TableBody,
@@ -13,13 +15,13 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PAGE_TITLE } from '@/lib/styles'
 import type { EventStatus, ManagedEvent } from '../../api/types'
-import { ConfirmButton } from '../../components/ConfirmButton'
+import { ConfirmDialog } from '../../components/ConfirmButton'
 import { ErrorBanner } from '../../components/ErrorBanner'
 import { Pagination } from '../../components/Pagination'
 import { LoadingPage } from '../../components/StatusPages'
 import { eventsKey } from '../catalog/catalogApi'
 import { formatDateTime } from '../../lib/dates'
-import { getAllowedActions } from './allowedActions'
+import { EventActionsMenu, type ConfirmedAction } from './EventActionsMenu'
 import { StatusBadge } from './eventStatus'
 import {
   cancelEvent,
@@ -30,6 +32,11 @@ import {
 } from './organizerApi'
 
 const IRREVERSIBLE = 'Tej operacji nie można cofnąć.'
+
+const CONFIRM_TEXTS: Record<ConfirmedAction, { label: string; title: string }> = {
+  cancel: { label: 'Odwołaj', title: 'Odwołać wydarzenie' },
+  delete: { label: 'Usuń', title: 'Usunąć wydarzenie' },
+}
 
 const STATUS_FILTERS: { value: EventStatus | ''; label: string }[] = [
   { value: '', label: 'Wszystkie' },
@@ -46,6 +53,7 @@ export function MyEventsPage() {
     (filter) => filter.value !== '' && filter.value === params.get('status'),
   )?.value as EventStatus | undefined
   const page = Number(params.get('page')) || 1
+  const [confirm, setConfirm] = useState<{ action: ConfirmedAction; event: ManagedEvent } | null>(null)
 
   const { data, error, isPending } = useQuery({
     queryKey: [...organizerKey, 'events', status, page],
@@ -73,53 +81,24 @@ export function MyEventsPage() {
     setParams(nextParams)
   }
 
+  function runConfirmed() {
+    if (!confirm) {
+      return
+    }
+
+    const { action, event } = confirm
+
+    actionMutation.mutate(() => (action === 'cancel' ? cancelEvent(event.id) : deleteEvent(event.id)))
+  }
+
   function renderActions(event: ManagedEvent) {
-    const allowed = getAllowedActions(event.status)
-    const busy = actionMutation.isPending
-
     return (
-      <div className="flex justify-end gap-2">
-        <Button variant="outline" size="sm" asChild>
-          <Link to={`/organizer/events/${event.id}/ticket-types`}>Pule biletów</Link>
-        </Button>
-
-        {allowed.edit && (
-          <Button variant="outline" size="sm" asChild>
-            <Link to={`/organizer/events/${event.id}/edit`}>Edytuj</Link>
-          </Button>
-        )}
-
-        {allowed.publish && (
-          <Button
-            size="sm"
-            type="button"
-            disabled={busy}
-            onClick={() => actionMutation.mutate(() => publishEvent(event.id))}
-          >
-            Opublikuj
-          </Button>
-        )}
-
-        {allowed.cancel && (
-          <ConfirmButton
-            label="Odwołaj"
-            title={`Odwołać wydarzenie „${event.title}”?`}
-            description={IRREVERSIBLE}
-            disabled={busy}
-            onConfirm={() => actionMutation.mutate(() => cancelEvent(event.id))}
-          />
-        )}
-
-        {allowed.delete && (
-          <ConfirmButton
-            label="Usuń"
-            title={`Usunąć wydarzenie „${event.title}”?`}
-            description={IRREVERSIBLE}
-            disabled={busy}
-            onConfirm={() => actionMutation.mutate(() => deleteEvent(event.id))}
-          />
-        )}
-      </div>
+      <EventActionsMenu
+        event={event}
+        disabled={actionMutation.isPending}
+        onPublish={() => actionMutation.mutate(() => publishEvent(event.id))}
+        onConfirm={(action) => setConfirm({ action, event })}
+      />
     )
   }
 
@@ -156,7 +135,7 @@ export function MyEventsPage() {
 
       {data && data.data.length > 0 && (
         <>
-          <div className="rounded-xl border">
+          <div className="hidden rounded-xl border md:block">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -170,22 +149,57 @@ export function MyEventsPage() {
               <TableBody>
                 {data.data.map((event) => (
                   <TableRow key={event.id}>
-                    <TableCell className="pl-4 font-medium">{event.title}</TableCell>
+                    <TableCell className="pl-4 font-medium whitespace-normal">{event.title}</TableCell>
                     <TableCell>{formatDateTime(event.startsAt, event.timezone)}</TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-normal">
                       {event.venue}, {event.city}
                     </TableCell>
                     <TableCell>
                       <StatusBadge status={event.status} />
                     </TableCell>
-                    <TableCell className="pr-4">{renderActions(event)}</TableCell>
+                    <TableCell className="pr-4 text-right">{renderActions(event)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </div>
+
+          <ul className="grid gap-3 md:hidden">
+            {data.data.map((event) => (
+              <li key={event.id}>
+                <Card className="py-4">
+                  <CardContent className="grid gap-2 px-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="min-w-0 font-medium break-words">{event.title}</p>
+                      {renderActions(event)}
+                    </div>
+
+                    <p className="text-sm text-muted-foreground">
+                      {formatDateTime(event.startsAt, event.timezone)} · {event.venue}, {event.city}
+                    </p>
+
+                    <div>
+                      <StatusBadge status={event.status} />
+                    </div>
+                  </CardContent>
+                </Card>
+              </li>
+            ))}
+          </ul>
+
           <Pagination meta={data.meta} onPageChange={changePage} />
         </>
+      )}
+
+      {confirm && (
+        <ConfirmDialog
+          open
+          onOpenChange={(open) => !open && setConfirm(null)}
+          label={CONFIRM_TEXTS[confirm.action].label}
+          title={`${CONFIRM_TEXTS[confirm.action].title} „${confirm.event.title}”?`}
+          description={IRREVERSIBLE}
+          onConfirm={runConfirmed}
+        />
       )}
     </section>
   )

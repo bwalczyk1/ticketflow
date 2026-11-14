@@ -135,6 +135,39 @@ it('falls back to English for an unsupported language', function () {
         ->assertHeader('Content-Language', 'en');
 });
 
+it('answers 400 INVALID_JSON for a malformed JSON body', function (string $body) {
+    $response = $this->call('POST', '/api/probe/strict', [], [], [], [
+        'CONTENT_TYPE' => 'application/json',
+        'HTTP_ACCEPT' => 'application/json',
+    ], $body);
+
+    assertErrorEnvelope($response, 400, 'INVALID_JSON');
+
+    $response->assertJsonPath('error.message', 'Malformed JSON body.')
+        ->assertJsonMissingPath('error.details');
+})->with([
+    'unclosed object' => ['{bad'],
+    'trailing comma' => ['{"name": "a",}'],
+]);
+
+it('answers 400 INVALID_JSON on the login endpoint', function () {
+    $response = $this->call('POST', '/api/auth/login', [], [], [], [
+        'CONTENT_TYPE' => 'application/json',
+        'HTTP_ACCEPT' => 'application/json',
+    ], '{"email": ');
+
+    assertErrorEnvelope($response, 400, 'INVALID_JSON');
+});
+
+it('accepts a valid JSON body and a request without a body', function () {
+    $this->call('POST', '/api/probe/strict', [], [], [], ['CONTENT_TYPE' => 'application/json'], '{"name": "a"}')
+        ->assertOk();
+
+    $this->call('POST', '/api/probe/strict', [], [], [], ['CONTENT_TYPE' => 'application/json', 'HTTP_ACCEPT' => 'application/json'])
+        ->assertStatus(400)
+        ->assertJsonPath('error.code', 'VALIDATION_ERROR');
+});
+
 it('renders domain exceptions with their code and status', function () {
     assertErrorEnvelope($this->getJson('/api/probe/domain'), 409, 'TICKETS_SOLD_OUT');
 });

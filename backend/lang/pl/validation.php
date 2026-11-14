@@ -114,6 +114,7 @@ return [
         'email' => 'adres e-mail',
         'password' => 'hasło',
         'name' => 'imię i nazwisko',
+        'ticket_type_name' => 'nazwa puli',
         'role' => 'rola',
         'q' => 'fraza wyszukiwania',
         'city' => 'miasto',

@@ -108,7 +108,7 @@ it('moves a refunded order from revenue to refunds', function () {
 
     Order::query()->whereKey($refunded->id)->update(['status' => OrderStatus::Refunded]);
 
-    $refund = Refund::factory()->for($refunded)->create(['amount' => $refunded->total, 'status' => RefundStatus::Completed]);
+    $refund = Refund::factory()->for($refunded)->create(['amount' => $refunded->total, 'status' => RefundStatus::Succeeded]);
 
     app(UpdateSalesSummary::class)->handle(new OrderRefunded($refunded->id, $refund->id));
 

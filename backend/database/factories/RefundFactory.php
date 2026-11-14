@@ -25,9 +25,9 @@ class RefundFactory extends Factory
         ];
     }
 
-    public function completed(): static
+    public function succeeded(): static
     {
-        return $this->state(['status' => RefundStatus::Completed]);
+        return $this->state(['status' => RefundStatus::Succeeded]);
     }
 
     public function failed(): static

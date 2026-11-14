@@ -46,6 +46,8 @@ class DompdfInvoicePdfGenerator implements InvoicePdfGenerator
             'order' => $invoice->order,
             'buyer' => $invoice->order->user,
             'items' => $invoice->order->items,
+            // A correction returns the whole order, so every line is printed with a minus sign.
+            'sign' => $isCorrection ? -1 : 1,
             'total' => $isCorrection ? -$invoice->refund->amount : $invoice->order->total,
         ])->render();
     }

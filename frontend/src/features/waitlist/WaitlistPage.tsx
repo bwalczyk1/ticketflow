@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -14,6 +15,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PAGE_TITLE } from '@/lib/styles'
 import type { WaitlistEntry, WaitlistStatus } from '../../api/types'
+import { ConfirmDialog } from '../../components/ConfirmButton'
 import { ErrorBanner } from '../../components/ErrorBanner'
 import { Pagination } from '../../components/Pagination'
 import { LoadingPage, RefreshingArea } from '../../components/StatusPages'
@@ -89,6 +91,7 @@ function positionLabel(entry: WaitlistEntry): string {
 
 export function WaitlistPage() {
   const now = useNow()
+  const [leaving, setLeaving] = useState<WaitlistEntry | null>(null)
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [params, setParams] = useSearchParams()
@@ -142,13 +145,14 @@ export function WaitlistPage() {
     acceptMutation.mutate(entry)
   }
 
-  function leave(entry: WaitlistEntry) {
+  function askToLeave(entry: WaitlistEntry) {
     acceptMutation.reset()
-    leaveMutation.mutate(entry)
+    leaveMutation.reset()
+    setLeaving(entry)
   }
 
   function renderActions(entry: WaitlistEntry) {
-    return <EntryActions entry={entry} now={now} busy={busy} onAccept={accept} onLeave={leave} />
+    return <EntryActions entry={entry} now={now} busy={busy} onAccept={accept} onLeave={askToLeave} />
   }
 
   return (
@@ -251,6 +255,17 @@ export function WaitlistPage() {
           </>
         )}
       </RefreshingArea>
+
+      {leaving && (
+        <ConfirmDialog
+          open
+          onOpenChange={(open) => !open && setLeaving(null)}
+          label="Wypisz się"
+          title="Wypisać się z listy oczekujących?"
+          description={`Stracisz swoje miejsce w kolejce na pulę „${leaving.ticketType.name}”.`}
+          onConfirm={() => leaveMutation.mutate(leaving)}
+        />
+      )}
     </section>
   )
 }

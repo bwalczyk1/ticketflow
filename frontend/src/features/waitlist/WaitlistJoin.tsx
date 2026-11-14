@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import type { TicketType } from '../../api/types'
+import { ConfirmDialog } from '../../components/ConfirmButton'
 import { ErrorBanner } from '../../components/ErrorBanner'
 import { eventsKey } from '../catalog/catalogApi'
 import { fetchAllEntries, joinWaitlist, leaveWaitlist, waitlistKey } from './waitlistApi'
@@ -22,6 +23,7 @@ interface WaitlistJoinProps {
 export function WaitlistJoin({ ticketType, allowance }: WaitlistJoinProps) {
   const queryClient = useQueryClient()
   const [quantity, setQuantity] = useState(1)
+  const [isLeaving, setIsLeaving] = useState(false)
   const maxQuantity = Math.min(MAX_QUANTITY, allowance)
   const selected = Math.min(quantity, maxQuantity)
 
@@ -78,10 +80,19 @@ export function WaitlistJoin({ ticketType, allowance }: WaitlistJoinProps) {
             size="sm"
             type="button"
             disabled={leaveMutation.isPending}
-            onClick={() => leaveMutation.mutate()}
+            onClick={() => setIsLeaving(true)}
           >
             Wypisz się
           </Button>
+
+          <ConfirmDialog
+            open={isLeaving}
+            onOpenChange={setIsLeaving}
+            label="Wypisz się"
+            title="Wypisać się z listy oczekujących?"
+            description={`Stracisz swoje miejsce w kolejce na pulę „${ticketType.name}”.`}
+            onConfirm={() => leaveMutation.mutate()}
+          />
         </div>
       </div>
     )
@@ -101,7 +112,7 @@ export function WaitlistJoin({ ticketType, allowance }: WaitlistJoinProps) {
 
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <p className="text-sm text-muted-foreground">
-          Gdy bilety wrócą do sprzedaży, damy Ci 15 minut na zakup.
+          Gdy bilety wrócą do sprzedaży, damy Ci 30 minut na zakup.
         </p>
 
         <div className="flex flex-wrap items-center gap-2">

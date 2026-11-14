@@ -173,6 +173,18 @@ it('compares a new end with the stored start', function () {
         ->assertJsonPath('error.details.0.field', 'endsAt');
 });
 
+it('translates the message for an end before the start', function (array $headers, string $message) {
+    $this->actingAs($this->organizer)
+        ->postJson('/api/organizer/events', eventPayload(['endsAt' => '2027-03-01T18:00:00+01:00']), $headers)
+        ->assertStatus(400)
+        ->assertJsonPath('error.code', 'VALIDATION_ERROR')
+        ->assertJsonPath('error.details.0.field', 'endsAt')
+        ->assertJsonPath('error.details.0.message', $message);
+})->with([
+    'English by default' => [[], 'The end must be after the start.'],
+    'Polish on request' => [['Accept-Language' => 'pl'], 'Data zakończenia musi być późniejsza niż data rozpoczęcia.'],
+]);
+
 it('rejects status in an update with 400', function () {
     $this->actingAs($this->organizer)
         ->patchJson("/api/organizer/events/{$this->event->id}", ['status' => 'PUBLISHED'])

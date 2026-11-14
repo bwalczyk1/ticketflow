@@ -10,14 +10,14 @@ class UpdateEventRequest extends EventRequest
     public function rules(): array
     {
         return [
-            'title' => ['sometimes', 'string', 'max:160'],
-            'description' => ['sometimes', 'string', 'max:5000'],
-            'venue' => ['sometimes', 'string', 'max:160'],
-            'city' => ['sometimes', 'string', 'max:100'],
-            'category' => ['sometimes', 'string', 'max:50'],
-            'timezone' => ['sometimes', 'timezone:all'],
-            'startsAt' => ['sometimes', 'date', new OffsetDate],
-            'endsAt' => ['sometimes', 'date', new OffsetDate],
+            'title' => ['sometimes', 'required', 'string', 'max:160'],
+            'description' => ['sometimes', 'required', 'string', 'max:5000'],
+            'venue' => ['sometimes', 'required', 'string', 'max:160'],
+            'city' => ['sometimes', 'required', 'string', 'max:100'],
+            'category' => ['sometimes', 'required', 'string', 'max:50'],
+            'timezone' => ['sometimes', 'required', 'timezone:all'],
+            'startsAt' => ['sometimes', 'required', 'date', new OffsetDate],
+            'endsAt' => ['sometimes', 'required', 'date', new OffsetDate],
         ];
     }
 }

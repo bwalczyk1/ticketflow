@@ -9,6 +9,7 @@ use App\Models\TicketType;
 use App\Models\User;
 use App\Services\Events\OrganizerEvents;
 use Illuminate\Support\Facades\Event as EventBus;
+use Illuminate\Support\Str;
 
 function eventPayload(array $overrides = []): array
 {
@@ -171,6 +172,32 @@ it('compares a new end with the stored start', function () {
         ->assertStatus(400)
         ->assertJsonPath('error.code', 'VALIDATION_ERROR')
         ->assertJsonPath('error.details.0.field', 'endsAt');
+});
+
+it('answers that a field is required when an update empties it', function (string $field, mixed $value, string $label) {
+    $this->actingAs($this->organizer)
+        ->patchJson("/api/organizer/events/{$this->event->id}", [$field => $value])
+        ->assertStatus(400)
+        ->assertJsonPath('error.details.0.field', $field)
+        ->assertJsonPath('error.details.0.message', "The {$label} field is required.");
+
+    expect($this->event->fresh()->{Str::snake($field)})->not->toBeNull();
+})->with([
+    ['title', '', 'title'],
+    ['description', '', 'description'],
+    ['venue', '   ', 'venue'],
+    ['city', '', 'city'],
+    ['category', '', 'category'],
+    ['timezone', '', 'timezone'],
+    ['startsAt', '', 'starts at'],
+    ['endsAt', null, 'ends at'],
+]);
+
+it('answers in Polish that an emptied title is required', function () {
+    $this->actingAs($this->organizer)
+        ->patchJson("/api/organizer/events/{$this->event->id}", ['title' => ''], ['Accept-Language' => 'pl'])
+        ->assertStatus(400)
+        ->assertJsonPath('error.details.0.message', 'Pole tytuł jest wymagane.');
 });
 
 it('translates the message for an end before the start', function (array $headers, string $message) {

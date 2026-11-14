@@ -63,6 +63,19 @@ it('labels the ticket type name in an update', function () {
         ->assertJsonPath('error.details.0.message', 'Pole nazwa puli nie może mieć więcej niż 100 znaków.');
 });
 
+it('answers that a field is required when an update empties it', function (string $field, mixed $value, string $message) {
+    $ticketType = TicketType::factory()->for($this->event)->create();
+
+    $this->patchJson("{$this->path}/{$ticketType->id}", [$field => $value], ['Accept-Language' => 'pl'])
+        ->assertStatus(400)
+        ->assertJsonPath('error.details.0.field', $field)
+        ->assertJsonPath('error.details.0.message', $message);
+})->with([
+    ['name', '', 'Pole nazwa puli jest wymagane.'],
+    ['price', null, 'Pole cena jest wymagane.'],
+    ['quantity', '', 'Pole liczba biletów jest wymagane.'],
+]);
+
 it('rejects invalid ticket type fields with 400', function (array $body, string $field) {
     $this->postJson($this->path, [...['name' => 'Standard', 'price' => 12000, 'quantity' => 50], ...$body])
         ->assertStatus(400)

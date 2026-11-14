@@ -1,0 +1,35 @@
+<?php
+
+use App\Enums\QueueName;
+use App\Events\Refunds\OrderRefunded;
+use App\Listeners\Payments\RefundPayment;
+use Illuminate\Events\CallQueuedListener;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Queue;
+
+/**
+ * Consumers of refunds and cancellations and their queues.
+ *
+ * @return array<string, array{0: object, 1: class-string, 2: QueueName}>
+ */
+dataset('refund consumers', [
+    'RefundPayment' => [fn () => new OrderRefunded(1, 1), RefundPayment::class, QueueName::Payments],
+]);
+
+it('registers every consumer of the event', function (object $event, string $listener) {
+    Event::fake();
+
+    Event::assertListening($event::class, $listener);
+})->with('refund consumers');
+
+it('puts every consumer on its own queue', function (object $event, string $listener, QueueName $queue) {
+    Queue::fake();
+
+    event($event);
+
+    Queue::assertPushedOn(
+        $queue->value,
+        CallQueuedListener::class,
+        fn (CallQueuedListener $job) => $job->class === $listener,
+    );
+})->with('refund consumers');

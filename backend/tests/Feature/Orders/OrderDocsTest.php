@@ -34,7 +34,7 @@ it('documents the conflicts of the purchase endpoints', function (string $method
     expect(orderErrorCodes($this->spec, $method, $path, 409))->toEqualCanonicalizing($codes);
 })->with([
     ['post', '/orders', ['SALES_CLOSED', 'TICKET_LIMIT_EXCEEDED', 'TICKETS_SOLD_OUT', 'RESERVATION_CONFLICT']],
-    ['post', '/orders/{id}/pay', ['PAYMENT_ALREADY_STARTED', 'INVALID_STATUS_TRANSITION', 'SALES_CLOSED']],
+    ['post', '/orders/{id}/pay', ['PAYMENT_ALREADY_STARTED', 'ORDER_NOT_PAYABLE', 'SALES_CLOSED']],
     ['post', '/orders/{id}/cancel', ['PAYMENT_ALREADY_STARTED', 'INVALID_STATUS_TRANSITION']],
 ]);
 

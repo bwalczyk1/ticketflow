@@ -7,7 +7,10 @@ use RuntimeException;
 class DomainException extends RuntimeException
 {
     /**
-     * @param  list<array<string, mixed>>  $details
+     * The message of a detail is a translation key, so the renderer can answer in the language
+     * of the request while the exception itself stays free of the framework.
+     *
+     * @param  list<array{field: string, message: string}>  $details
      */
     public function __construct(
         string $message,

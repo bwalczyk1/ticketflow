@@ -17,3 +17,4 @@ Artisan::command('ticketflow:expire-reservations', function (ExpireReservations 
 
 Schedule::command('ticketflow:expire-reservations')->everyMinute();
 Schedule::command('ticketflow:finish-events')->everyFiveMinutes();
+Schedule::command('ticketflow:reconcile-orders')->everyFiveMinutes();

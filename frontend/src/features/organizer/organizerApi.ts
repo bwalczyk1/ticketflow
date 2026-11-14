@@ -1,5 +1,5 @@
 import { api } from '../../api/client'
-import type { EventStatus, ManagedEvent, ManagedTicketType, Paginated } from '../../api/types'
+import type { EventStatus, ManagedEvent, ManagedTicketType, Paginated, SalesSummary } from '../../api/types'
 
 export const PAGE_SIZE = 10
 
@@ -35,6 +35,10 @@ export function fetchMyEvents(
 /** Includes the ticket types with their sales counters. */
 export function fetchMyEvent(id: string): Promise<ManagedEvent> {
   return api.get<ManagedEvent>(`${BASE}/${id}`)
+}
+
+export function fetchSales(eventId: string): Promise<SalesSummary> {
+  return api.get<SalesSummary>(`${BASE}/${eventId}/sales`)
 }
 
 export function createEvent(payload: EventPayload): Promise<ManagedEvent> {

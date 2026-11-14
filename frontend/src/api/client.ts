@@ -29,7 +29,7 @@ function withQuery(path: string, query: QueryParams = {}): string {
 }
 
 async function send(path: string, { method = 'GET', body }: RequestOptions): Promise<Response> {
-  const headers: Record<string, string> = { Accept: 'application/json' }
+  const headers: Record<string, string> = { Accept: 'application/json', 'Accept-Language': 'pl' }
   const xsrfToken = readCookie('XSRF-TOKEN')
 
   if (xsrfToken) {

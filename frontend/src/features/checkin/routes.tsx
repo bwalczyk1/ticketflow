@@ -1,6 +1,4 @@
 import type { RouteObject } from 'react-router-dom'
-import { PlaceholderPage } from '../../components/StatusPages'
+import { CheckInPage } from './CheckInPage'
 
-export const checkinRoutes: RouteObject[] = [
-  { path: 'organizer/check-in', element: <PlaceholderPage title="Check-in" /> },
-]
+export const checkinRoutes: RouteObject[] = [{ path: 'organizer/check-in', element: <CheckInPage /> }]

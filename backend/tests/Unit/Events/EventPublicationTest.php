@@ -55,6 +55,17 @@ it('requires the end after the start', function (string $endsAt) {
     'earlier' => ['2026-12-01T11:59:59Z'],
 ])->throws(InvalidEventDates::class);
 
+it('requires a new start in the future', function (string $startsAt) {
+    EventPublication::ensureStartsInFuture(CarbonImmutable::parse($startsAt), CarbonImmutable::parse('2026-12-01T12:00:00Z'));
+})->with([
+    'exactly now' => ['2026-12-01T12:00:00Z'],
+    'in the past' => ['2026-12-01T11:59:59Z'],
+])->throws(InvalidEventDates::class);
+
+it('accepts a new start one second from now', function () {
+    EventPublication::ensureStartsInFuture(CarbonImmutable::parse('2026-12-01T12:00:01Z'), CarbonImmutable::parse('2026-12-01T12:00:00Z'));
+})->throwsNoExceptions();
+
 it('accepts an end after the start', function () {
     EventPublication::ensureDatesInOrder(CarbonImmutable::parse('2026-12-01T12:00:00Z'), CarbonImmutable::parse('2026-12-01T12:00:01Z'));
 })->throwsNoExceptions();

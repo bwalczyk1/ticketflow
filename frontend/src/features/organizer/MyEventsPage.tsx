@@ -34,9 +34,14 @@ import {
 
 const IRREVERSIBLE = 'Tej operacji nie można cofnąć.'
 
-const CONFIRM_TEXTS: Record<ConfirmedAction, { label: string; title: string; done: string }> = {
-  cancel: { label: 'Odwołaj', title: 'Odwołać wydarzenie', done: 'Odwołano wydarzenie' },
-  delete: { label: 'Usuń', title: 'Usunąć wydarzenie', done: 'Usunięto wydarzenie' },
+const CONFIRM_TEXTS: Record<ConfirmedAction, { label: string; title: string; description: string; done: string }> = {
+  cancel: {
+    label: 'Odwołaj',
+    title: 'Odwołać wydarzenie',
+    description: `Wszystkie opłacone zamówienia zostaną zwrócone, bilety unieważnione, a uczestnicy dostaną wiadomość e-mail. ${IRREVERSIBLE}`,
+    done: 'Odwołano wydarzenie',
+  },
+  delete: { label: 'Usuń', title: 'Usunąć wydarzenie', description: IRREVERSIBLE, done: 'Usunięto wydarzenie' },
 }
 
 interface EventAction {
@@ -221,7 +226,7 @@ export function MyEventsPage() {
           onOpenChange={(open) => !open && setConfirm(null)}
           label={CONFIRM_TEXTS[confirm.action].label}
           title={`${CONFIRM_TEXTS[confirm.action].title} „${confirm.event.title}”?`}
-          description={IRREVERSIBLE}
+          description={CONFIRM_TEXTS[confirm.action].description}
           onConfirm={runConfirmed}
         />
       )}

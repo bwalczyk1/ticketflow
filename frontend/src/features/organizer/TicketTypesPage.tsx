@@ -16,6 +16,7 @@ import { eventsKey } from '../catalog/catalogApi'
 import { getAllowedActions } from './allowedActions'
 import { StatusBadge } from './eventStatus'
 import { deleteTicketType, fetchMyEvent, organizerKey } from './organizerApi'
+import { SalesSummaryCard } from './SalesSummaryCard'
 import { TicketTypeForm } from './TicketTypeForm'
 
 const DELETE_ERRORS = {
@@ -76,6 +77,8 @@ export function TicketTypesPage() {
         <h1 className={`${PAGE_TITLE} break-words`}>Pule biletów: {event.title}</h1>
         <StatusBadge status={event.status} />
       </div>
+
+      <SalesSummaryCard eventId={id} />
 
       <ErrorBanner error={deleteMutation.error} messages={DELETE_ERRORS} />
 

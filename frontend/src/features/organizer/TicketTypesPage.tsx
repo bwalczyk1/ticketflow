@@ -43,6 +43,16 @@ export function TicketTypesPage() {
       ]),
   })
 
+  // The delete banner belongs to the last delete only, so any new action clears it.
+  function clearDeleteError() {
+    deleteMutation.reset()
+  }
+
+  function startEditing(ticketTypeId: number) {
+    clearDeleteError()
+    setEditingId(ticketTypeId)
+  }
+
   if (error instanceof ApiError && (error.status === 404 || error.status === 403)) {
     return <NotFoundPage />
   }
@@ -83,6 +93,7 @@ export function TicketTypesPage() {
                     <TicketTypeForm
                       eventId={id}
                       ticketType={ticketType}
+                      onSubmitStart={clearDeleteError}
                       onDone={() => setEditingId(null)}
                     />
                   ) : (
@@ -104,7 +115,7 @@ export function TicketTypesPage() {
                             variant="outline"
                             size="sm"
                             type="button"
-                            onClick={() => setEditingId(ticketType.id)}
+                            onClick={() => startEditing(ticketType.id)}
                           >
                             Edytuj
                           </Button>
@@ -139,6 +150,7 @@ export function TicketTypesPage() {
             <TicketTypeForm
               key={newFormKey}
               eventId={id}
+              onSubmitStart={clearDeleteError}
               onDone={() => setNewFormKey((key) => key + 1)}
             />
           </CardContent>

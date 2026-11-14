@@ -19,10 +19,12 @@ interface TicketTypeFormProps {
   eventId: string
   /** When given, the form edits this ticket type; otherwise it adds a new one. */
   ticketType?: ManagedTicketType
+  /** Runs when a save starts, e.g. to clear the page's banner from an earlier action. */
+  onSubmitStart?: () => void
   onDone: () => void
 }
 
-export function TicketTypeForm({ eventId, ticketType, onDone }: TicketTypeFormProps) {
+export function TicketTypeForm({ eventId, ticketType, onSubmitStart, onDone }: TicketTypeFormProps) {
   const queryClient = useQueryClient()
   const [clientErrors, setClientErrors] = useState<Record<string, string>>({})
 
@@ -46,6 +48,7 @@ export function TicketTypeForm({ eventId, ticketType, onDone }: TicketTypeFormPr
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    onSubmitStart?.()
 
     const form = new FormData(event.currentTarget)
     const price = plnToGrosze(String(form.get('price')))

@@ -18,9 +18,10 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Wydarzenia' },
   { to: '/orders', label: 'Moje zamówienia', roles: ['ATTENDEE'] },
   { to: '/tickets', label: 'Moje bilety', roles: ['ATTENDEE'] },
+  { to: '/waitlist', label: 'Lista oczekujących', roles: ['ATTENDEE'] },
   { to: '/organizer', label: 'Moje wydarzenia', roles: ['ORGANIZER'] },
   { to: '/organizer/check-in', label: 'Check-in', roles: ['ORGANIZER'] },
-  { to: '/admin', label: 'Użytkownicy', roles: ['ADMIN'] },
+  { to: '/admin', label: 'Admin', roles: ['ADMIN'] },
 ]
 
 function navLinkClass({ isActive }: { isActive: boolean }) {

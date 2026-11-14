@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
+import { toast } from 'sonner'
 import { getFieldErrors } from '../../api/errors'
 import { Button } from '@/components/ui/button'
 import type { ManagedTicketType } from '../../api/types'
@@ -18,10 +19,12 @@ interface TicketTypeFormProps {
   eventId: string
   /** When given, the form edits this ticket type; otherwise it adds a new one. */
   ticketType?: ManagedTicketType
+  /** Runs when a save starts, e.g. to clear the page's banner from an earlier action. */
+  onSubmitStart?: () => void
   onDone: () => void
 }
 
-export function TicketTypeForm({ eventId, ticketType, onDone }: TicketTypeFormProps) {
+export function TicketTypeForm({ eventId, ticketType, onSubmitStart, onDone }: TicketTypeFormProps) {
   const queryClient = useQueryClient()
   const [clientErrors, setClientErrors] = useState<Record<string, string>>({})
 
@@ -30,12 +33,13 @@ export function TicketTypeForm({ eventId, ticketType, onDone }: TicketTypeFormPr
       ticketType
         ? updateTicketType(eventId, ticketType.id, payload)
         : createTicketType(eventId, payload),
-    onSuccess: async () => {
+    onSuccess: async (saved) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: organizerKey }),
         queryClient.invalidateQueries({ queryKey: eventsKey }),
       ])
 
+      toast.success(ticketType ? `Zapisano pulę „${saved.name}”.` : `Dodano pulę „${saved.name}”.`)
       onDone()
     },
   })
@@ -44,6 +48,7 @@ export function TicketTypeForm({ eventId, ticketType, onDone }: TicketTypeFormPr
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    onSubmitStart?.()
 
     const form = new FormData(event.currentTarget)
     const price = plnToGrosze(String(form.get('price')))
@@ -68,7 +73,7 @@ export function TicketTypeForm({ eventId, ticketType, onDone }: TicketTypeFormPr
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form noValidate onSubmit={handleSubmit}>
       <ErrorBanner error={mutation.error} />
 
       <div className="grid items-start gap-4 sm:grid-cols-3">

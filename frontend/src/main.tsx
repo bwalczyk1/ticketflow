@@ -3,6 +3,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
 import { ThemeProvider } from './components/ThemeProvider'
+import { Toaster } from './components/ui/sonner'
 import { AuthProvider } from './features/auth/AuthProvider'
 import './index.css'
 import { queryClient } from './queryClient'
@@ -16,6 +17,7 @@ createRoot(document.getElementById('root')!).render(
           <RouterProvider router={router} />
         </AuthProvider>
       </QueryClientProvider>
+      <Toaster />
     </ThemeProvider>
   </StrictMode>,
 )

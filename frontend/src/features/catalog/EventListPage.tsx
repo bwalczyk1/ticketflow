@@ -6,7 +6,7 @@ import { PAGE_TITLE } from '@/lib/styles'
 import type { CatalogEvent } from '../../api/types'
 import { ErrorBanner } from '../../components/ErrorBanner'
 import { Pagination } from '../../components/Pagination'
-import { LoadingPage } from '../../components/StatusPages'
+import { LoadingPage, RefreshingArea } from '../../components/StatusPages'
 import { formatDateTime } from '../../lib/dates'
 import { formatPrice, plnToGrosze } from '../../lib/money'
 import { eventsKey, fetchEvents, type CatalogFilters } from './catalogApi'
@@ -66,7 +66,7 @@ export function EventListPage() {
   const [params, setParams] = useSearchParams()
   const filters = toApiFilters(params)
 
-  const { data, error, isPending } = useQuery({
+  const { data, error, isPending, isPlaceholderData } = useQuery({
     queryKey: [...eventsKey, 'list', filters],
     queryFn: () => fetchEvents(filters),
     placeholderData: (previous) => previous,
@@ -90,21 +90,23 @@ export function EventListPage() {
 
       {isPending && !error && <LoadingPage />}
 
-      {data && data.data.length === 0 && (
-        <p className="text-muted-foreground">Nie znaleziono wydarzeń pasujących do filtrów.</p>
-      )}
+      <RefreshingArea active={isPlaceholderData}>
+        {data && data.data.length === 0 && (
+          <p className="text-muted-foreground">Nie znaleziono wydarzeń pasujących do filtrów.</p>
+        )}
 
-      {data && data.data.length > 0 && (
-        <>
-          <p className="mb-4 text-sm text-muted-foreground">Znaleziono: {data.meta.total}</p>
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {data.data.map((event) => (
-              <EventCard key={event.id} event={event} />
-            ))}
-          </ul>
-          <Pagination meta={data.meta} onPageChange={changePage} />
-        </>
-      )}
+        {data && data.data.length > 0 && (
+          <>
+            <p className="mb-4 text-sm text-muted-foreground">Znaleziono: {data.meta.total}</p>
+            <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {data.data.map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </ul>
+            <Pagination meta={data.meta} onPageChange={changePage} />
+          </>
+        )}
+      </RefreshingArea>
     </section>
   )
 }

@@ -1,10 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PAGE_TITLE } from '@/lib/styles'
 import { ApiError } from '../../api/errors'
+import type { ManagedTicketType } from '../../api/types'
 import { BackLink } from '../../components/BackLink'
 import { ConfirmButton } from '../../components/ConfirmButton'
 import { ErrorBanner } from '../../components/ErrorBanner'
@@ -15,6 +17,10 @@ import { getAllowedActions } from './allowedActions'
 import { StatusBadge } from './eventStatus'
 import { deleteTicketType, fetchMyEvent, organizerKey } from './organizerApi'
 import { TicketTypeForm } from './TicketTypeForm'
+
+const DELETE_ERRORS = {
+  POOL_PROTECTED: 'Nie można usunąć puli, w której sprzedano lub zablokowano bilety.',
+}
 
 export function TicketTypesPage() {
   const { id = '' } = useParams()
@@ -28,13 +34,24 @@ export function TicketTypesPage() {
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (ticketTypeId: number) => deleteTicketType(id, ticketTypeId),
+    mutationFn: (ticketType: ManagedTicketType) => deleteTicketType(id, ticketType.id),
+    onSuccess: (_, ticketType) => toast.success(`Usunięto pulę „${ticketType.name}”.`),
     onSettled: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: organizerKey }),
         queryClient.invalidateQueries({ queryKey: eventsKey }),
       ]),
   })
+
+  // The delete banner belongs to the last delete only, so any new action clears it.
+  function clearDeleteError() {
+    deleteMutation.reset()
+  }
+
+  function startEditing(ticketTypeId: number) {
+    clearDeleteError()
+    setEditingId(ticketTypeId)
+  }
 
   if (error instanceof ApiError && (error.status === 404 || error.status === 403)) {
     return <NotFoundPage />
@@ -60,7 +77,7 @@ export function TicketTypesPage() {
         <StatusBadge status={event.status} />
       </div>
 
-      <ErrorBanner error={deleteMutation.error} />
+      <ErrorBanner error={deleteMutation.error} messages={DELETE_ERRORS} />
 
       {ticketTypes.length === 0 && (
         <p className="mb-6 text-muted-foreground">To wydarzenie nie ma jeszcze żadnych pul.</p>
@@ -76,6 +93,7 @@ export function TicketTypesPage() {
                     <TicketTypeForm
                       eventId={id}
                       ticketType={ticketType}
+                      onSubmitStart={clearDeleteError}
                       onDone={() => setEditingId(null)}
                     />
                   ) : (
@@ -97,7 +115,7 @@ export function TicketTypesPage() {
                             variant="outline"
                             size="sm"
                             type="button"
-                            onClick={() => setEditingId(ticketType.id)}
+                            onClick={() => startEditing(ticketType.id)}
                           >
                             Edytuj
                           </Button>
@@ -106,7 +124,8 @@ export function TicketTypesPage() {
                             title={`Usunąć pulę „${ticketType.name}”?`}
                             description="Tej operacji nie można cofnąć."
                             disabled={deleteMutation.isPending}
-                            onConfirm={() => deleteMutation.mutate(ticketType.id)}
+                            onOpen={() => deleteMutation.reset()}
+                            onConfirm={() => deleteMutation.mutate(ticketType)}
                           />
                         </div>
                       )}
@@ -131,6 +150,7 @@ export function TicketTypesPage() {
             <TicketTypeForm
               key={newFormKey}
               eventId={id}
+              onSubmitStart={clearDeleteError}
               onDone={() => setNewFormKey((key) => key + 1)}
             />
           </CardContent>

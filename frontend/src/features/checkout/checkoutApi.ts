@@ -1,4 +1,4 @@
-import { api } from '../../api/client'
+import { api, downloadFile } from '../../api/client'
 import type { Order, Paginated } from '../../api/types'
 
 export const ordersKey = ['orders']
@@ -24,6 +24,13 @@ export function fetchOrder(id: string): Promise<Order> {
 
 export function payOrder(id: number): Promise<Order> {
   return api.post<Order>(`/api/orders/${id}/pay`)
+}
+
+/** 404 INVOICE_NOT_FOUND until the invoice is issued. */
+export function downloadInvoice(order: Order): Promise<void> {
+  const name = order.invoice ? `faktura-${order.invoice.number.replaceAll('/', '-')}.pdf` : 'faktura.pdf'
+
+  return downloadFile(`/api/orders/${order.id}/invoice`, name)
 }
 
 export function cancelOrder(id: number): Promise<Order> {

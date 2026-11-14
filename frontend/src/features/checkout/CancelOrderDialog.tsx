@@ -13,12 +13,14 @@ import { Button } from '@/components/ui/button'
 
 interface CancelOrderDialogProps {
   disabled: boolean
+  /** Runs when the dialog opens, e.g. to clear the error of the previous attempt. */
+  onOpen?: () => void
   onConfirm: () => void
 }
 
-export function CancelOrderDialog({ disabled, onConfirm }: CancelOrderDialogProps) {
+export function CancelOrderDialog({ disabled, onOpen, onConfirm }: CancelOrderDialogProps) {
   return (
-    <AlertDialog>
+    <AlertDialog onOpenChange={(open) => open && onOpen?.()}>
       <AlertDialogTrigger asChild>
         <Button variant="outline" type="button" disabled={disabled}>
           Anuluj rezerwację

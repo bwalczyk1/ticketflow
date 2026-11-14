@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { ApiError } from '../../api/errors'
-import type { CatalogEvent, TicketType } from '../../api/types'
+import type { CatalogEvent, PurchaseLimit, TicketType } from '../../api/types'
 import { ErrorBanner } from '../../components/ErrorBanner'
 import { formatPrice } from '../../lib/money'
 import { useAuth } from '../auth/AuthContext'
@@ -14,7 +14,10 @@ import { eventsKey } from '../catalog/catalogApi'
 import { createOrder, ordersKey } from './checkoutApi'
 import { useNow } from './useCountdown'
 
-/** The server enforces the real limit; this only stops the picker from going past it. */
+/**
+ * Used when the API sends no purchase limit. The server enforces the real limit; this only
+ * stops the picker from going past it.
+ */
 const MAX_TICKETS = 6
 
 interface TicketSelectionProps {
@@ -62,6 +65,14 @@ function QuantityPicker({ ticketType, quantity, canAddMore, onChange }: Quantity
   )
 }
 
+function limitLabel(limit: PurchaseLimit, allowance: number, selected: number): string {
+  if (allowance === 0) {
+    return `Wykorzystano limit ${limit.max} biletów na to wydarzenie, więc nie możesz kupić kolejnych.`
+  }
+
+  return `Wybrano ${selected}. Możesz kupić jeszcze ${allowance} z ${limit.max} biletów.`
+}
+
 export function TicketSelection({ event }: TicketSelectionProps) {
   const { user } = useAuth()
   const location = useLocation()
@@ -95,6 +106,8 @@ export function TicketSelection({ event }: TicketSelectionProps) {
     (sum, ticketType) => sum + (quantities[ticketType.id] ?? 0) * ticketType.price,
     0,
   )
+  const limit = event.purchaseLimit
+  const allowance = limit ? Math.max(0, limit.max - limit.used) : MAX_TICKETS
   const canRetry = mutation.error instanceof ApiError && mutation.error.code === 'RESERVATION_CONFLICT'
 
   function changeQuantity(ticketTypeId: number, quantity: number) {
@@ -125,12 +138,18 @@ export function TicketSelection({ event }: TicketSelectionProps) {
         <ErrorBanner error={mutation.error} />
 
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="font-semibold">
-            Razem: {formatPrice(totalPrice)}
-            <span className="ml-2 text-sm font-normal text-muted-foreground">
-              ({totalQuantity} z {MAX_TICKETS} biletów)
-            </span>
-          </p>
+          <div>
+            <p className="font-semibold">
+              Razem: {formatPrice(totalPrice)}
+              {!limit && (
+                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                  ({totalQuantity} z {MAX_TICKETS} biletów)
+                </span>
+              )}
+            </p>
+
+            {limit && <p className="text-sm text-muted-foreground">{limitLabel(limit, allowance, totalQuantity)}</p>}
+          </div>
 
           <div className="flex flex-wrap gap-2">
             {canRetry && (
@@ -173,7 +192,7 @@ export function TicketSelection({ event }: TicketSelectionProps) {
                     <QuantityPicker
                       ticketType={ticketType}
                       quantity={quantities[ticketType.id] ?? 0}
-                      canAddMore={totalQuantity < MAX_TICKETS}
+                      canAddMore={totalQuantity < allowance}
                       onChange={(quantity) => changeQuantity(ticketType.id, quantity)}
                     />
                   )}

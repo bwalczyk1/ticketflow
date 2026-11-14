@@ -52,6 +52,17 @@ it('allows one refund per order', function () {
     violates(fn () => Refund::factory()->for($refund->order)->create());
 });
 
+it('keeps refund statuses in line with payments and lets the reason be empty', function () {
+    $refund = Refund::factory()->create(['reason' => null]);
+
+    DB::table('refunds')->where('id', $refund->id)->update(['status' => 'SUCCEEDED']);
+
+    expect($refund->fresh()->reason)->toBeNull();
+
+    violates(fn () => DB::table('refunds')->where('id', $refund->id)->update(['status' => 'COMPLETED']));
+    violates(fn () => DB::table('refunds')->where('id', $refund->id)->update(['reason' => str_repeat('a', 501)]));
+});
+
 it('does not repeat a ticket position or code', function () {
     $ticket = Ticket::factory()->create(['position' => 1]);
 

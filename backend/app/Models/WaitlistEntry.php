@@ -5,7 +5,9 @@ namespace App\Models;
 use App\Enums\WaitlistStatus;
 use Database\Factories\WaitlistEntryFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -13,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class WaitlistEntry extends Model
 {
     /** @use HasFactory<WaitlistEntryFactory> */
-    use HasFactory;
+    use HasFactory, MassPrunable;
 
     protected $attributes = [
         'status' => WaitlistStatus::Waiting->value,
@@ -31,6 +33,18 @@ class WaitlistEntry extends Model
     }
 
     /**
+     * Expired and left entries only matter while they are recent. Converted ones point at an order and stay.
+     *
+     * @return Builder<self>
+     */
+    public function prunable(): Builder
+    {
+        return static::query()
+            ->whereIn('status', [WaitlistStatus::Expired, WaitlistStatus::Cancelled])
+            ->where('updated_at', '<', now()->subDays(config('ticketflow.prune_after_days')));
+    }
+
+    /**
      * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
@@ -44,5 +58,15 @@ class WaitlistEntry extends Model
     public function ticketType(): BelongsTo
     {
         return $this->belongsTo(TicketType::class);
+    }
+
+    /**
+     * The order an accepted offer became.
+     *
+     * @return BelongsTo<Order, $this>
+     */
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class);
     }
 }

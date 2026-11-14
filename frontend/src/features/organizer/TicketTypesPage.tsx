@@ -110,6 +110,7 @@ export function TicketTypesPage() {
                             title={`Usunąć pulę „${ticketType.name}”?`}
                             description="Tej operacji nie można cofnąć."
                             disabled={deleteMutation.isPending}
+                            onOpen={() => deleteMutation.reset()}
                             onConfirm={() => deleteMutation.mutate(ticketType.id)}
                           />
                         </div>

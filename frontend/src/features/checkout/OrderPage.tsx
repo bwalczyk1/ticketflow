@@ -136,6 +136,10 @@ export function OrderPage() {
             isPaying={isPaying}
             isBusy={payMutation.isPending || cancelMutation.isPending}
             onPay={() => payMutation.mutate()}
+            onCancelOpen={() => {
+              payMutation.reset()
+              cancelMutation.reset()
+            }}
             onCancel={() => cancelMutation.mutate()}
           />
         ) : (

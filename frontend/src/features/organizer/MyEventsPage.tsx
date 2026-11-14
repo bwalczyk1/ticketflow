@@ -81,6 +81,12 @@ export function MyEventsPage() {
     setParams(nextParams)
   }
 
+  function openConfirm(action: ConfirmedAction, event: ManagedEvent) {
+    // The banner of the previous attempt would otherwise look like the answer to this one.
+    actionMutation.reset()
+    setConfirm({ action, event })
+  }
+
   function runConfirmed() {
     if (!confirm) {
       return
@@ -97,7 +103,7 @@ export function MyEventsPage() {
         event={event}
         disabled={actionMutation.isPending}
         onPublish={() => actionMutation.mutate(() => publishEvent(event.id))}
-        onConfirm={(action) => setConfirm({ action, event })}
+        onConfirm={(action) => openConfirm(action, event)}
       />
     )
   }

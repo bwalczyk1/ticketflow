@@ -2,6 +2,7 @@
 
 use App\Docs\DomainExceptionToResponseExtension;
 use App\Docs\FrameworkExceptionToResponseExtension;
+use App\Docs\MiddlewareErrorResponseExtension;
 use App\Docs\NumericPathParameterExtension;
 use App\Docs\PaginationReturnTypeExtension;
 use Dedoc\Scramble\Http\Middleware\RestrictedDocsAccess;
@@ -171,6 +172,7 @@ return [
         DomainExceptionToResponseExtension::class,
         NumericPathParameterExtension::class,
         PaginationReturnTypeExtension::class,
+        MiddlewareErrorResponseExtension::class,
     ],
 
     /*

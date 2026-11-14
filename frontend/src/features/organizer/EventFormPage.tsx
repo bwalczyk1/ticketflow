@@ -99,7 +99,7 @@ function EventForm({ event }: EventFormProps) {
       <CardContent>
         <ErrorBanner error={mutation.error} />
 
-        <form className="grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit}>
+        <form className="grid gap-4 sm:grid-cols-2" noValidate onSubmit={handleSubmit}>
           <div className="sm:col-span-2">
             <FormField
               label="Tytuł"

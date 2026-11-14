@@ -35,7 +35,7 @@ export function LoginPage() {
       <CardContent>
         <ErrorBanner error={mutation.error} />
 
-        <form className="grid gap-4" onSubmit={handleSubmit}>
+        <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
           <FormField
             label="E-mail"
             name="email"

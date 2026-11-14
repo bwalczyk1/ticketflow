@@ -73,7 +73,7 @@ export function TicketTypeForm({ eventId, ticketType, onSubmitStart, onDone }: T
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form noValidate onSubmit={handleSubmit}>
       <ErrorBanner error={mutation.error} />
 
       <div className="grid items-start gap-4 sm:grid-cols-3">

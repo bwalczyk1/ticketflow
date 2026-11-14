@@ -107,6 +107,7 @@ return [
     'offset_date' => 'Pole :attribute musi być datą w formacie ISO 8601 ze strefą czasową lub literą Z.',
     'unknown_field' => 'To pole jest niedozwolone.',
     'event_ends_after_start' => 'Data zakończenia musi być późniejsza niż data rozpoczęcia.',
+    'event_starts_in_future' => 'Data rozpoczęcia musi być w przyszłości.',
 
     'custom' => [],
 

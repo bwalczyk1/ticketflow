@@ -50,7 +50,7 @@ it('sends the organizer sold tickets, revenue, refunds and check-ins', function 
 
     $refunded = TicketFixtures::paidOrder([1], event: $this->event);
     $refunded->forceFill(['status' => 'REFUNDED'])->save();
-    Refund::factory()->for($refunded)->completed()->create(['amount' => 5000]);
+    Refund::factory()->for($refunded)->succeeded()->create(['amount' => 5000]);
 
     $this->event->forceFill(['status' => EventStatus::Finished])->save();
 

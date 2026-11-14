@@ -18,7 +18,9 @@
 
     @if ($isCorrection)
         <p>do faktury nr {{ $invoice->corrects->number }}/{{ $invoice->corrects->year }}</p>
-        <p>Powód: {{ $invoice->refund->reason }}</p>
+        @if ($invoice->refund->reason !== null)
+            <p>Powód: {{ $invoice->refund->reason }}</p>
+        @endif
     @endif
 
     <p>
@@ -41,9 +43,9 @@
             @foreach ($items as $item)
                 <tr>
                     <td>{{ $item->ticketType->name }}</td>
-                    <td class="right">{{ $item->quantity }}</td>
+                    <td class="right">{{ $sign * $item->quantity }}</td>
                     <td class="right">{{ \App\Services\Documents\Pln::format($item->unit_price) }}</td>
-                    <td class="right">{{ \App\Services\Documents\Pln::format($item->quantity * $item->unit_price) }}</td>
+                    <td class="right">{{ \App\Services\Documents\Pln::format($sign * $item->quantity * $item->unit_price) }}</td>
                 </tr>
             @endforeach
             <tr class="total">

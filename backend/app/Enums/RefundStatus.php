@@ -5,6 +5,6 @@ namespace App\Enums;
 enum RefundStatus: string
 {
     case Pending = 'PENDING';
-    case Completed = 'COMPLETED';
+    case Succeeded = 'SUCCEEDED';
     case Failed = 'FAILED';
 }

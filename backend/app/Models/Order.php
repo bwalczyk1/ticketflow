@@ -100,4 +100,14 @@ class Order extends Model
     {
         return $this->hasOne(Invoice::class)->where('type', InvoiceType::Invoice);
     }
+
+    /**
+     * A refund is always for the whole order, so an order has at most one correction.
+     *
+     * @return HasOne<Invoice, $this>
+     */
+    public function correctionInvoice(): HasOne
+    {
+        return $this->hasOne(Invoice::class)->where('type', InvoiceType::Correction);
+    }
 }

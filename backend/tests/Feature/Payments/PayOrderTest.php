@@ -92,24 +92,33 @@ it('answers 410 for an expired order', function () {
         ->assertJsonPath('error.code', 'RESERVATION_EXPIRED');
 });
 
-it('answers 409 for a cancelled order', function () {
+it('answers 409 ORDER_NOT_PAYABLE for a cancelled order', function () {
     Order::query()->whereKey($this->order->id)->update(['status' => OrderStatus::Cancelled]);
 
     $this->postJson($this->path)
         ->assertConflict()
-        ->assertJsonPath('error.code', 'INVALID_STATUS_TRANSITION');
+        ->assertJsonPath('error.code', 'ORDER_NOT_PAYABLE');
+
+    expect(Payment::count())->toBe(0);
 });
 
-it('answers 409 for a finished payment', function (OrderStatus $status, PaymentStatus $paymentStatus) {
+it('answers 409 ORDER_NOT_PAYABLE for a finished payment', function (OrderStatus $status, PaymentStatus $paymentStatus) {
+    Event::fake([OrderPlaced::class]);
+
     Order::query()->whereKey($this->order->id)->update(['status' => $status]);
     Payment::factory()->for($this->order)->create(['status' => $paymentStatus]);
 
     $this->postJson($this->path)
         ->assertConflict()
-        ->assertJsonPath('error.code', 'PAYMENT_ALREADY_STARTED');
+        ->assertJsonPath('error.code', 'ORDER_NOT_PAYABLE');
+
+    expect(Payment::count())->toBe(1);
+
+    Event::assertNotDispatched(OrderPlaced::class);
 })->with([
     'paid' => [OrderStatus::Paid, PaymentStatus::Succeeded],
     'failed' => [OrderStatus::Failed, PaymentStatus::Failed],
+    'refunded' => [OrderStatus::Refunded, PaymentStatus::Succeeded],
 ]);
 
 it('answers 409 when the sale closed during the hold', function (array $eventChange) {

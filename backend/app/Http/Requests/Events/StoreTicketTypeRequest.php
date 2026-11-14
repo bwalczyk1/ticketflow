@@ -2,9 +2,7 @@
 
 namespace App\Http\Requests\Events;
 
-use App\Http\Requests\ApiFormRequest;
-
-class StoreTicketTypeRequest extends ApiFormRequest
+class StoreTicketTypeRequest extends TicketTypeRequest
 {
     /**
      * @return array<string, mixed>

@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use App\Exceptions\Domain\DomainException;
+use App\Exceptions\Domain\EmailTaken;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -51,7 +52,7 @@ class ApiExceptionRenderer
         }
 
         return match (true) {
-            $e instanceof DomainException => $this->error($request, $e->status, $e->errorCode, $e->getMessage(), $e->details),
+            $e instanceof DomainException => $this->domain($request, $e),
             $e instanceof ValidationException => $this->validation($request, $e),
             $e instanceof AuthenticationException => $this->error($request, 401, 'UNAUTHENTICATED', 'Authentication required'),
             $e instanceof AuthorizationException,
@@ -75,6 +76,16 @@ class ApiExceptionRenderer
         return (int) ($e->errorInfo[1] ?? 0);
     }
 
+    private function domain(Request $request, DomainException $e): JsonResponse
+    {
+        $details = array_map(
+            fn (array $detail) => ['field' => $detail['field'], 'message' => __($detail['message'])],
+            $e->details,
+        );
+
+        return $this->error($request, $e->status, $e->errorCode, $e->getMessage(), $details);
+    }
+
     private function validation(Request $request, ValidationException $e): JsonResponse
     {
         $details = [];
@@ -92,7 +103,7 @@ class ApiExceptionRenderer
     {
         return match (self::driverCode($e)) {
             self::MYSQL_DUPLICATE => str_contains($e->getMessage(), 'users_email_unique')
-                ? $this->error($request, 409, 'EMAIL_TAKEN', 'Email is already registered')
+                ? $this->domain($request, new EmailTaken)
                 : $this->error($request, 409, 'UNIQUE_VIOLATION', 'Resource already exists'),
             self::MYSQL_ROW_IS_REFERENCED,
             self::MYSQL_NO_REFERENCED_ROW => $this->error($request, 409, 'FOREIGN_KEY_VIOLATION', 'Resource is referenced by other data'),

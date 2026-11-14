@@ -23,6 +23,8 @@ class CustomerOrders
         'items.ticketType:id,name',
         'payment:id,order_id,status',
         'invoice:id,order_id,year,number,pdf_path,created_at',
+        'correctionInvoice:id,order_id,year,number,pdf_path,created_at',
+        'refund:id,order_id,status,amount,reason,created_at',
     ];
 
     /**

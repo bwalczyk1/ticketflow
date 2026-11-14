@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Exceptions\Domain\InvoiceNotFound;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Orders\ListOrdersRequest;
+use App\Http\Requests\Orders\RefundOrderRequest;
 use App\Http\Requests\Orders\StoreOrderRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
@@ -14,6 +15,7 @@ use App\Services\Orders\CancelOrder;
 use App\Services\Orders\CustomerOrders;
 use App\Services\Orders\ReserveTickets;
 use App\Services\Payments\StartPayment;
+use App\Services\Refunds\StartRefund;
 use App\Support\Pagination;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
@@ -104,6 +106,22 @@ class OrderController extends Controller
         $order = $this->ownOrder($id);
 
         $cancelOrder->handle($order);
+
+        return new OrderResource($this->orders->find($order->id));
+    }
+
+    /**
+     * Refund an own paid order.
+     *
+     * Allowed until 48 hours before the event starts (`refundableUntil` of the order). The whole
+     * order is refunded: the answer shows a `PENDING` refund, and the money, the voided tickets and
+     * the correction invoice follow in the background.
+     */
+    public function refund(RefundOrderRequest $request, string $id, StartRefund $startRefund): OrderResource
+    {
+        $order = $this->ownOrder($id);
+
+        $startRefund->forAttendee($order, $request->validated('reason'));
 
         return new OrderResource($this->orders->find($order->id));
     }

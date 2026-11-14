@@ -1,10 +1,12 @@
 <?php
 
 use App\Enums\QueueName;
+use App\Events\Catalog\EventCancelled;
 use App\Events\Refunds\OrderRefunded;
 use App\Listeners\Documents\IssueCorrectionInvoice;
 use App\Listeners\Orders\ReleaseRefundedSeats;
 use App\Listeners\Payments\RefundPayment;
+use App\Listeners\Refunds\RefundAllOrders;
 use App\Listeners\Refunds\SendRefundEmail;
 use App\Listeners\Tickets\VoidTickets;
 use Illuminate\Events\CallQueuedListener;
@@ -22,6 +24,7 @@ dataset('refund consumers', [
     'IssueCorrectionInvoice' => [fn () => new OrderRefunded(1, 1), IssueCorrectionInvoice::class, QueueName::Documents],
     'ReleaseRefundedSeats' => [fn () => new OrderRefunded(1, 1), ReleaseRefundedSeats::class, QueueName::Orders],
     'SendRefundEmail' => [fn () => new OrderRefunded(1, 1), SendRefundEmail::class, QueueName::Mail],
+    'RefundAllOrders' => [fn () => new EventCancelled(1), RefundAllOrders::class, QueueName::Refunds],
 ]);
 
 it('registers every consumer of the event', function (object $event, string $listener) {

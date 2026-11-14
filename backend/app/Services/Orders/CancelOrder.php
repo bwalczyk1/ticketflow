@@ -34,4 +34,22 @@ class CancelOrder
             $this->releaseOrderSeats->handle($locked->id);
         });
     }
+
+    /**
+     * An order of a cancelled event is cancelled even while its payment runs: a payment that
+     * succeeds later finds a final order and is refunded by RefundLatePayment.
+     */
+    public function forCancelledEvent(int $orderId): void
+    {
+        DB::transaction(function () use ($orderId) {
+            $locked = Order::query()->whereKey($orderId)->lockForUpdate()->first(['id', 'status']);
+
+            if ($locked?->status !== OrderStatus::Pending) {
+                return;
+            }
+
+            $this->orderTransition->apply($locked, OrderStatus::Cancelled);
+            $this->releaseOrderSeats->handle($locked->id);
+        });
+    }
 }

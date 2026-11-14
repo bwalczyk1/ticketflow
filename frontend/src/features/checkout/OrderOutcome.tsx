@@ -1,4 +1,4 @@
-import { CircleAlert, CircleCheck, Clock } from 'lucide-react'
+import { CircleAlert, CircleCheck, Clock, LoaderCircle } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -7,8 +7,12 @@ import type { Order } from '../../api/types'
 
 interface OrderOutcomeProps {
   order: Order
-  /** The hold ran out, although the server may not have marked the order EXPIRED yet. */
-  isExpired: boolean
+}
+
+interface ExpiringNoticeProps {
+  /** The server has not expired the order within the polling time. */
+  timedOut: boolean
+  onCheckAgain: () => void
 }
 
 interface OutcomeAlertProps {
@@ -29,7 +33,7 @@ function OutcomeAlert({ title, children, icon, destructive }: OutcomeAlertProps)
 }
 
 /** What the user sees once the order is over: paid, rejected, expired or cancelled. */
-export function OrderOutcome({ order, isExpired }: OrderOutcomeProps) {
+export function OrderOutcome({ order }: OrderOutcomeProps) {
   const eventLink = (
     <Button className="mt-3" variant="outline" size="sm" asChild>
       <Link to={`/events/${order.event.id}`}>Wróć do wydarzenia</Link>
@@ -68,10 +72,10 @@ export function OrderOutcome({ order, isExpired }: OrderOutcomeProps) {
     )
   }
 
-  if (isExpired) {
+  if (order.status === 'EXPIRED') {
     return (
-      <OutcomeAlert title="Rezerwacja wygasła" icon={<Clock />}>
-        Czas na płatność minął, a miejsca wróciły do puli. Wybierz bilety jeszcze raz.
+      <OutcomeAlert title="Rezerwacja wygasła, miejsca wróciły do puli" icon={<Clock />}>
+        Czas na płatność minął. Wybierz bilety jeszcze raz.
         <br />
         {eventLink}
       </OutcomeAlert>
@@ -79,4 +83,28 @@ export function OrderOutcome({ order, isExpired }: OrderOutcomeProps) {
   }
 
   return null
+}
+
+/**
+ * The countdown reached zero, but the order stays PENDING until the scheduler expires it,
+ * so the page does not claim yet that the seats are back in the pool.
+ */
+export function ExpiringNotice({ timedOut, onCheckAgain }: ExpiringNoticeProps) {
+  if (timedOut) {
+    return (
+      <OutcomeAlert title="Rezerwacja wygasa" icon={<Clock />}>
+        Czas na płatność minął, ale system jeszcze nie zwolnił miejsc. Sprawdź status za chwilę.
+        <br />
+        <Button className="mt-3" variant="outline" size="sm" type="button" onClick={onCheckAgain}>
+          Sprawdź ponownie
+        </Button>
+      </OutcomeAlert>
+    )
+  }
+
+  return (
+    <OutcomeAlert title="Rezerwacja wygasa…" icon={<LoaderCircle className="animate-spin" />}>
+      Czas na płatność minął. Czekamy, aż system zwolni zablokowane miejsca. Strona odświeży się sama.
+    </OutcomeAlert>
+  )
 }

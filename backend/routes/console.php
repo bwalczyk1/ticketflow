@@ -21,3 +21,4 @@ Schedule::command('ticketflow:reconcile-orders')->everyFiveMinutes();
 
 // Waitlist, check-in and event notifications.
 Schedule::command('ticketflow:expire-waitlist-offers')->everyMinute();
+Schedule::command('ticketflow:send-event-reminders')->hourly();

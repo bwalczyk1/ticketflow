@@ -20,10 +20,11 @@ class InvoiceNumbering
     }
 
     /**
-     * Numbers restart every year, so only the year and the number together identify an invoice.
+     * Numbers restart every year, so only the number and the year together identify an invoice.
+     * The order number/year is the Polish convention and matches the PDF.
      */
     public static function label(int $year, int $number): string
     {
-        return "{$year}/{$number}";
+        return "{$number}/{$year}";
     }
 }

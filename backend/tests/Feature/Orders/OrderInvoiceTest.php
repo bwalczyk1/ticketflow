@@ -39,7 +39,7 @@ it('downloads the invoice of an own order', function () {
     $response = $this->get("/api/orders/{$this->order->id}/invoice")->assertOk();
 
     expect($response->headers->get('Content-Type'))->toBe('application/pdf')
-        ->and($response->headers->get('Content-Disposition'))->toBe('attachment; filename="invoice-2026-7.pdf"')
+        ->and($response->headers->get('Content-Disposition'))->toBe('attachment; filename="invoice-7-2026.pdf"')
         ->and($response->streamedContent())->toBe('%PDF-1.7 invoice');
 });
 
@@ -64,7 +64,7 @@ it('serves the original invoice and not a correction', function () {
 
     $response = $this->get("/api/orders/{$this->order->id}/invoice")->assertOk();
 
-    expect($response->headers->get('Content-Disposition'))->toContain('invoice-2026-7.pdf');
+    expect($response->headers->get('Content-Disposition'))->toContain('invoice-7-2026.pdf');
 });
 
 it('answers 404 NOT_FOUND for an invoice of another user', function () {
@@ -98,7 +98,7 @@ it('checks the invoice download in the order 401, 403 role, 404', function () {
 it('shows the issued invoice in the order detail and list', function () {
     issuedInvoice($this->order);
 
-    $expected = ['number' => '2026/7', 'issuedAt' => '2026-11-14T10:15:00Z'];
+    $expected = ['number' => '7/2026', 'issuedAt' => '2026-11-14T10:15:00Z'];
 
     $this->getJson("/api/orders/{$this->order->id}")
         ->assertOk()

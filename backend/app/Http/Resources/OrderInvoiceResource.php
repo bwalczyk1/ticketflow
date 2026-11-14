@@ -20,7 +20,9 @@ class OrderInvoiceResource extends JsonResource
     {
         return [
             /**
-             * Year and number, for example `2026/1`.
+             * Number and year, as printed on the PDF.
+             *
+             * @example 1/2026
              */
             'number' => InvoiceNumbering::label($this->year, $this->number),
             /**

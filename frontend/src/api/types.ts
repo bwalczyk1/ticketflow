@@ -96,4 +96,34 @@ export interface Order {
     startsAt: string
   }
   items: OrderItem[]
+  /**
+   * Hand-written ahead of the backend change that adds it; check against the OpenAPI docs once
+   * they are regenerated. Null until the invoice is issued, missing on an older backend.
+   */
+  invoice?: Invoice | null
+}
+
+/** Hand-written ahead of the backend change that adds it (see `Order.invoice`). */
+export interface Invoice {
+  number: string
+  issuedAt: string
+}
+
+export type TicketStatus = 'VALID' | 'USED' | 'VOID'
+
+export interface Ticket {
+  id: number
+  code: string
+  status: TicketStatus
+  /** The ticket's number within its order item, starting at 1. */
+  position: number
+  checkedInAt: string | null
+  /** False until the PDF has been generated in the background. */
+  pdfReady: boolean
+  orderId: number
+  ticketType: {
+    id: number
+    name: string
+  }
+  event: Order['event']
 }

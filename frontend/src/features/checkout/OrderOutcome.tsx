@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import type { Order } from '../../api/types'
+import { ORDER_DOCUMENTS_ID } from './OrderDocuments'
 
 interface OrderOutcomeProps {
   order: Order
@@ -32,6 +33,10 @@ function OutcomeAlert({ title, children, icon, destructive }: OutcomeAlertProps)
   )
 }
 
+function showDocuments() {
+  document.getElementById(ORDER_DOCUMENTS_ID)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
 /** What the user sees once the order is over: paid, rejected, expired or cancelled. */
 export function OrderOutcome({ order }: OrderOutcomeProps) {
   const eventLink = (
@@ -43,10 +48,10 @@ export function OrderOutcome({ order }: OrderOutcomeProps) {
   if (order.status === 'PAID') {
     return (
       <OutcomeAlert title="Płatność przyjęta" icon={<CircleCheck />}>
-        Dziękujemy, zamówienie jest opłacone. Bilety znajdziesz w zakładce „Moje bilety”.
+        Dziękujemy, zamówienie jest opłacone. Bilety w PDF i fakturę pobierzesz z listy przy zamówieniu.
         <br />
-        <Button className="mt-3" size="sm" asChild>
-          <Link to="/tickets">Przejdź do biletów</Link>
+        <Button className="mt-3" size="sm" type="button" onClick={showDocuments}>
+          Przejdź do biletów
         </Button>
       </OutcomeAlert>
     )

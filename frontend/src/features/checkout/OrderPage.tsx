@@ -12,6 +12,7 @@ import { ErrorBanner } from '../../components/ErrorBanner'
 import { LoadingPage, NotFoundPage } from '../../components/StatusPages'
 import { eventsKey } from '../catalog/catalogApi'
 import { cancelOrder, fetchOrder, ordersKey, payOrder } from './checkoutApi'
+import { OrderDocuments } from './OrderDocuments'
 import { OrderItemsCard } from './OrderItemsCard'
 import { ExpiringNotice, OrderOutcome } from './OrderOutcome'
 import { getOrderWait, isHoldOver, type OrderWait } from './orderState'
@@ -28,6 +29,7 @@ const POLLING: Record<OrderWait, { interval: number; timeout: number }> = {
   payment: { interval: 1500, timeout: 30_000 },
   // The scheduler expires holds once a minute, so this waits for up to two ticks.
   expiry: { interval: 5000, timeout: 120_000 },
+  invoice: { interval: 3000, timeout: 60_000 },
 }
 
 export function OrderPage() {
@@ -117,6 +119,8 @@ export function OrderPage() {
       <div className="grid items-start gap-6 lg:grid-cols-[1fr_22rem]">
         <div className="grid gap-4">
           <OrderItemsCard order={order} />
+
+          {order.status === 'PAID' && <OrderDocuments order={order} />}
 
           {isPaying && !pollingTimedOut && (
             <Alert role="status">

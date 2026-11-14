@@ -18,4 +18,12 @@ class InvoiceNumbering
     {
         return $lastNumber + 1;
     }
+
+    /**
+     * Numbers restart every year, so only the year and the number together identify an invoice.
+     */
+    public static function label(int $year, int $number): string
+    {
+        return "{$year}/{$number}";
+    }
 }

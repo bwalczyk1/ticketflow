@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Orders;
 
+use App\Exceptions\Domain\InvoiceNotFound;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Orders\ListOrdersRequest;
 use App\Http\Requests\Orders\StoreOrderRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
+use App\Services\Documents\InvoiceNumbering;
 use App\Services\Orders\CancelOrder;
 use App\Services\Orders\CustomerOrders;
 use App\Services\Orders\ReserveTickets;
@@ -15,6 +17,8 @@ use App\Support\Pagination;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class OrderController extends Controller
 {
@@ -48,6 +52,24 @@ class OrderController extends Controller
     public function show(string $id): OrderResource
     {
         return new OrderResource($this->ownOrder($id));
+    }
+
+    /**
+     * Download the invoice PDF of an own order.
+     *
+     * The invoice is issued in the background after the payment, so for a moment it is not there yet.
+     *
+     * @throws InvoiceNotFound
+     */
+    public function invoice(string $id): StreamedResponse
+    {
+        $invoice = $this->orders->invoice($this->ownOrder($id));
+        $filename = 'invoice-'.str_replace('/', '-', InvoiceNumbering::label($invoice->year, $invoice->number)).'.pdf';
+
+        return Storage::disk('local')->download($invoice->pdf_path, $filename, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
     }
 
     /**

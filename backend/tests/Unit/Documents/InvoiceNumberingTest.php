@@ -63,3 +63,8 @@ it('numbers invoices and corrections separately', function () {
     expect(allocateInMemory($counters, InvoiceType::Correction, $at))->toBe('2026/CORRECTION/1')
         ->and(allocateInMemory($counters, InvoiceType::Invoice, $at))->toBe('2026/INVOICE/3');
 });
+
+it('labels an invoice with its year and number', function () {
+    expect(InvoiceNumbering::label(2026, 1))->toBe('2026/1')
+        ->and(InvoiceNumbering::label(2027, 315))->toBe('2027/315');
+});

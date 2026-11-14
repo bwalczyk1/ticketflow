@@ -36,6 +36,10 @@ class OrderResource extends JsonResource
             'paymentStatus' => $this->payment?->status,
             'event' => new OrderEventResource($this->event),
             'items' => OrderItemResource::collection($this->items),
+            /**
+             * The invoice appears once its PDF can be downloaded from `/orders/{id}/invoice`.
+             */
+            'invoice' => $this->invoice?->pdf_path === null ? null : new OrderInvoiceResource($this->invoice),
         ];
     }
 }

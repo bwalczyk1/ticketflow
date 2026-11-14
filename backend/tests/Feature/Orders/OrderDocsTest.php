@@ -73,6 +73,24 @@ it('documents camelCase order fields and the request body', function () {
         ->toHaveKeys(['eventId', 'items']);
 });
 
+it('documents the invoice download', function () {
+    $operation = $this->spec['paths']['/orders/{id}/invoice']['get'];
+
+    expect($operation['responses'][200]['content'])->toHaveKey('application/pdf')
+        ->and(orderErrorCodes($this->spec, 'get', '/orders/{id}/invoice', 404))->toContain('NOT_FOUND', 'INVOICE_NOT_FOUND')
+        ->and(orderErrorCodes($this->spec, 'get', '/orders/{id}/invoice', 401))->toContain('UNAUTHENTICATED');
+});
+
+it('documents the invoice of an order as a nullable object', function () {
+    $invoice = $this->spec['components']['schemas']['OrderResource']['properties']['invoice'];
+    $schema = collect($invoice['anyOf'] ?? [$invoice])->firstWhere('$ref');
+
+    expect(collect($invoice['anyOf'] ?? [])->pluck('type'))->toContain('null')
+        ->and($schema['$ref'])->toBe('#/components/schemas/OrderInvoiceResource')
+        ->and($this->spec['components']['schemas']['OrderInvoiceResource']['properties'])->toHaveKeys(['number', 'issuedAt'])
+        ->and($this->spec['components']['schemas']['OrderInvoiceResource']['properties']['issuedAt']['format'])->toBe('date-time');
+});
+
 it('documents order ids in the path as integers', function () {
     $parameters = collect($this->spec['paths']['/orders/{id}/pay']['post']['parameters'])->where('in', 'path');
 

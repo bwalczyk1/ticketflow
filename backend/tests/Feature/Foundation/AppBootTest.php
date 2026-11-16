@@ -49,6 +49,10 @@ it('fails on lazy loading outside production', function () {
     expect(Model::preventsLazyLoading())->toBeTrue();
 });
 
+it('fails on reading a column that was not selected outside production', function () {
+    expect(Model::preventsAccessingMissingAttributes())->toBeTrue();
+});
+
 it('returns resources without a data wrapper', function () {
     expect(JsonResource::$wrap)->toBeNull();
 });

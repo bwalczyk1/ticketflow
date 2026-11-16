@@ -39,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
 
         JsonResource::withoutWrapping();
         Model::preventLazyLoading(! $this->app->isProduction());
+        Model::preventAccessingMissingAttributes(! $this->app->isProduction());
 
         $this->documentApiSecurity();
     }

@@ -3,6 +3,7 @@
 use App\Docs\DomainExceptionToResponseExtension;
 use App\Docs\FrameworkExceptionToResponseExtension;
 use App\Docs\NumericPathParameterExtension;
+use App\Docs\PaginationReturnTypeExtension;
 use Dedoc\Scramble\Http\Middleware\RestrictedDocsAccess;
 use Dedoc\Scramble\OpenApiVersion;
 
@@ -169,6 +170,7 @@ return [
         FrameworkExceptionToResponseExtension::class,
         DomainExceptionToResponseExtension::class,
         NumericPathParameterExtension::class,
+        PaginationReturnTypeExtension::class,
     ],
 
     /*

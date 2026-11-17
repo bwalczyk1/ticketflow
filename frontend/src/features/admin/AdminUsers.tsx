@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -19,6 +20,7 @@ import { ErrorBanner } from '../../components/ErrorBanner'
 import { FormField } from '../../components/FormField'
 import { Pagination } from '../../components/Pagination'
 import { LoadingPage, RefreshingArea } from '../../components/StatusPages'
+import { usePageParam } from '../../lib/urlParams'
 import { useAuth } from '../auth/AuthContext'
 import { adminKey, changeUserRole, fetchUsers, ROLE_LABELS } from './adminApi'
 
@@ -29,11 +31,6 @@ const ALL_ROLES = 'ALL'
 
 const ROLE_ERRORS = {
   NOT_FOUND: 'Nie znaleziono użytkownika. Odśwież listę.',
-}
-
-interface AdminUsersProps {
-  params: URLSearchParams
-  onParamsChange: (params: URLSearchParams) => void
 }
 
 interface RoleSelectProps {
@@ -60,13 +57,14 @@ function RoleSelect({ user, disabled, onChange }: RoleSelectProps) {
   )
 }
 
-export function AdminUsers({ params, onParamsChange }: AdminUsersProps) {
+export function AdminUsers() {
   const { user: currentUser } = useAuth()
   const queryClient = useQueryClient()
   const [pending, setPending] = useState<{ user: User; role: Role } | null>(null)
+  const [params, setParams] = useSearchParams()
+  const [page, changePage] = usePageParam()
   const q = params.get('q') ?? ''
   const role = ROLES.find((candidate) => candidate === params.get('role'))
-  const page = Number(params.get('page')) || 1
 
   const { data, error, isPending, isPlaceholderData } = useQuery({
     queryKey: [...adminKey, 'users', q, role, page],
@@ -91,7 +89,7 @@ export function AdminUsers({ params, onParamsChange }: AdminUsersProps) {
       nextParams.set('role', next.role)
     }
 
-    onParamsChange(nextParams)
+    setParams(nextParams)
   }
 
   function handleSearch(event: FormEvent<HTMLFormElement>) {
@@ -100,13 +98,6 @@ export function AdminUsers({ params, onParamsChange }: AdminUsersProps) {
     const form = new FormData(event.currentTarget)
 
     applyFilters({ q: String(form.get('q') ?? '').trim(), role })
-  }
-
-  function changePage(next: number) {
-    const nextParams = new URLSearchParams(params)
-
-    nextParams.set('page', String(next))
-    onParamsChange(nextParams)
   }
 
   function askForConfirmation(user: User, nextRole: Role) {

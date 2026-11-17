@@ -27,9 +27,9 @@ export function AdminPage() {
       </Tabs>
 
       {view === 'users' ? (
-        <AdminUsers params={params} onParamsChange={setParams} />
+        <AdminUsers />
       ) : (
-        <AdminEvents params={params} onParamsChange={setParams} />
+        <AdminEvents />
       )}
     </section>
   )

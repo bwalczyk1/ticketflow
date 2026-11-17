@@ -9,6 +9,7 @@ import { Pagination } from '../../components/Pagination'
 import { LoadingPage, RefreshingArea } from '../../components/StatusPages'
 import { formatDateTime } from '../../lib/dates'
 import { formatPrice, plnToGrosze } from '../../lib/money'
+import { usePageParam } from '../../lib/urlParams'
 import { eventsKey, fetchEvents, type CatalogFilters } from './catalogApi'
 import { EventFilters } from './EventFilters'
 
@@ -64,6 +65,7 @@ function EventCard({ event }: { event: CatalogEvent }) {
 
 export function EventListPage() {
   const [params, setParams] = useSearchParams()
+  const [, changePage] = usePageParam()
   const filters = toApiFilters(params)
 
   const { data, error, isPending, isPlaceholderData } = useQuery({
@@ -71,13 +73,6 @@ export function EventListPage() {
     queryFn: () => fetchEvents(filters),
     placeholderData: (previous) => previous,
   })
-
-  function changePage(page: number) {
-    const next = new URLSearchParams(params)
-
-    next.set('page', String(page))
-    setParams(next)
-  }
 
   return (
     <section>

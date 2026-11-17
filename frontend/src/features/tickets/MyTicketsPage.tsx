@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Download, LoaderCircle } from 'lucide-react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -17,6 +17,7 @@ import { ErrorBanner } from '../../components/ErrorBanner'
 import { Pagination } from '../../components/Pagination'
 import { LoadingPage, RefreshingArea } from '../../components/StatusPages'
 import { formatDateTime } from '../../lib/dates'
+import { usePageParam } from '../../lib/urlParams'
 import { downloadTicketPdf, fetchTickets, ticketsKey } from './ticketsApi'
 import { TicketStatusBadge } from './TicketStatusBadge'
 
@@ -70,8 +71,7 @@ function TicketActions({ ticket, busy, onDownload }: TicketActionsProps) {
 }
 
 export function MyTicketsPage() {
-  const [params, setParams] = useSearchParams()
-  const page = Number(params.get('page')) || 1
+  const [page, changePage] = usePageParam()
 
   const { data, error, isPending, isPlaceholderData } = useQuery({
     queryKey: [...ticketsKey, 'list', page],
@@ -81,10 +81,6 @@ export function MyTicketsPage() {
   })
 
   const downloadMutation = useMutation({ mutationFn: downloadTicketPdf })
-
-  function changePage(next: number) {
-    setParams({ page: String(next) })
-  }
 
   function isBusy(ticket: Ticket) {
     return downloadMutation.isPending && downloadMutation.variables.id === ticket.id

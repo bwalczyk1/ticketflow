@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -17,6 +17,7 @@ import { Pagination } from '../../components/Pagination'
 import { LoadingPage, RefreshingArea } from '../../components/StatusPages'
 import { formatDateTime } from '../../lib/dates'
 import { formatPrice } from '../../lib/money'
+import { usePageParam } from '../../lib/urlParams'
 import { fetchOrders, ordersKey } from './checkoutApi'
 import { isReservationActive } from './orderState'
 import { OrderStatusBadge } from './OrderStatusBadge'
@@ -38,8 +39,7 @@ function itemsSummary(order: Order): string {
 
 export function OrdersPage() {
   const now = useNow()
-  const [params, setParams] = useSearchParams()
-  const page = Number(params.get('page')) || 1
+  const [page, changePage] = usePageParam()
 
   const { data, error, isPending, isPlaceholderData } = useQuery({
     queryKey: [...ordersKey, 'list', page],
@@ -47,10 +47,6 @@ export function OrdersPage() {
     staleTime: 0,
     placeholderData: (previous) => previous,
   })
-
-  function changePage(next: number) {
-    setParams({ page: String(next) })
-  }
 
   return (
     <section>

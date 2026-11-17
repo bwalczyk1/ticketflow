@@ -12,29 +12,18 @@ import { ErrorBanner } from '../../components/ErrorBanner'
 import { Pagination } from '../../components/Pagination'
 import { LoadingPage, RefreshingArea } from '../../components/StatusPages'
 import { formatDateTime } from '../../lib/dates'
+import { usePageParam } from '../../lib/urlParams'
 import { StatusBadge } from '../organizer/eventStatus'
 import { adminKey, fetchAdminEvents } from './adminApi'
 
-interface AdminEventsProps {
-  params: URLSearchParams
-  onParamsChange: (params: URLSearchParams) => void
-}
-
-export function AdminEvents({ params, onParamsChange }: AdminEventsProps) {
-  const page = Number(params.get('page')) || 1
+export function AdminEvents() {
+  const [page, changePage] = usePageParam()
 
   const { data, error, isPending, isPlaceholderData } = useQuery({
     queryKey: [...adminKey, 'events', page],
     queryFn: () => fetchAdminEvents(page),
     placeholderData: (previous) => previous,
   })
-
-  function changePage(next: number) {
-    const nextParams = new URLSearchParams(params)
-
-    nextParams.set('page', String(next))
-    onParamsChange(nextParams)
-  }
 
   return (
     <>

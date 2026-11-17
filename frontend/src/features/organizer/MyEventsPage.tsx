@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
 import { useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -13,15 +13,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PAGE_TITLE } from '@/lib/styles'
 import type { EventStatus, ManagedEvent } from '../../api/types'
 import { ConfirmDialog } from '../../components/ConfirmButton'
 import { ErrorBanner } from '../../components/ErrorBanner'
 import { Pagination } from '../../components/Pagination'
 import { LoadingPage, RefreshingArea } from '../../components/StatusPages'
+import { StatusTabs } from '../../components/StatusTabs'
 import { eventsKey } from '../catalog/catalogApi'
 import { formatDateTime } from '../../lib/dates'
+import { usePageParam, useStatusParam, type StatusFilter } from '../../lib/urlParams'
 import { EventActionsMenu, type ConfirmedAction } from './EventActionsMenu'
 import { StatusBadge } from './eventStatus'
 import {
@@ -50,7 +51,7 @@ interface EventAction {
   done: string
 }
 
-const STATUS_FILTERS: { value: EventStatus | ''; label: string }[] = [
+const STATUS_FILTERS: StatusFilter<EventStatus>[] = [
   { value: '', label: 'Wszystkie' },
   { value: 'DRAFT', label: 'Szkice' },
   { value: 'PUBLISHED', label: 'Opublikowane' },
@@ -60,11 +61,8 @@ const STATUS_FILTERS: { value: EventStatus | ''; label: string }[] = [
 
 export function MyEventsPage() {
   const queryClient = useQueryClient()
-  const [params, setParams] = useSearchParams()
-  const status = STATUS_FILTERS.find(
-    (filter) => filter.value !== '' && filter.value === params.get('status'),
-  )?.value as EventStatus | undefined
-  const page = Number(params.get('page')) || 1
+  const [status] = useStatusParam(STATUS_FILTERS)
+  const [page, changePage] = usePageParam()
   const [confirm, setConfirm] = useState<{ action: ConfirmedAction; event: ManagedEvent } | null>(null)
 
   const { data, error, isPending, isPlaceholderData } = useQuery({
@@ -82,17 +80,6 @@ export function MyEventsPage() {
         queryClient.invalidateQueries({ queryKey: eventsKey }),
       ]),
   })
-
-  function changeStatus(value: string) {
-    setParams(value ? { status: value } : {})
-  }
-
-  function changePage(next: number) {
-    const nextParams = new URLSearchParams(params)
-
-    nextParams.set('page', String(next))
-    setParams(nextParams)
-  }
 
   function openConfirm(action: ConfirmedAction, event: ManagedEvent) {
     // The banner of the previous attempt would otherwise look like the answer to this one.
@@ -141,15 +128,7 @@ export function MyEventsPage() {
         </Button>
       </div>
 
-      <Tabs className="mb-4 max-w-full overflow-x-auto" value={status ?? ''} onValueChange={changeStatus}>
-        <TabsList aria-label="Status">
-          {STATUS_FILTERS.map((filter) => (
-            <TabsTrigger key={filter.value} value={filter.value}>
-              {filter.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+      <StatusTabs filters={STATUS_FILTERS} />
 
       <ErrorBanner error={error} />
       <ErrorBanner error={actionMutation.error} />

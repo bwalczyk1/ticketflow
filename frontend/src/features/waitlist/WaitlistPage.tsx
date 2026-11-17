@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -12,22 +12,23 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PAGE_TITLE } from '@/lib/styles'
 import type { WaitlistEntry, WaitlistStatus } from '../../api/types'
 import { ConfirmDialog } from '../../components/ConfirmButton'
 import { ErrorBanner } from '../../components/ErrorBanner'
 import { Pagination } from '../../components/Pagination'
 import { LoadingPage, RefreshingArea } from '../../components/StatusPages'
+import { StatusTabs } from '../../components/StatusTabs'
 import { formatDateTime } from '../../lib/dates'
 import { formatPrice } from '../../lib/money'
+import { usePageParam, useStatusParam, type StatusFilter } from '../../lib/urlParams'
 import { eventsKey } from '../catalog/catalogApi'
 import { ordersKey } from '../checkout/checkoutApi'
 import { formatCountdown, useNow } from '../checkout/useCountdown'
 import { acceptOffer, fetchWaitlist, leaveWaitlist, waitlistKey } from './waitlistApi'
 import { WaitlistStatusBadge } from './WaitlistStatusBadge'
 
-const STATUS_FILTERS: { value: WaitlistStatus | ''; label: string }[] = [
+const STATUS_FILTERS: StatusFilter<WaitlistStatus>[] = [
   { value: '', label: 'Wszystkie' },
   { value: 'WAITING', label: 'Oczekujące' },
   { value: 'OFFERED', label: 'Oferty' },
@@ -94,11 +95,8 @@ export function WaitlistPage() {
   const [leaving, setLeaving] = useState<WaitlistEntry | null>(null)
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const [params, setParams] = useSearchParams()
-  const status = STATUS_FILTERS.find(
-    (filter) => filter.value !== '' && filter.value === params.get('status'),
-  )?.value as WaitlistStatus | undefined
-  const page = Number(params.get('page')) || 1
+  const [status] = useStatusParam(STATUS_FILTERS)
+  const [page, changePage] = usePageParam()
 
   const { data, error, isPending, isPlaceholderData } = useQuery({
     queryKey: [...waitlistKey, 'list', status, page],
@@ -129,17 +127,6 @@ export function WaitlistPage() {
 
   const busy = acceptMutation.isPending || leaveMutation.isPending
 
-  function changeStatus(value: string) {
-    setParams(value ? { status: value } : {})
-  }
-
-  function changePage(next: number) {
-    const nextParams = new URLSearchParams(params)
-
-    nextParams.set('page', String(next))
-    setParams(nextParams)
-  }
-
   function accept(entry: WaitlistEntry) {
     leaveMutation.reset()
     acceptMutation.mutate(entry)
@@ -159,15 +146,7 @@ export function WaitlistPage() {
     <section>
       <h1 className={`${PAGE_TITLE} mb-6`}>Lista oczekujących</h1>
 
-      <Tabs className="mb-4 max-w-full overflow-x-auto" value={status ?? ''} onValueChange={changeStatus}>
-        <TabsList aria-label="Status">
-          {STATUS_FILTERS.map((filter) => (
-            <TabsTrigger key={filter.value} value={filter.value}>
-              {filter.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+      <StatusTabs filters={STATUS_FILTERS} />
 
       <ErrorBanner error={error} />
       <ErrorBanner error={acceptMutation.error} messages={ACCEPT_ERRORS} />

@@ -3,12 +3,12 @@
 namespace App\Listeners\Payments;
 
 use App\Contracts\PaymentGateway;
-use App\Contracts\PaymentResultHandler;
 use App\Enums\PaymentStatus;
 use App\Enums\QueueName;
 use App\Events\Orders\OrderPlaced;
 use App\Exceptions\Domain\PaymentDeclined;
 use App\Models\Payment;
+use App\Services\Payments\SettlePayment;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\Attributes\Queue;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
@@ -18,7 +18,7 @@ class ProcessPayment implements ShouldQueue
 {
     public function __construct(
         private PaymentGateway $gateway,
-        private PaymentResultHandler $results,
+        private SettlePayment $results,
     ) {}
 
     /**

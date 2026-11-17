@@ -2,15 +2,17 @@
 
 namespace App\Services\Documents;
 
-use App\Contracts\InvoicePdfGenerator;
 use App\Enums\InvoiceType;
 use App\Models\Invoice;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-class DompdfInvoicePdfGenerator implements InvoicePdfGenerator
+class InvoicePdfGenerator
 {
+    /**
+     * Returns the storage path invoices/{year}/{type}-{number}.pdf.
+     */
     public function generate(Invoice $invoice): string
     {
         $path = DocumentPaths::invoice($invoice->year, $invoice->type, $invoice->number);

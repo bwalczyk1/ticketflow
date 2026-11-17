@@ -1,6 +1,5 @@
 <?php
 
-use App\Contracts\InvoicePdfGenerator;
 use App\Enums\InvoiceType;
 use App\Enums\OrderStatus;
 use App\Enums\QueueName;
@@ -10,6 +9,7 @@ use App\Models\Invoice;
 use App\Models\InvoiceSequence;
 use App\Models\Order;
 use App\Services\Documents\InvoiceNumberAllocator;
+use App\Services\Documents\InvoicePdfGenerator;
 use Illuminate\Database\QueryException;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\Queue;

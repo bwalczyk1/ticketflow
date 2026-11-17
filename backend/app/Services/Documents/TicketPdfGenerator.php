@@ -2,14 +2,16 @@
 
 namespace App\Services\Documents;
 
-use App\Contracts\TicketPdfGenerator;
 use App\Models\Ticket;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-class DompdfTicketPdfGenerator implements TicketPdfGenerator
+class TicketPdfGenerator
 {
+    /**
+     * Returns the storage path tickets/{code}.pdf.
+     */
     public function generate(Ticket $ticket): string
     {
         $path = DocumentPaths::ticket($ticket->code);

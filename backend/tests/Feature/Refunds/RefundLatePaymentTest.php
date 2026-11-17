@@ -1,6 +1,5 @@
 <?php
 
-use App\Contracts\PaymentResultHandler;
 use App\Enums\OrderStatus;
 use App\Enums\QueueName;
 use App\Enums\RefundStatus;
@@ -9,6 +8,7 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Refund;
 use App\Services\Payments\RefundLatePayment;
+use App\Services\Payments\SettlePayment;
 use Illuminate\Support\Facades\Queue;
 
 beforeEach(function () {
@@ -19,7 +19,7 @@ beforeEach(function () {
 it('creates a refund of the late payment and sends it to the gateway in the background', function () {
     Queue::fake();
 
-    app(PaymentResultHandler::class)->succeeded($this->payment, 'ref_1');
+    app(SettlePayment::class)->succeeded($this->payment, 'ref_1');
 
     $refund = Refund::query()->sole();
 
@@ -34,7 +34,7 @@ it('creates a refund of the late payment and sends it to the gateway in the back
 });
 
 it('returns the late payment through the gateway', function () {
-    app(PaymentResultHandler::class)->succeeded($this->payment, 'ref_1');
+    app(SettlePayment::class)->succeeded($this->payment, 'ref_1');
 
     expect(Refund::query()->sole()->status)->toBe(RefundStatus::Succeeded);
 });
@@ -42,7 +42,7 @@ it('returns the late payment through the gateway', function () {
 it('creates one refund when the late result arrives twice', function () {
     Queue::fake();
 
-    $results = app(PaymentResultHandler::class);
+    $results = app(SettlePayment::class);
 
     $results->succeeded($this->payment);
     $results->succeeded($this->payment->fresh());
@@ -53,7 +53,7 @@ it('creates one refund when the late result arrives twice', function () {
 });
 
 it('shows the refund of a late payment on the order', function () {
-    app(PaymentResultHandler::class)->succeeded($this->payment);
+    app(SettlePayment::class)->succeeded($this->payment);
 
     $this->actingAs($this->order->user)
         ->getJson("/api/orders/{$this->order->id}")

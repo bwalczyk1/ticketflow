@@ -2,7 +2,6 @@
 
 namespace App\Services\Payments;
 
-use App\Contracts\PaymentResultHandler;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Events\Orders\OrderPaid;
@@ -14,7 +13,10 @@ use App\Models\TicketType;
 use App\Services\Orders\OrderTransition;
 use Illuminate\Support\Facades\DB;
 
-class SettlePayment implements PaymentResultHandler
+/**
+ * The single entry for payment results. Both methods are idempotent.
+ */
+class SettlePayment
 {
     public function __construct(
         private OrderTransition $orderTransition,

@@ -2,11 +2,11 @@
 
 namespace App\Jobs\Documents;
 
-use App\Contracts\TicketPdfGenerator;
 use App\Enums\QueueName;
 use App\Events\Tickets\TicketsGenerated;
 use App\Models\OrderItem;
 use App\Models\Ticket;
+use App\Services\Documents\TicketPdfGenerator;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\Attributes\Queue;

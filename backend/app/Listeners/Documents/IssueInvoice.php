@@ -2,7 +2,6 @@
 
 namespace App\Listeners\Documents;
 
-use App\Contracts\InvoicePdfGenerator;
 use App\Enums\InvoiceType;
 use App\Enums\OrderStatus;
 use App\Enums\QueueName;
@@ -10,6 +9,7 @@ use App\Events\Orders\OrderPaid;
 use App\Models\Invoice;
 use App\Models\Order;
 use App\Services\Documents\InvoiceNumberAllocator;
+use App\Services\Documents\InvoicePdfGenerator;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\Attributes\Queue;
 use Illuminate\Support\Facades\DB;

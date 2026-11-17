@@ -1,6 +1,5 @@
 <?php
 
-use App\Contracts\PaymentResultHandler;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Events\Orders\OrderPaid;
@@ -9,6 +8,7 @@ use App\Events\Payments\PaymentFailed;
 use App\Models\Payment;
 use App\Models\TicketType;
 use App\Services\Orders\ExpireReservations;
+use App\Services\Payments\SettlePayment;
 use Illuminate\Support\Facades\Event;
 use Tests\Feature\Orders\OrderFixtures;
 use Tests\Integration\Orders\Interleave;
@@ -67,7 +67,7 @@ it('keeps the order locked until the payment result is committed', function (str
         $locked = Interleave::rowIsLocked($this->other, 'orders', $this->order->id);
     });
 
-    app(PaymentResultHandler::class)->{$result}($payment, 'ref_1');
+    app(SettlePayment::class)->{$result}($payment, 'ref_1');
 
     expect($locked)->toBeTrue();
 })->with(['succeeded', 'failed']);
@@ -79,7 +79,7 @@ it('does not pay an order expired just before the payment result arrived', funct
         $this->other->table('orders')->where('id', $this->order->id)->update(['status' => OrderStatus::Expired->value]);
     });
 
-    app(PaymentResultHandler::class)->succeeded($payment, 'ref_1');
+    app(SettlePayment::class)->succeeded($payment, 'ref_1');
 
     expect($this->order->fresh()->status)->toBe(OrderStatus::Expired)
         ->and($payment->fresh()->status)->toBe(PaymentStatus::Succeeded)
@@ -95,7 +95,7 @@ it('does not fail an order expired just before the payment result arrived', func
         $this->other->table('orders')->where('id', $this->order->id)->update(['status' => OrderStatus::Expired->value]);
     });
 
-    app(PaymentResultHandler::class)->failed($payment, 'Card declined');
+    app(SettlePayment::class)->failed($payment, 'Card declined');
 
     expect($this->order->fresh()->status)->toBe(OrderStatus::Expired)
         ->and($payment->fresh()->status)->toBe(PaymentStatus::Failed);
@@ -112,7 +112,7 @@ it('settles a repeated result only once when it was committed just before the lo
         $this->other->table('ticket_types')->where('id', $this->pool->id)->update(['held' => 0, 'sold' => 2]);
     });
 
-    app(PaymentResultHandler::class)->succeeded($payment);
+    app(SettlePayment::class)->succeeded($payment);
 
     expect($this->pool->fresh())->sold->toBe(2)->held->toBe(0);
 

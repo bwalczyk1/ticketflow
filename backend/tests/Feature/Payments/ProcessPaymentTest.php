@@ -1,7 +1,6 @@
 <?php
 
 use App\Contracts\PaymentGateway;
-use App\Contracts\PaymentResultHandler;
 use App\Data\PaymentStart;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
@@ -14,6 +13,7 @@ use App\Models\Payment;
 use App\Models\TicketType;
 use App\Models\User;
 use App\Services\Payments\FakePaymentGateway;
+use App\Services\Payments\SettlePayment;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Support\Facades\Event;
@@ -128,7 +128,7 @@ it('waits for the webhook of a redirect gateway', function () {
         ->shouldReceive('startPayment')
         ->andReturn(new PaymentStart(providerRef: 'cs_1', redirectUrl: 'https://pay.example.com/cs_1'));
 
-    $this->mock(PaymentResultHandler::class)->shouldNotReceive('succeeded');
+    $this->mock(SettlePayment::class)->shouldNotReceive('succeeded');
 
     app(ProcessPayment::class)->handle(new OrderPlaced($this->order->id));
 

@@ -1,9 +1,9 @@
 <?php
 
-use App\Contracts\TicketPdfGenerator;
 use App\Events\Tickets\TicketsGenerated;
 use App\Jobs\Documents\GenerateTicketPdfs;
 use App\Models\Ticket;
+use App\Services\Documents\TicketPdfGenerator;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Tests\Feature\Tickets\TicketFixtures;

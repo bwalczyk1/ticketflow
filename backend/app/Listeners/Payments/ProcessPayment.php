@@ -33,9 +33,8 @@ class ProcessPayment implements ShouldQueue
     }
 
     /**
-     * A gateway that returns a redirect reports its result later through a webhook. Any other
-     * error from the gateway leaves the payment pending, so the queue retries with the same key.
-     * After the last attempt the payment stays pending and ExpireReservations picks the order up
+     * An error from the gateway other than a decline leaves the payment pending, so the queue
+     * retries with the same key. After the last attempt the payment stays pending and ExpireReservations picks the order up
      * after the grace period.
      */
     public function handle(OrderPlaced $event): void
@@ -47,15 +46,13 @@ class ProcessPayment implements ShouldQueue
         }
 
         try {
-            $start = $this->gateway->startPayment($payment);
+            $providerRef = $this->gateway->startPayment($payment);
         } catch (PaymentDeclined $e) {
             $this->results->failed($payment, $e->getMessage());
 
             return;
         }
 
-        if ($start->redirectUrl === null) {
-            $this->results->succeeded($payment, $start->providerRef);
-        }
+        $this->results->succeeded($payment, $providerRef);
     }
 }

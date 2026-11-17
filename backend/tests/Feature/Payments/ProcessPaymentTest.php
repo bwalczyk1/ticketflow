@@ -1,7 +1,6 @@
 <?php
 
 use App\Contracts\PaymentGateway;
-use App\Data\PaymentStart;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\QueueName;
@@ -13,7 +12,6 @@ use App\Models\Payment;
 use App\Models\TicketType;
 use App\Models\User;
 use App\Services\Payments\FakePaymentGateway;
-use App\Services\Payments\SettlePayment;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Support\Facades\Event;
@@ -99,7 +97,7 @@ it('gives the seats back after a declined payment in the whole flow', function (
 it('does not charge twice when the job runs again', function () {
     $gateway = $this->mock(PaymentGateway::class);
 
-    $gateway->shouldReceive('startPayment')->once()->andReturn(new PaymentStart(providerRef: 'ref_1'));
+    $gateway->shouldReceive('startPayment')->once()->andReturn('ref_1');
 
     $listener = app(ProcessPayment::class);
 
@@ -121,18 +119,6 @@ it('leaves at once when the order has no payment', function () {
     $this->mock(PaymentGateway::class)->shouldNotReceive('startPayment');
 
     app(ProcessPayment::class)->handle(new OrderPlaced($this->order->id));
-});
-
-it('waits for the webhook of a redirect gateway', function () {
-    $this->mock(PaymentGateway::class)
-        ->shouldReceive('startPayment')
-        ->andReturn(new PaymentStart(providerRef: 'cs_1', redirectUrl: 'https://pay.example.com/cs_1'));
-
-    $this->mock(SettlePayment::class)->shouldNotReceive('succeeded');
-
-    app(ProcessPayment::class)->handle(new OrderPlaced($this->order->id));
-
-    expect($this->payment->fresh()->status)->toBe(PaymentStatus::Pending);
 });
 
 it('leaves the payment pending for a retry when the gateway breaks', function () {

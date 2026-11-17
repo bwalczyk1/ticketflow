@@ -3,7 +3,6 @@
 namespace App\Services\Payments;
 
 use App\Contracts\PaymentGateway;
-use App\Data\PaymentStart;
 use App\Exceptions\Domain\PaymentDeclined;
 use App\Models\Payment;
 use App\Models\Refund;
@@ -30,7 +29,7 @@ class FakePaymentGateway implements PaymentGateway
     /**
      * @throws PaymentDeclined
      */
-    public function startPayment(Payment $payment): PaymentStart
+    public function startPayment(Payment $payment): string
     {
         $key = "payment:{$payment->id}";
 
@@ -42,7 +41,7 @@ class FakePaymentGateway implements PaymentGateway
             throw new PaymentDeclined;
         }
 
-        return new PaymentStart(providerRef: 'fake_'.substr(hash('sha256', $key), 0, 16));
+        return 'fake_'.substr(hash('sha256', $key), 0, 16);
     }
 
     /**

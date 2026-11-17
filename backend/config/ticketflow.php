@@ -3,8 +3,6 @@
 return [
     'payment_gateway' => env('PAYMENT_GATEWAY', 'fake'),
     'fake_failure_rate' => env('FAKE_PAYMENT_FAILURE_RATE', 0.1),
-    'stripe_secret' => env('STRIPE_SECRET'),
-    'stripe_webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
 
     'hold_minutes' => 15,
     'ticket_limit_per_person' => 6,

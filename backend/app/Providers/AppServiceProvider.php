@@ -61,19 +61,16 @@ class AppServiceProvider extends ServiceProvider
                 'app_key' => config('app.key'),
                 'payment_gateway' => config('ticketflow.payment_gateway'),
                 'fake_failure_rate' => config('ticketflow.fake_failure_rate'),
-                'stripe_secret' => config('ticketflow.stripe_secret'),
             ],
             [
                 'app_key' => ['required'],
-                'payment_gateway' => ['required', 'in:fake,stripe'],
+                'payment_gateway' => ['required', 'in:fake'],
                 'fake_failure_rate' => ['required', 'numeric', 'between:0,1'],
-                'stripe_secret' => ['required_if:payment_gateway,stripe'],
             ],
             attributes: [
                 'app_key' => 'APP_KEY',
                 'payment_gateway' => 'PAYMENT_GATEWAY',
                 'fake_failure_rate' => 'FAKE_PAYMENT_FAILURE_RATE',
-                'stripe_secret' => 'STRIPE_SECRET',
             ],
         );
 

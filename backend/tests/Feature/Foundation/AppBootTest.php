@@ -20,15 +20,28 @@ it('stops the application on invalid configuration and lists every error', funct
 
     expect(fn () => bootProvider())->toThrow(function (RuntimeException $e) {
         expect($e->getMessage())
-            ->toContain('APP_KEY must be set')
-            ->toContain('FAKE_PAYMENT_FAILURE_RATE must be a number between 0 and 1');
+            ->toContain('Invalid configuration')
+            ->toContain('APP_KEY')
+            ->toContain('FAKE_PAYMENT_FAILURE_RATE');
     });
 });
+
+it('rejects an unknown payment gateway', function () {
+    config(['ticketflow.payment_gateway' => 'cash']);
+
+    expect(fn () => bootProvider())->toThrow(RuntimeException::class, 'PAYMENT_GATEWAY');
+});
+
+it('rejects a failure rate outside the 0-1 range', function (mixed $rate) {
+    config(['ticketflow.fake_failure_rate' => $rate]);
+
+    expect(fn () => bootProvider())->toThrow(RuntimeException::class, 'FAKE_PAYMENT_FAILURE_RATE');
+})->with([-0.1, 1.1, 'often']);
 
 it('requires the key of the selected gateway', function () {
     config(['ticketflow.payment_gateway' => 'stripe', 'ticketflow.stripe_secret' => null]);
 
-    expect(fn () => bootProvider())->toThrow(RuntimeException::class, 'STRIPE_SECRET must be set');
+    expect(fn () => bootProvider())->toThrow(RuntimeException::class, 'STRIPE_SECRET');
 });
 
 it('lets setup commands run before the configuration is complete', function (string $command) {

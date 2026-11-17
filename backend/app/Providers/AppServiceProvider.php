@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Support\ConfigValidator;
 use Dedoc\Scramble\Configuration\OperationTransformers;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
@@ -16,6 +15,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -56,15 +56,29 @@ class AppServiceProvider extends ServiceProvider
             return;
         }
 
-        $errors = ConfigValidator::errors([
-            'app_key' => config('app.key'),
-            'payment_gateway' => config('ticketflow.payment_gateway'),
-            'fake_failure_rate' => config('ticketflow.fake_failure_rate'),
-            'stripe_secret' => config('ticketflow.stripe_secret'),
-        ]);
+        $validator = Validator::make(
+            [
+                'app_key' => config('app.key'),
+                'payment_gateway' => config('ticketflow.payment_gateway'),
+                'fake_failure_rate' => config('ticketflow.fake_failure_rate'),
+                'stripe_secret' => config('ticketflow.stripe_secret'),
+            ],
+            [
+                'app_key' => ['required'],
+                'payment_gateway' => ['required', 'in:fake,stripe'],
+                'fake_failure_rate' => ['required', 'numeric', 'between:0,1'],
+                'stripe_secret' => ['required_if:payment_gateway,stripe'],
+            ],
+            attributes: [
+                'app_key' => 'APP_KEY',
+                'payment_gateway' => 'PAYMENT_GATEWAY',
+                'fake_failure_rate' => 'FAKE_PAYMENT_FAILURE_RATE',
+                'stripe_secret' => 'STRIPE_SECRET',
+            ],
+        );
 
-        if ($errors !== []) {
-            throw new RuntimeException("Invalid configuration:\n- ".implode("\n- ", $errors));
+        if ($validator->fails()) {
+            throw new RuntimeException("Invalid configuration:\n- ".implode("\n- ", $validator->errors()->all()));
         }
     }
 

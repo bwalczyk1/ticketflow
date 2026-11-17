@@ -10,12 +10,6 @@ interface OrderOutcomeProps {
   order: Order
 }
 
-interface ExpiringNoticeProps {
-  /** The server has not expired the order within the polling time. */
-  timedOut: boolean
-  onCheckAgain: () => void
-}
-
 interface OutcomeAlertProps {
   title: string
   children: ReactNode
@@ -104,19 +98,7 @@ export function OrderOutcome({ order }: OrderOutcomeProps) {
  * The countdown reached zero, but the order stays PENDING until the scheduler expires it,
  * so the page does not claim yet that the seats are back in the pool.
  */
-export function ExpiringNotice({ timedOut, onCheckAgain }: ExpiringNoticeProps) {
-  if (timedOut) {
-    return (
-      <OutcomeAlert title="Rezerwacja wygasa" icon={<Clock />}>
-        Czas na płatność minął, ale system jeszcze nie zwolnił miejsc. Sprawdź status za chwilę.
-        <br />
-        <Button className="mt-3" variant="outline" size="sm" type="button" onClick={onCheckAgain}>
-          Sprawdź ponownie
-        </Button>
-      </OutcomeAlert>
-    )
-  }
-
+export function ExpiringNotice() {
   return (
     <OutcomeAlert title="Rezerwacja wygasa…" icon={<LoaderCircle className="animate-spin" />}>
       Czas na płatność minął. Czekamy, aż system zwolni zablokowane miejsca. Strona odświeży się sama.

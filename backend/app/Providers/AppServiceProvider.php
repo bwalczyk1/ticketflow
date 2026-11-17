@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Docs\ErrorResponse;
 use Dedoc\Scramble\Configuration\OperationTransformers;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
@@ -126,6 +127,7 @@ class AppServiceProvider extends ServiceProvider
         Scramble::configure()
             ->withDocumentTransformers(function (OpenApi $openApi) {
                 $openApi->secure(SecurityScheme::http('bearer'));
+                ErrorResponse::register($openApi);
             })
             ->withOperationTransformers(function (OperationTransformers $transformers) {
                 $transformers->prepend(function (Operation $operation, RouteInfo $routeInfo) {

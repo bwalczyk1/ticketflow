@@ -11,12 +11,7 @@ beforeEach(function () {
  */
 function refundErrorCodes(array $spec, string $method, string $path, int $status): array
 {
-    $schema = $spec['paths'][$path][$method]['responses'][$status]['content']['application/json']['schema'] ?? [];
-    $variants = $schema['anyOf'] ?? [$schema];
-
-    return collect($variants)
-        ->flatMap(fn (array $variant) => $variant['properties']['error']['properties']['code']['enum'] ?? [])
-        ->all();
+    return errorCodesInSchema($spec, $spec['paths'][$path][$method]['responses'][$status]['content']['application/json']['schema'] ?? []);
 }
 
 it('documents the refund endpoint with its errors and the order schema', function () {

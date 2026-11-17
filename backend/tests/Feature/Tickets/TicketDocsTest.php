@@ -11,12 +11,7 @@ beforeEach(function () {
  */
 function ticketErrorCodes(array $spec, string $path, int $status): array
 {
-    $schema = $spec['paths'][$path]['get']['responses'][$status]['content']['application/json']['schema'] ?? [];
-    $variants = $schema['anyOf'] ?? [$schema];
-
-    return collect($variants)
-        ->flatMap(fn (array $variant) => $variant['properties']['error']['properties']['code']['enum'] ?? [])
-        ->all();
+    return errorCodesInSchema($spec, $spec['paths'][$path]['get']['responses'][$status]['content']['application/json']['schema'] ?? []);
 }
 
 it('documents authentication of the ticket and sales endpoints', function (string $path) {

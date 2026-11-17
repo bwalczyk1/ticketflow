@@ -11,11 +11,7 @@ beforeEach(function () {
  */
 function waitlistErrorCodes(array $spec, string $method, string $path, int $status): array
 {
-    $schema = $spec['paths'][$path][$method]['responses'][$status]['content']['application/json']['schema'] ?? [];
-
-    return collect($schema['anyOf'] ?? [$schema])
-        ->flatMap(fn (array $variant) => $variant['properties']['error']['properties']['code']['enum'] ?? [])
-        ->all();
+    return errorCodesInSchema($spec, $spec['paths'][$path][$method]['responses'][$status]['content']['application/json']['schema'] ?? []);
 }
 
 it('documents authentication of the waitlist endpoints', function (string $method, string $path) {

@@ -3,9 +3,9 @@ import type { Order, Paginated } from '../../api/types'
 
 export const ordersKey = ['orders']
 
-export const ORDERS_PAGE_SIZE = 10
+const ORDERS_PAGE_SIZE = 10
 
-export interface OrderItemInput {
+interface OrderItemInput {
   ticketTypeId: number
   quantity: number
 }

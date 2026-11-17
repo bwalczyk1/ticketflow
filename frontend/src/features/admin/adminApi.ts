@@ -3,7 +3,7 @@ import type { AdminEvent, Paginated, Role, User } from '../../api/types'
 
 export const adminKey = ['admin']
 
-export const ADMIN_PAGE_SIZE = 10
+const ADMIN_PAGE_SIZE = 10
 
 export const ROLE_LABELS: Record<Role, string> = {
   ADMIN: 'Administrator',

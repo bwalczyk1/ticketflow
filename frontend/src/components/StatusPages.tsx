@@ -5,10 +5,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { PAGE_TITLE } from '@/lib/styles'
 import { cn } from '@/lib/utils'
 
-interface PlaceholderPageProps {
-  title: string
-}
-
 interface MessagePageProps {
   title: string
   message: string
@@ -46,10 +42,6 @@ function MessagePage({ title, message, backLink = false }: MessagePageProps) {
       )}
     </section>
   )
-}
-
-export function PlaceholderPage({ title }: PlaceholderPageProps) {
-  return <MessagePage title={title} message="Ta strona jest w przygotowaniu." />
 }
 
 export function ForbiddenPage() {

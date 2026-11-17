@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { ApiError } from '../../api/errors'
-import type { CatalogEvent, PurchaseLimit, TicketType } from '../../api/types'
+import type { EventDetails, PurchaseLimit, TicketType } from '../../api/types'
 import { ErrorBanner } from '../../components/ErrorBanner'
 import { formatPrice } from '../../lib/money'
 import { useAuth } from '../auth/AuthContext'
@@ -15,14 +15,8 @@ import { createOrder, ordersKey } from './checkoutApi'
 import { WaitlistJoin } from '../waitlist/WaitlistJoin'
 import { useNow } from './useCountdown'
 
-/**
- * Used when the API sends no purchase limit. The server enforces the real limit; this only
- * stops the picker from going past it.
- */
-const MAX_TICKETS = 6
-
 interface TicketSelectionProps {
-  event: CatalogEvent
+  event: EventDetails
 }
 
 interface QuantityPickerProps {
@@ -108,7 +102,7 @@ export function TicketSelection({ event }: TicketSelectionProps) {
     0,
   )
   const limit = event.purchaseLimit
-  const allowance = limit ? Math.max(0, limit.max - limit.used) : MAX_TICKETS
+  const allowance = limit ? Math.max(0, limit.max - limit.used) : 0
   const canRetry = mutation.error instanceof ApiError && mutation.error.code === 'RESERVATION_CONFLICT'
 
   function changeQuantity(ticketTypeId: number, quantity: number) {
@@ -140,14 +134,7 @@ export function TicketSelection({ event }: TicketSelectionProps) {
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="font-semibold">
-              Razem: {formatPrice(totalPrice)}
-              {!limit && (
-                <span className="ml-2 text-sm font-normal text-muted-foreground">
-                  ({totalQuantity} z {MAX_TICKETS} biletów)
-                </span>
-              )}
-            </p>
+            <p className="font-semibold">Razem: {formatPrice(totalPrice)}</p>
 
             {limit && <p className="text-sm text-muted-foreground">{limitLabel(limit, allowance, totalQuantity)}</p>}
           </div>

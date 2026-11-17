@@ -118,11 +118,6 @@ export function OrderRefund({ order, now, wait, timedOut, onCheckAgain }: OrderR
   const { refund } = order
   const deadline = order.refundableUntil ? formatDateTime(order.refundableUntil, order.event.timezone) : null
 
-  // An older backend sends neither field, so there is nothing to show.
-  if (order.refundableUntil === undefined && refund === undefined) {
-    return null
-  }
-
   if (isRefundOpen(order, now)) {
     return (
       <Card>

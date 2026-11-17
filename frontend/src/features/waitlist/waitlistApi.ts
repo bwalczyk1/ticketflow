@@ -3,7 +3,7 @@ import type { Order, Paginated, WaitlistEntry, WaitlistStatus } from '../../api/
 
 export const waitlistKey = ['waitlist']
 
-export const WAITLIST_PAGE_SIZE = 10
+const WAITLIST_PAGE_SIZE = 10
 
 /** The most entries one request returns; an attendee has far fewer, so one page covers them. */
 const ALL_ENTRIES_LIMIT = 100

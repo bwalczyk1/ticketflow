@@ -60,11 +60,12 @@ export interface CatalogEvent {
   endsAt: string
   status: EventStatus
   ticketTypes?: TicketType[]
-  /**
-   * Hand-written ahead of the backend change that adds it to GET /api/events/{id}; check against
-   * the OpenAPI docs once they are regenerated. Null for guests and users who are not attendees.
-   */
-  purchaseLimit?: PurchaseLimit | null
+}
+
+/** GET /api/events/{id}: the catalog event with the signed-in attendee's purchase limit. */
+export interface EventDetails extends CatalogEvent {
+  /** Null for guests and users who are not attendees. */
+  purchaseLimit: PurchaseLimit | null
 }
 
 /** How many tickets the attendee may hold for one event and how many they already have. */
@@ -107,25 +108,18 @@ export interface Order {
     startsAt: string
   }
   items: OrderItem[]
-  /**
-   * Hand-written ahead of the backend change that adds it; check against the OpenAPI docs once
-   * they are regenerated. Null until the invoice is issued, missing on an older backend.
-   */
-  invoice?: Invoice | null
-  /**
-   * Hand-written ahead of the refunds backend change; regenerate from the OpenAPI docs once it
-   * lands. Set only while the order is PAID: the last moment a refund is accepted.
-   */
-  refundableUntil?: string | null
-  /** Hand-written ahead of the refunds backend change. Null until a refund is requested. */
-  refund?: Refund | null
-  /** Hand-written ahead of the refunds backend change. Null until the correction is issued. */
-  correctionInvoice?: Invoice | null
+  /** Null until the invoice is issued. */
+  invoice: Invoice | null
+  /** Set only while the order is PAID: the last moment a refund is accepted. */
+  refundableUntil: string | null
+  /** Null until a refund is requested. */
+  refund: Refund | null
+  /** Null until the correction invoice is issued. */
+  correctionInvoice: Invoice | null
 }
 
 export type RefundStatus = 'PENDING' | 'SUCCEEDED' | 'FAILED'
 
-/** Hand-written ahead of the refunds backend change (see `Order.refund`). */
 export interface Refund {
   status: RefundStatus
   /** Integer grosze. */
@@ -134,7 +128,6 @@ export interface Refund {
   createdAt: string
 }
 
-/** Hand-written ahead of the backend change that adds it (see `Order.invoice`). */
 export interface Invoice {
   number: string
   issuedAt: string
@@ -161,7 +154,6 @@ export interface Ticket {
 
 export type WaitlistStatus = 'WAITING' | 'OFFERED' | 'CONVERTED' | 'EXPIRED' | 'CANCELLED'
 
-/** Hand-written ahead of the waitlist backend change; regenerate from the OpenAPI docs once it lands. */
 export interface WaitlistEntry {
   id: number
   status: WaitlistStatus
@@ -185,7 +177,6 @@ export interface WaitlistEntry {
   createdAt: string
 }
 
-/** Hand-written ahead of the check-in backend change. */
 export interface CheckedInTicket {
   id: number
   code: string

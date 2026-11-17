@@ -10,9 +10,6 @@ import { ErrorBanner } from '../../components/ErrorBanner'
 import { eventsKey } from '../catalog/catalogApi'
 import { fetchAllEntries, joinWaitlist, leaveWaitlist, waitlistKey } from './waitlistApi'
 
-/** The most tickets one waitlist entry can ask for. */
-const MAX_QUANTITY = 6
-
 interface WaitlistJoinProps {
   ticketType: TicketType
   /** How many more tickets the attendee may hold for the event. */
@@ -24,8 +21,7 @@ export function WaitlistJoin({ ticketType, allowance }: WaitlistJoinProps) {
   const queryClient = useQueryClient()
   const [quantity, setQuantity] = useState(1)
   const [isLeaving, setIsLeaving] = useState(false)
-  const maxQuantity = Math.min(MAX_QUANTITY, allowance)
-  const selected = Math.min(quantity, maxQuantity)
+  const selected = Math.min(quantity, allowance)
 
   const { data } = useQuery({ queryKey: [...waitlistKey, 'all'], queryFn: fetchAllEntries })
   const entry = data?.data.find(
@@ -98,7 +94,7 @@ export function WaitlistJoin({ ticketType, allowance }: WaitlistJoinProps) {
     )
   }
 
-  if (maxQuantity < 1) {
+  if (allowance < 1) {
     return (
       <p className="basis-full text-sm text-muted-foreground">
         Wykorzystano limit biletów na to wydarzenie, więc nie możesz zapisać się na listę.
@@ -141,7 +137,7 @@ export function WaitlistJoin({ ticketType, allowance }: WaitlistJoinProps) {
               size="icon-sm"
               type="button"
               aria-label="Więcej"
-              disabled={selected >= maxQuantity}
+              disabled={selected >= allowance}
               onClick={() => setQuantity(selected + 1)}
             >
               <Plus />

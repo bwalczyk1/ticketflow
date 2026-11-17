@@ -1,7 +1,7 @@
 import type { Order } from '../../api/types'
 
 /** The payment was started and the background job has not answered yet. */
-export function isPaymentInProgress(order: Order): boolean {
+function isPaymentInProgress(order: Order): boolean {
   return order.status === 'PENDING' && order.paymentStatus === 'PENDING'
 }
 
@@ -39,12 +39,10 @@ export function getOrderWait(order: Order, now: number): OrderWait | null {
     return 'refund'
   }
 
-  // Undefined means a backend without refunds, so there is nothing to wait for.
   if (order.status === 'REFUNDED' && order.correctionInvoice === null) {
     return 'correction'
   }
 
-  // Undefined means a backend without invoices, so there is nothing to wait for.
   if (order.status === 'PAID' && order.invoice === null) {
     return 'invoice'
   }

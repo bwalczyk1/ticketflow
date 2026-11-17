@@ -58,7 +58,9 @@ class StartPayment
             throw new PaymentAlreadyStarted;
         }
 
-        if (TicketAvailability::holdEnded($order->expires_at, now())) {
+        // The hold is half-open: at the exact second of expires_at it is already over, the same
+        // boundary ExpireReservations uses.
+        if ($order->expires_at->lte(now())) {
             throw new ReservationExpired;
         }
 

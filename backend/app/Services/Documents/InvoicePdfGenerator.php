@@ -5,8 +5,6 @@ namespace App\Services\Documents;
 use App\Enums\InvoiceType;
 use App\Models\Invoice;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class InvoicePdfGenerator
 {
@@ -15,17 +13,10 @@ class InvoicePdfGenerator
      */
     public function generate(Invoice $invoice): string
     {
-        $path = DocumentPaths::invoice($invoice->year, $invoice->type, $invoice->number);
         $pdf = Pdf::loadHTML($this->html($invoice))->setPaper('a4')->setOption('enable_font_subsetting', true)->output();
+        $type = strtolower($invoice->type->value);
 
-        // A half-written file must never sit under the final name, so a retry can safely overwrite it.
-        $disk = Storage::disk('local');
-        $temporaryPath = $path.'.'.Str::random(8).'.tmp';
-
-        $disk->put($temporaryPath, $pdf);
-        $disk->move($temporaryPath, $path);
-
-        return $path;
+        return PdfFile::store("invoices/{$invoice->year}/{$type}-{$invoice->number}.pdf", $pdf);
     }
 
     public function html(Invoice $invoice): string

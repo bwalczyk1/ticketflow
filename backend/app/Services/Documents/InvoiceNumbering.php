@@ -14,11 +14,6 @@ class InvoiceNumbering
         return (int) $at->copy()->setTimezone($timezone)->format('Y');
     }
 
-    public static function next(int $lastNumber): int
-    {
-        return $lastNumber + 1;
-    }
-
     /**
      * Numbers restart every year, so only the number and the year together identify an invoice.
      * The order number/year is the Polish convention and matches the PDF.

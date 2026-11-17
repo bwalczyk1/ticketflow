@@ -35,7 +35,7 @@ class InvoiceNumberAllocator
                 ->lockForUpdate()
                 ->value('last_number');
 
-            $number = InvoiceNumbering::next($last);
+            $number = $last + 1;
 
             $connection->table('invoice_sequences')
                 ->where('year', $year)

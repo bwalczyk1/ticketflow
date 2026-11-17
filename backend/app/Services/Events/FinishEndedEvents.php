@@ -15,7 +15,7 @@ class FinishEndedEvents
     public function handle(): int
     {
         return Event::query()
-            ->whereIn('status', self::finishableStatuses())
+            ->where('status', EventStatus::Published)
             ->where('ends_at', '<', now())
             ->orderBy('id')
             ->pluck('id')
@@ -23,22 +23,11 @@ class FinishEndedEvents
             ->count();
     }
 
-    /**
-     * @return list<EventStatus>
-     */
-    public static function finishableStatuses(): array
-    {
-        return array_values(array_filter(
-            EventStatus::cases(),
-            fn (EventStatus $status) => $status->canTransitionTo(EventStatus::Finished),
-        ));
-    }
-
     private function finish(int $eventId): bool
     {
         $finished = Event::query()
             ->whereKey($eventId)
-            ->whereIn('status', self::finishableStatuses())
+            ->where('status', EventStatus::Published)
             ->update(['status' => EventStatus::Finished]);
 
         if ($finished === 0) {

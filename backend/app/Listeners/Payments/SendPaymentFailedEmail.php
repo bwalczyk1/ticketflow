@@ -10,9 +10,7 @@ use App\Models\Order;
 use App\Services\Notifications\NotificationLedger;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\Attributes\Queue;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Throwable;
 
 #[Queue(QueueName::Mail)]
 class SendPaymentFailedEmail implements ShouldQueue
@@ -35,10 +33,5 @@ class SendPaymentFailedEmail implements ShouldQueue
         $this->ledger->once("order:{$order->id}:payment-failed", function () use ($order) {
             Mail::to($order->user)->send(new PaymentFailedMail($order));
         });
-    }
-
-    public function failed(PaymentFailed $event, Throwable $exception): void
-    {
-        Log::error('Sending the failed payment e-mail failed', ['order_id' => $event->orderId, 'error' => $exception::class]);
     }
 }

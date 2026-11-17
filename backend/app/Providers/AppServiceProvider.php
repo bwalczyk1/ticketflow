@@ -9,8 +9,13 @@ use Dedoc\Scramble\Support\Generator\OpenApi;
 use Dedoc\Scramble\Support\Generator\Operation;
 use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Dedoc\Scramble\Support\RouteInfo;
+use Illuminate\Contracts\Queue\Job;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Events\CallQueuedListener;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Queue\Events\JobFailed;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -42,6 +47,7 @@ class AppServiceProvider extends ServiceProvider
         Model::preventAccessingMissingAttributes(! $this->app->isProduction());
 
         $this->documentApiSecurity();
+        $this->logFailedJobs();
     }
 
     private function failOnInvalidConfig(): void
@@ -60,6 +66,44 @@ class AppServiceProvider extends ServiceProvider
         if ($errors !== []) {
             throw new RuntimeException("Invalid configuration:\n- ".implode("\n- ", $errors));
         }
+    }
+
+    /**
+     * Horizon keeps every failed job with its payload and exception, where it can be retried by hand.
+     * The log line names the job, its ids and the exception class only: exception messages can
+     * carry query bindings or e-mail addresses.
+     */
+    private function logFailedJobs(): void
+    {
+        Queue::failing(function (JobFailed $event) {
+            Log::error('Queued job failed', [
+                'job' => $event->job->resolveName(),
+                'uuid' => $event->job->uuid(),
+                ...self::failedJobIds($event->job),
+                'error' => $event->exception::class,
+            ]);
+        });
+    }
+
+    /**
+     * The integer ids of the job, or of the event a queued listener got, such as orderId.
+     *
+     * @return array<string, int>
+     */
+    private static function failedJobIds(Job $job): array
+    {
+        $command = unserialize($job->payload()['data']['command'] ?? 'N;');
+        $subject = $command instanceof CallQueuedListener ? ($command->data[0] ?? null) : $command;
+
+        if (! is_object($subject)) {
+            return [];
+        }
+
+        return array_filter(
+            get_object_vars($subject),
+            fn (mixed $value, string $name) => is_int($value) && str_ends_with($name, 'Id'),
+            ARRAY_FILTER_USE_BOTH,
+        );
     }
 
     /**

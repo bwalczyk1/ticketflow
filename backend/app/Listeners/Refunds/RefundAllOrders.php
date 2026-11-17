@@ -11,8 +11,6 @@ use App\Services\Orders\CancelOrder;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\Attributes\Queue;
 use Illuminate\Support\Facades\Bus;
-use Illuminate\Support\Facades\Log;
-use Throwable;
 
 #[Queue(QueueName::Refunds)]
 class RefundAllOrders implements ShouldQueue
@@ -48,10 +46,5 @@ class RefundAllOrders implements ShouldQueue
             ->onQueue(QueueName::Refunds->value)
             ->allowFailures()
             ->dispatch();
-    }
-
-    public function failed(EventCancelled $event, Throwable $exception): void
-    {
-        Log::error('Refunding the orders of a cancelled event failed', ['event_id' => $event->eventId, 'error' => $exception::class]);
     }
 }

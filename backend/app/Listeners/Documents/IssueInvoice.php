@@ -13,8 +13,6 @@ use App\Services\Documents\InvoiceNumberAllocator;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\Attributes\Queue;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Throwable;
 
 #[Queue(QueueName::Documents)]
 class IssueInvoice implements ShouldQueue
@@ -43,11 +41,6 @@ class IssueInvoice implements ShouldQueue
         }
 
         $invoice->update(['pdf_path' => $this->pdfs->generate($invoice)]);
-    }
-
-    public function failed(OrderPaid $event, Throwable $exception): void
-    {
-        Log::error('Issuing an invoice failed', ['order_id' => $event->orderId, 'error' => $exception::class]);
     }
 
     private function existingInvoice(int $orderId): ?Invoice

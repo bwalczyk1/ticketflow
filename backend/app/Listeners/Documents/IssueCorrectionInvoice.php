@@ -14,8 +14,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\Attributes\Queue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Throwable;
 
 #[Queue(QueueName::Documents)]
 class IssueCorrectionInvoice implements ShouldQueue
@@ -67,11 +65,6 @@ class IssueCorrectionInvoice implements ShouldQueue
         }
 
         $correction->update(['pdf_path' => $this->pdfs->generate($correction)]);
-    }
-
-    public function failed(OrderRefunded $event, Throwable $exception): void
-    {
-        Log::error('Issuing a correction invoice failed', ['order_id' => $event->orderId, 'error' => $exception::class]);
     }
 
     private function existingCorrection(int $refundId): ?Invoice

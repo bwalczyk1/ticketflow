@@ -11,9 +11,7 @@ use App\Services\Notifications\NotificationLedger;
 use App\Services\Tickets\SalesSummary;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\Attributes\Queue;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Throwable;
 
 #[Queue(QueueName::Notifications)]
 class SendPostEventReport implements ShouldQueue
@@ -41,10 +39,5 @@ class SendPostEventReport implements ShouldQueue
         $this->ledger->once("event:{$finished->id}:report", function () use ($finished, $summary) {
             Mail::to($finished->organizer)->send(new PostEventReportMail($finished, $summary));
         });
-    }
-
-    public function failed(EventFinished $event, Throwable $exception): void
-    {
-        Log::error('Sending the post-event report failed', ['event_id' => $event->eventId, 'error' => $exception::class]);
     }
 }

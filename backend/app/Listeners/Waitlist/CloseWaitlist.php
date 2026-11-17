@@ -7,8 +7,6 @@ use App\Events\Catalog\EventCancelled;
 use App\Services\Waitlist\CloseEventWaitlist;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\Attributes\Queue;
-use Illuminate\Support\Facades\Log;
-use Throwable;
 
 #[Queue(QueueName::Waitlist)]
 class CloseWaitlist implements ShouldQueue
@@ -18,10 +16,5 @@ class CloseWaitlist implements ShouldQueue
     public function handle(EventCancelled $event): void
     {
         $this->closeEventWaitlist->handle($event->eventId);
-    }
-
-    public function failed(EventCancelled $event, Throwable $exception): void
-    {
-        Log::error('Closing the waitlist of a cancelled event failed', ['event_id' => $event->eventId, 'error' => $exception::class]);
     }
 }

@@ -9,9 +9,7 @@ use App\Models\Order;
 use App\Services\Notifications\NotificationLedger;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\Attributes\Queue;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Throwable;
 
 #[Queue(QueueName::Notifications)]
 class NotifyOrganizer implements ShouldQueue
@@ -34,10 +32,5 @@ class NotifyOrganizer implements ShouldQueue
         $this->ledger->once("order:{$order->id}:organizer", function () use ($order) {
             Mail::to($order->event->organizer)->send(new OrganizerOrderMail($order));
         });
-    }
-
-    public function failed(OrderPaid $event, Throwable $exception): void
-    {
-        Log::error('Notifying the organizer failed', ['order_id' => $event->orderId, 'error' => $exception::class]);
     }
 }

@@ -10,8 +10,6 @@ use App\Models\Ticket;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\Attributes\Queue;
-use Illuminate\Support\Facades\Log;
-use Throwable;
 
 /**
  * Dispatched by IssueTickets once the tickets exist, so the PDFs never race with ticket issuing.
@@ -43,10 +41,5 @@ class GenerateTicketPdfs implements ShouldQueue
         }
 
         TicketsGenerated::dispatch($this->orderId);
-    }
-
-    public function failed(Throwable $exception): void
-    {
-        Log::error('Generating ticket PDFs failed', ['order_id' => $this->orderId, 'error' => $exception::class]);
     }
 }

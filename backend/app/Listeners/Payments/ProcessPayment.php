@@ -12,8 +12,6 @@ use App\Models\Payment;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\Attributes\Queue;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
-use Illuminate\Support\Facades\Log;
-use Throwable;
 
 #[Queue(QueueName::Payments)]
 class ProcessPayment implements ShouldQueue
@@ -37,6 +35,8 @@ class ProcessPayment implements ShouldQueue
     /**
      * A gateway that returns a redirect reports its result later through a webhook. Any other
      * error from the gateway leaves the payment pending, so the queue retries with the same key.
+     * After the last attempt the payment stays pending and ExpireReservations picks the order up
+     * after the grace period.
      */
     public function handle(OrderPlaced $event): void
     {
@@ -57,13 +57,5 @@ class ProcessPayment implements ShouldQueue
         if ($start->redirectUrl === null) {
             $this->results->succeeded($payment, $start->providerRef);
         }
-    }
-
-    /**
-     * The payment stays pending and ExpireReservations picks the order up after the grace period.
-     */
-    public function failed(OrderPlaced $event, Throwable $exception): void
-    {
-        Log::error('Processing a payment failed', ['order_id' => $event->orderId, 'error' => $exception->getMessage()]);
     }
 }

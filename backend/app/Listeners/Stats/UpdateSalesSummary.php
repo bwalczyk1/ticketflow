@@ -11,8 +11,6 @@ use App\Models\Ticket;
 use App\Services\Tickets\SalesSummary;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\Attributes\Queue;
-use Illuminate\Support\Facades\Log;
-use Throwable;
 
 #[Queue(QueueName::Stats)]
 class UpdateSalesSummary implements ShouldQueue
@@ -28,16 +26,6 @@ class UpdateSalesSummary implements ShouldQueue
         if ($eventId !== null) {
             $this->salesSummary->recalculate($eventId);
         }
-    }
-
-    public function failed(OrderPaid|OrderRefunded|TicketCheckedIn $event, Throwable $exception): void
-    {
-        Log::error('Updating the sales summary failed', [
-            'event' => $event::class,
-            'order_id' => $event->orderId ?? null,
-            'ticket_id' => $event->ticketId ?? null,
-            'error' => $exception::class,
-        ]);
     }
 
     private function eventOfTicket(int $ticketId): ?int

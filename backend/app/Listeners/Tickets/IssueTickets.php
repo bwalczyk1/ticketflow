@@ -13,9 +13,7 @@ use App\Models\Ticket;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\Attributes\Queue;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use Throwable;
 
 #[Queue(QueueName::Tickets)]
 class IssueTickets implements ShouldQueue
@@ -32,11 +30,6 @@ class IssueTickets implements ShouldQueue
         }
 
         GenerateTicketPdfs::dispatch($event->orderId);
-    }
-
-    public function failed(OrderPaid $event, Throwable $exception): void
-    {
-        Log::error('Issuing tickets failed', ['order_id' => $event->orderId, 'error' => $exception::class]);
     }
 
     /**

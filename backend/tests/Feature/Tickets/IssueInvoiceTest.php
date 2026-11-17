@@ -12,7 +12,6 @@ use App\Models\Order;
 use App\Services\Documents\InvoiceNumberAllocator;
 use Illuminate\Database\QueryException;
 use Illuminate\Events\CallQueuedListener;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Tests\Feature\Tickets\TicketFixtures;
@@ -139,14 +138,4 @@ it('runs on the documents queue', function () {
         CallQueuedListener::class,
         fn (CallQueuedListener $job) => $job->class === IssueInvoice::class,
     );
-});
-
-it('logs the order id when all attempts are used up', function () {
-    Log::spy();
-
-    app(IssueInvoice::class)->failed(new OrderPaid(7), new RuntimeException('Disk is full'));
-
-    Log::shouldHaveReceived('error')
-        ->once()
-        ->withArgs(fn (string $message, array $context) => $context['order_id'] === 7);
 });

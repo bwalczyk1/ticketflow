@@ -8,7 +8,6 @@ use App\Listeners\Tickets\IssueTickets;
 use App\Models\Order;
 use App\Models\Ticket;
 use Illuminate\Support\Facades\Bus;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Tests\Feature\Tickets\TicketFixtures;
 
@@ -95,14 +94,4 @@ it('does nothing for a missing order', function () {
     expect(Ticket::query()->count())->toBe(0);
 
     Bus::assertNotDispatched(GenerateTicketPdfs::class);
-});
-
-it('logs the order id when all attempts are used up', function () {
-    Log::spy();
-
-    app(IssueTickets::class)->failed(new OrderPaid(7), new RuntimeException('Database is down'));
-
-    Log::shouldHaveReceived('error')
-        ->once()
-        ->withArgs(fn (string $message, array $context) => $context['order_id'] === 7);
 });

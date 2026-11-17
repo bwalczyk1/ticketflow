@@ -14,9 +14,7 @@ use App\Services\Refunds\StartRefund;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Queue\Attributes\Queue;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Throwable;
 
 #[Queue(QueueName::Mail)]
 class NotifyAttendees implements ShouldQueue
@@ -55,10 +53,5 @@ class NotifyAttendees implements ShouldQueue
                 Mail::to($attendee)->send(new EventCancelledMail($cancelled, $attendee, $refundTotal));
             });
         }
-    }
-
-    public function failed(EventCancelled $event, Throwable $exception): void
-    {
-        Log::error('Notifying attendees of a cancelled event failed', ['event_id' => $event->eventId, 'error' => $exception::class]);
     }
 }

@@ -9,7 +9,6 @@ use App\Enums\QueueName;
 use App\Events\Orders\OrderPaid;
 use App\Events\Orders\OrderPlaced;
 use App\Events\Payments\PaymentFailed;
-use App\Exceptions\Domain\PaymentDeclined;
 use App\Listeners\Payments\ProcessPayment;
 use App\Models\Payment;
 use App\Models\TicketType;
@@ -18,7 +17,6 @@ use App\Services\Payments\FakePaymentGateway;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Tests\Feature\Orders\OrderFixtures;
 
@@ -152,14 +150,4 @@ it('does not run two jobs of one order at once', function () {
 
     expect($middleware[0])->toBeInstanceOf(WithoutOverlapping::class)
         ->and($middleware[0]->key)->toBe('order:7');
-});
-
-it('logs the order id when all attempts are used up', function () {
-    Log::spy();
-
-    app(ProcessPayment::class)->failed(new OrderPlaced(7), new PaymentDeclined);
-
-    Log::shouldHaveReceived('error')
-        ->once()
-        ->withArgs(fn (string $message, array $context) => $context['order_id'] === 7);
 });

@@ -9,8 +9,6 @@ use Illuminate\Bus\Batchable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\Attributes\Queue;
-use Illuminate\Support\Facades\Log;
-use Throwable;
 
 /**
  * One order of a cancelled event, run inside the batch of RefundAllOrders, so Horizon shows the progress.
@@ -37,10 +35,5 @@ class RefundOrder implements ShouldQueue
         } catch (OrderNotRefundable) {
             return;
         }
-    }
-
-    public function failed(Throwable $exception): void
-    {
-        Log::error('Refunding an order of a cancelled event failed', ['order_id' => $this->orderId, 'error' => $exception::class]);
     }
 }

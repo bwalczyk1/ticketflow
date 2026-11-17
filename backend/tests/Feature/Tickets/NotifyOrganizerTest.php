@@ -9,7 +9,6 @@ use App\Models\Order;
 use App\Models\SentNotification;
 use App\Models\User;
 use Illuminate\Events\CallQueuedListener;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
 use Tests\Feature\Tickets\TicketFixtures;
@@ -69,14 +68,4 @@ it('runs on the notifications queue', function () {
         CallQueuedListener::class,
         fn (CallQueuedListener $job) => $job->class === NotifyOrganizer::class,
     );
-});
-
-it('logs the order id when all attempts are used up', function () {
-    Log::spy();
-
-    app(NotifyOrganizer::class)->failed(new OrderPaid(7), new RuntimeException('SMTP is down'));
-
-    Log::shouldHaveReceived('error')
-        ->once()
-        ->withArgs(fn (string $message, array $context) => $context['order_id'] === 7);
 });

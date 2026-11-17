@@ -7,8 +7,6 @@ use App\Events\Orders\SeatsReleased;
 use App\Services\Waitlist\WaitlistOffers;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\Attributes\Queue;
-use Illuminate\Support\Facades\Log;
-use Throwable;
 
 #[Queue(QueueName::Waitlist)]
 class OfferSeatsToWaitlist implements ShouldQueue
@@ -22,10 +20,5 @@ class OfferSeatsToWaitlist implements ShouldQueue
     public function handle(SeatsReleased $event): void
     {
         $this->waitlistOffers->offerFreeSeats($event->ticketTypeId);
-    }
-
-    public function failed(SeatsReleased $event, Throwable $exception): void
-    {
-        Log::error('Offering seats to the waitlist failed', ['ticket_type_id' => $event->ticketTypeId, 'error' => $exception::class]);
     }
 }

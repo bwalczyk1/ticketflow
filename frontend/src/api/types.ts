@@ -20,23 +20,11 @@ export interface Paginated<T> {
   }
 }
 
-/**
- * Written by hand: the docs describe `details` only as a list of objects, while the API
- * always sends `{ field, message }` pairs there.
- */
-export interface FieldError {
-  field: string
-  message: string
-}
+/** One invalid field of a VALIDATION_ERROR. */
+export type FieldError = Schemas['ErrorDetail']
 
-export interface ApiErrorBody {
-  error: {
-    code: string
-    message: string
-    details?: FieldError[]
-    requestId?: string
-  }
-}
+/** The body of every error response: `{ error: { code, message, details?, requestId } }`. */
+export type ApiErrorBody = Schemas['ErrorResponse']
 
 export type EventStatus = Schemas['EventStatus']
 

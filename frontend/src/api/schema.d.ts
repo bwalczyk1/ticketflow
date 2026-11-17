@@ -592,6 +592,24 @@ export interface components {
             endsAt: string;
             organizer: components["schemas"]["UserResource"];
         };
+        /** AlreadyOnWaitlistError */
+        AlreadyOnWaitlistError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "ALREADY_ON_WAITLIST";
+                /** @example You are already on the waitlist of this pool */
+                message?: string;
+            };
+        };
+        /** CheckInClosedError */
+        CheckInClosedError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "CHECK_IN_CLOSED";
+                /** @example Check-in is open only on the day of the event */
+                message?: string;
+            };
+        };
         /** CheckInRequest */
         CheckInRequest: {
             /** @description The ticket code from the QR code, a UUID. */
@@ -606,6 +624,47 @@ export interface components {
             checkedInAt: string;
             ticketTypeName: string;
             holderName: string;
+        };
+        /** CsrfTokenMismatchError */
+        CsrfTokenMismatchError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "CSRF_TOKEN_MISMATCH";
+                /** @example CSRF token mismatch */
+                message?: string;
+            };
+        };
+        /** EmailTakenError */
+        EmailTakenError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "EMAIL_TAKEN";
+                /** @example Email is already registered */
+                message?: string;
+            };
+        };
+        /** ErrorDetail */
+        ErrorDetail: {
+            field: string;
+            message: string;
+        };
+        /** ErrorResponse */
+        ErrorResponse: {
+            error: {
+                code: string;
+                message: string;
+                details?: components["schemas"]["ErrorDetail"][];
+                requestId: string;
+            };
+        };
+        /** EventClosedError */
+        EventClosedError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "EVENT_CLOSED";
+                /** @example A finished or cancelled event cannot be changed */
+                message?: string;
+            };
         };
         /** EventDetailsResource */
         EventDetailsResource: {
@@ -631,6 +690,15 @@ export interface components {
                 used: number;
             } | null;
         };
+        /** EventHasSalesError */
+        EventHasSalesError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "EVENT_HAS_SALES";
+                /** @example An event with sold or held tickets can only be cancelled */
+                message?: string;
+            };
+        };
         /** EventManagementResource */
         EventManagementResource: {
             id: number;
@@ -646,6 +714,15 @@ export interface components {
             endsAt: string;
             status: components["schemas"]["EventStatus"];
             ticketTypes?: components["schemas"]["TicketTypeManagementResource"][];
+        };
+        /** EventNotPublishableError */
+        EventNotPublishableError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "EVENT_NOT_PUBLISHABLE";
+                /** @example This event cannot be published yet */
+                message?: string;
+            };
         };
         /** EventResource */
         EventResource: {
@@ -668,6 +745,60 @@ export interface components {
          * @enum {string}
          */
         EventStatus: "DRAFT" | "PUBLISHED" | "FINISHED" | "CANCELLED";
+        /** ForbiddenError */
+        ForbiddenError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "FORBIDDEN";
+                /** @example Insufficient permissions */
+                message?: string;
+            };
+        };
+        /** InternalError */
+        InternalError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "INTERNAL_ERROR";
+                /** @example Internal server error */
+                message?: string;
+            };
+        };
+        /** InvalidCredentialsError */
+        InvalidCredentialsError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "INVALID_CREDENTIALS";
+                /** @example Invalid email or password */
+                message?: string;
+            };
+        };
+        /** InvalidJsonError */
+        InvalidJsonError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "INVALID_JSON";
+                /** @example Malformed JSON body. */
+                message?: string;
+            };
+        };
+        /** InvalidStatusTransitionError */
+        InvalidStatusTransitionError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "INVALID_STATUS_TRANSITION";
+                /** @example This status change is not allowed */
+                message?: string;
+            };
+        };
+        /** InvoiceNotFoundError */
+        InvoiceNotFoundError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "INVOICE_NOT_FOUND";
+                /** @example This order has no invoice yet */
+                message?: string;
+            };
+        };
         /** JoinWaitlistRequest */
         JoinWaitlistRequest: {
             quantity: number;
@@ -677,6 +808,15 @@ export interface components {
             /** Format: email */
             email: string;
             password: string;
+        };
+        /** NotFoundError */
+        NotFoundError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "NOT_FOUND";
+                /** @example Resource not found */
+                message?: string;
+            };
         };
         /** OrderEventResource */
         OrderEventResource: {
@@ -704,6 +844,24 @@ export interface components {
             name: string;
             quantity: number;
             unitPrice: number;
+        };
+        /** OrderNotPayableError */
+        OrderNotPayableError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "ORDER_NOT_PAYABLE";
+                /** @example This order cannot be paid in its current status */
+                message?: string;
+            };
+        };
+        /** OrderNotRefundableError */
+        OrderNotRefundableError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "ORDER_NOT_REFUNDABLE";
+                /** @example Only a paid order can be refunded */
+                message?: string;
+            };
         };
         /** OrderRefundResource */
         OrderRefundResource: {
@@ -741,11 +899,38 @@ export interface components {
          * @enum {string}
          */
         OrderStatus: "PENDING" | "PAID" | "EXPIRED" | "FAILED" | "CANCELLED" | "REFUNDED";
+        /** OwnAdminRoleProtectedError */
+        OwnAdminRoleProtectedError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "OWN_ADMIN_ROLE_PROTECTED";
+                /** @example You cannot remove your own ADMIN role */
+                message?: string;
+            };
+        };
+        /** PaymentAlreadyStartedError */
+        PaymentAlreadyStartedError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "PAYMENT_ALREADY_STARTED";
+                /** @example Payment for this order has already started */
+                message?: string;
+            };
+        };
         /**
          * PaymentStatus
          * @enum {string}
          */
         PaymentStatus: "PENDING" | "SUCCEEDED" | "FAILED";
+        /** PoolProtectedError */
+        PoolProtectedError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "POOL_PROTECTED";
+                /** @example Ticket pool cannot go below sold and held tickets */
+                message?: string;
+            };
+        };
         /** RefundOrderRequest */
         RefundOrderRequest: {
             /** @description Why the attendee gives the tickets back, printed on the correction invoice. */
@@ -756,6 +941,15 @@ export interface components {
          * @enum {string}
          */
         RefundStatus: "PENDING" | "SUCCEEDED" | "FAILED";
+        /** RefundWindowClosedError */
+        RefundWindowClosedError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "REFUND_WINDOW_CLOSED";
+                /** @example Refunds close 48 hours before the event starts */
+                message?: string;
+            };
+        };
         /** RegisterRequest */
         RegisterRequest: {
             name: string;
@@ -763,11 +957,38 @@ export interface components {
             email: string;
             password: string;
         };
+        /** ReservationConflictError */
+        ReservationConflictError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "RESERVATION_CONFLICT";
+                /** @example Too many concurrent reservations, please try again */
+                message?: string;
+            };
+        };
+        /** ReservationExpiredError */
+        ReservationExpiredError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "RESERVATION_EXPIRED";
+                /** @example Reservation has expired */
+                message?: string;
+            };
+        };
         /**
          * Role
          * @enum {string}
          */
         Role: "ADMIN" | "ORGANIZER" | "ATTENDEE";
+        /** SalesClosedError */
+        SalesClosedError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "SALES_CLOSED";
+                /** @example Tickets for this event are not on sale */
+                message?: string;
+            };
+        };
         /** StoreEventRequest */
         StoreEventRequest: {
             title: string;
@@ -794,6 +1015,42 @@ export interface components {
             name: string;
             price: number;
             quantity: number;
+        };
+        /** TicketAlreadyUsedError */
+        TicketAlreadyUsedError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "TICKET_ALREADY_USED";
+                /** @example This ticket has already been used */
+                message?: string;
+            };
+        };
+        /** TicketLimitExceededError */
+        TicketLimitExceededError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "TICKET_LIMIT_EXCEEDED";
+                /** @example Ticket limit per person exceeded */
+                message?: string;
+            };
+        };
+        /** TicketNotFoundError */
+        TicketNotFoundError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "TICKET_NOT_FOUND";
+                /** @example No ticket of this event has this code */
+                message?: string;
+            };
+        };
+        /** TicketPdfNotReadyError */
+        TicketPdfNotReadyError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "TICKET_PDF_NOT_READY";
+                /** @example The ticket PDF is still being generated, try again in a moment */
+                message?: string;
+            };
         };
         /** TicketResource */
         TicketResource: {
@@ -850,6 +1107,33 @@ export interface components {
             price: number;
             available: number;
         };
+        /** TicketVoidError */
+        TicketVoidError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "TICKET_VOID";
+                /** @example This ticket is void */
+                message?: string;
+            };
+        };
+        /** TicketsSoldOutError */
+        TicketsSoldOutError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "TICKETS_SOLD_OUT";
+                /** @example Not enough tickets available */
+                message?: string;
+            };
+        };
+        /** UnauthenticatedError */
+        UnauthenticatedError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "UNAUTHENTICATED";
+                /** @example Authentication required */
+                message?: string;
+            };
+        };
         /** UpdateEventRequest */
         UpdateEventRequest: {
             title?: string;
@@ -880,6 +1164,15 @@ export interface components {
             email: string;
             role: components["schemas"]["Role"];
         };
+        /** ValidationError */
+        ValidationError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "VALIDATION_ERROR";
+                /** @example Invalid request data */
+                message?: string;
+            };
+        };
         /** WaitlistEntryResource */
         WaitlistEntryResource: {
             id: number;
@@ -907,6 +1200,33 @@ export interface components {
             };
             /** Format: date-time */
             createdAt: string;
+        };
+        /** WaitlistNotNeededError */
+        WaitlistNotNeededError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "WAITLIST_NOT_NEEDED";
+                /** @example Enough tickets are still available, so they can be bought right away */
+                message?: string;
+            };
+        };
+        /** WaitlistOfferExpiredError */
+        WaitlistOfferExpiredError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "WAITLIST_OFFER_EXPIRED";
+                /** @example The waitlist offer has expired */
+                message?: string;
+            };
+        };
+        /** WaitlistOfferNotActiveError */
+        WaitlistOfferNotActiveError: components["schemas"]["ErrorResponse"] & {
+            error?: {
+                /** @enum {string} */
+                code?: "WAITLIST_OFFER_NOT_ACTIVE";
+                /** @example This waitlist entry has no open offer */
+                message?: string;
+            };
         };
         /**
          * WaitlistStatus
@@ -957,16 +1277,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "VALIDATION_ERROR";
-                            /** @example Invalid request data */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ValidationError"];
                 };
             };
             /** @description `UNAUTHENTICATED`: Authentication required */
@@ -975,16 +1286,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -993,16 +1295,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -1044,16 +1346,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "VALIDATION_ERROR";
-                            /** @example Invalid request data */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ValidationError"];
                 };
             };
             /** @description `UNAUTHENTICATED`: Authentication required */
@@ -1062,16 +1355,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -1080,16 +1364,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -1128,25 +1412,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "VALIDATION_ERROR";
-                            /** @example Invalid request data */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "INVALID_JSON";
-                            /** @example Malformed JSON body. */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ValidationError"] | components["schemas"]["InvalidJsonError"];
                 };
             };
             /** @description `UNAUTHENTICATED`: Authentication required */
@@ -1155,16 +1421,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -1173,16 +1430,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
                 };
             };
             /** @description `NOT_FOUND`: Resource not found */
@@ -1191,16 +1439,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "NOT_FOUND";
-                            /** @example Resource not found */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["NotFoundError"];
                 };
             };
             /** @description `OWN_ADMIN_ROLE_PROTECTED`: You cannot remove your own ADMIN role */
@@ -1209,16 +1448,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "OWN_ADMIN_ROLE_PROTECTED";
-                            /** @example You cannot remove your own ADMIN role */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["OwnAdminRoleProtectedError"];
+                };
+            };
+            /** @description `CSRF_TOKEN_MISMATCH`: CSRF token mismatch */
+            419: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CsrfTokenMismatchError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -1255,25 +1503,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "VALIDATION_ERROR";
-                            /** @example Invalid request data */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "INVALID_JSON";
-                            /** @example Malformed JSON body. */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ValidationError"] | components["schemas"]["InvalidJsonError"];
                 };
             };
             /** @description `EMAIL_TAKEN`: Email is already registered */
@@ -1282,16 +1512,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "EMAIL_TAKEN";
-                            /** @example Email is already registered */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["EmailTakenError"];
+                };
+            };
+            /** @description `CSRF_TOKEN_MISMATCH`: CSRF token mismatch */
+            419: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CsrfTokenMismatchError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -1328,25 +1567,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "VALIDATION_ERROR";
-                            /** @example Invalid request data */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "INVALID_JSON";
-                            /** @example Malformed JSON body. */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ValidationError"] | components["schemas"]["InvalidJsonError"];
                 };
             };
             /** @description `INVALID_CREDENTIALS`: Invalid email or password */
@@ -1355,16 +1576,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "INVALID_CREDENTIALS";
-                            /** @example Invalid email or password */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["InvalidCredentialsError"];
+                };
+            };
+            /** @description `CSRF_TOKEN_MISMATCH`: CSRF token mismatch */
+            419: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CsrfTokenMismatchError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -1391,16 +1621,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "INVALID_JSON";
-                            /** @example Malformed JSON body. */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["InvalidJsonError"];
                 };
             };
             /** @description `UNAUTHENTICATED`: Authentication required */
@@ -1409,16 +1630,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
+                };
+            };
+            /** @description `CSRF_TOKEN_MISMATCH`: CSRF token mismatch */
+            419: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CsrfTokenMismatchError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -1447,16 +1677,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -1502,16 +1732,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "VALIDATION_ERROR";
-                            /** @example Invalid request data */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ValidationError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -1542,16 +1772,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "NOT_FOUND";
-                            /** @example Resource not found */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["NotFoundError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -1591,25 +1821,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "VALIDATION_ERROR";
-                            /** @example Invalid request data */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "INVALID_JSON";
-                            /** @example Malformed JSON body. */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ValidationError"] | components["schemas"]["InvalidJsonError"];
                 };
             };
             /** @description `UNAUTHENTICATED`: Authentication required */
@@ -1618,16 +1830,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -1636,16 +1839,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
                 };
             };
             /**
@@ -1658,25 +1852,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "NOT_FOUND";
-                            /** @example Resource not found */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "TICKET_NOT_FOUND";
-                            /** @example No ticket of this event has this code */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["NotFoundError"] | components["schemas"]["TicketNotFoundError"];
                 };
             };
             /**
@@ -1691,34 +1867,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "CHECK_IN_CLOSED";
-                            /** @example Check-in is open only on the day of the event */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "TICKET_ALREADY_USED";
-                            /** @example This ticket has already been used */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "TICKET_VOID";
-                            /** @example This ticket is void */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["CheckInClosedError"] | components["schemas"]["TicketAlreadyUsedError"] | components["schemas"]["TicketVoidError"];
+                };
+            };
+            /** @description `CSRF_TOKEN_MISMATCH`: CSRF token mismatch */
+            419: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CsrfTokenMismatchError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -1738,6 +1905,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": string;
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -1778,16 +1954,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "VALIDATION_ERROR";
-                            /** @example Invalid request data */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ValidationError"];
                 };
             };
             /** @description `UNAUTHENTICATED`: Authentication required */
@@ -1796,16 +1963,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -1814,16 +1972,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -1860,25 +2018,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "VALIDATION_ERROR";
-                            /** @example Invalid request data */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "INVALID_JSON";
-                            /** @example Malformed JSON body. */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ValidationError"] | components["schemas"]["InvalidJsonError"];
                 };
             };
             /** @description `UNAUTHENTICATED`: Authentication required */
@@ -1887,16 +2027,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -1905,16 +2036,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
                 };
             };
             /** @description `NOT_FOUND`: Resource not found */
@@ -1923,16 +2045,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "NOT_FOUND";
-                            /** @example Resource not found */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["NotFoundError"];
                 };
             };
             /**
@@ -1949,43 +2062,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "SALES_CLOSED";
-                            /** @example Tickets for this event are not on sale */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "TICKET_LIMIT_EXCEEDED";
-                            /** @example Ticket limit per person exceeded */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "TICKETS_SOLD_OUT";
-                            /** @example Not enough tickets available */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "RESERVATION_CONFLICT";
-                            /** @example Too many concurrent reservations, please try again */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["SalesClosedError"] | components["schemas"]["TicketLimitExceededError"] | components["schemas"]["TicketsSoldOutError"] | components["schemas"]["ReservationConflictError"];
+                };
+            };
+            /** @description `CSRF_TOKEN_MISMATCH`: CSRF token mismatch */
+            419: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CsrfTokenMismatchError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -2016,16 +2111,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -2034,16 +2120,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
                 };
             };
             /** @description `NOT_FOUND`: Resource not found */
@@ -2052,16 +2129,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "NOT_FOUND";
-                            /** @example Resource not found */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["NotFoundError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -2092,16 +2169,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -2110,16 +2178,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
                 };
             };
             /**
@@ -2132,25 +2191,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "INVOICE_NOT_FOUND";
-                            /** @example This order has no invoice yet */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "NOT_FOUND";
-                            /** @example Resource not found */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["InvoiceNotFoundError"] | components["schemas"]["NotFoundError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -2181,16 +2231,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -2199,16 +2240,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
                 };
             };
             /**
@@ -2221,25 +2253,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "INVOICE_NOT_FOUND";
-                            /** @example This order has no invoice yet */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "NOT_FOUND";
-                            /** @example Resource not found */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["InvoiceNotFoundError"] | components["schemas"]["NotFoundError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -2270,16 +2293,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "INVALID_JSON";
-                            /** @example Malformed JSON body. */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["InvalidJsonError"];
                 };
             };
             /** @description `UNAUTHENTICATED`: Authentication required */
@@ -2288,16 +2302,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -2306,16 +2311,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
                 };
             };
             /** @description `NOT_FOUND`: Resource not found */
@@ -2324,16 +2320,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "NOT_FOUND";
-                            /** @example Resource not found */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["NotFoundError"];
                 };
             };
             /**
@@ -2348,34 +2335,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "PAYMENT_ALREADY_STARTED";
-                            /** @example Payment for this order has already started */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "ORDER_NOT_PAYABLE";
-                            /** @example This order cannot be paid in its current status */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "SALES_CLOSED";
-                            /** @example Tickets for this event are not on sale */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["PaymentAlreadyStartedError"] | components["schemas"]["OrderNotPayableError"] | components["schemas"]["SalesClosedError"];
                 };
             };
             /** @description `RESERVATION_EXPIRED`: Reservation has expired */
@@ -2384,16 +2344,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "RESERVATION_EXPIRED";
-                            /** @example Reservation has expired */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ReservationExpiredError"];
+                };
+            };
+            /** @description `CSRF_TOKEN_MISMATCH`: CSRF token mismatch */
+            419: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CsrfTokenMismatchError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -2424,16 +2393,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "INVALID_JSON";
-                            /** @example Malformed JSON body. */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["InvalidJsonError"];
                 };
             };
             /** @description `UNAUTHENTICATED`: Authentication required */
@@ -2442,16 +2402,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -2460,16 +2411,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
                 };
             };
             /** @description `NOT_FOUND`: Resource not found */
@@ -2478,16 +2420,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "NOT_FOUND";
-                            /** @example Resource not found */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["NotFoundError"];
                 };
             };
             /**
@@ -2500,25 +2433,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "INVALID_STATUS_TRANSITION";
-                            /** @example This status change is not allowed */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "PAYMENT_ALREADY_STARTED";
-                            /** @example Payment for this order has already started */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["InvalidStatusTransitionError"] | components["schemas"]["PaymentAlreadyStartedError"];
+                };
+            };
+            /** @description `CSRF_TOKEN_MISMATCH`: CSRF token mismatch */
+            419: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CsrfTokenMismatchError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -2557,25 +2490,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "VALIDATION_ERROR";
-                            /** @example Invalid request data */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "INVALID_JSON";
-                            /** @example Malformed JSON body. */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ValidationError"] | components["schemas"]["InvalidJsonError"];
                 };
             };
             /** @description `UNAUTHENTICATED`: Authentication required */
@@ -2584,16 +2499,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -2602,16 +2508,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
                 };
             };
             /** @description `NOT_FOUND`: Resource not found */
@@ -2620,16 +2517,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "NOT_FOUND";
-                            /** @example Resource not found */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["NotFoundError"];
                 };
             };
             /**
@@ -2642,25 +2530,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "ORDER_NOT_REFUNDABLE";
-                            /** @example Only a paid order can be refunded */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "REFUND_WINDOW_CLOSED";
-                            /** @example Refunds close 48 hours before the event starts */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["OrderNotRefundableError"] | components["schemas"]["RefundWindowClosedError"];
+                };
+            };
+            /** @description `CSRF_TOKEN_MISMATCH`: CSRF token mismatch */
+            419: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CsrfTokenMismatchError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -2701,16 +2589,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "VALIDATION_ERROR";
-                            /** @example Invalid request data */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ValidationError"];
                 };
             };
             /** @description `UNAUTHENTICATED`: Authentication required */
@@ -2719,16 +2598,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -2737,16 +2607,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -2783,25 +2653,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "VALIDATION_ERROR";
-                            /** @example Invalid request data */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "INVALID_JSON";
-                            /** @example Malformed JSON body. */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ValidationError"] | components["schemas"]["InvalidJsonError"];
                 };
             };
             /** @description `UNAUTHENTICATED`: Authentication required */
@@ -2810,16 +2662,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -2828,16 +2671,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
+                };
+            };
+            /** @description `CSRF_TOKEN_MISMATCH`: CSRF token mismatch */
+            419: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CsrfTokenMismatchError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -2868,16 +2720,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -2886,16 +2729,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
                 };
             };
             /** @description `NOT_FOUND`: Resource not found */
@@ -2904,16 +2738,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "NOT_FOUND";
-                            /** @example Resource not found */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["NotFoundError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -2942,16 +2776,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -2960,16 +2785,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
                 };
             };
             /** @description `NOT_FOUND`: Resource not found */
@@ -2978,16 +2794,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "NOT_FOUND";
-                            /** @example Resource not found */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["NotFoundError"];
                 };
             };
             /** @description `EVENT_HAS_SALES`: An event with sold or held tickets can only be cancelled */
@@ -2996,16 +2803,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "EVENT_HAS_SALES";
-                            /** @example An event with sold or held tickets can only be cancelled */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["EventHasSalesError"];
+                };
+            };
+            /** @description `CSRF_TOKEN_MISMATCH`: CSRF token mismatch */
+            419: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CsrfTokenMismatchError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -3044,25 +2860,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "VALIDATION_ERROR";
-                            /** @example Invalid request data */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "INVALID_JSON";
-                            /** @example Malformed JSON body. */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ValidationError"] | components["schemas"]["InvalidJsonError"];
                 };
             };
             /** @description `UNAUTHENTICATED`: Authentication required */
@@ -3071,16 +2869,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -3089,16 +2878,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
                 };
             };
             /** @description `NOT_FOUND`: Resource not found */
@@ -3107,16 +2887,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "NOT_FOUND";
-                            /** @example Resource not found */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["NotFoundError"];
                 };
             };
             /** @description `EVENT_CLOSED`: A finished or cancelled event cannot be changed */
@@ -3125,16 +2896,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "EVENT_CLOSED";
-                            /** @example A finished or cancelled event cannot be changed */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["EventClosedError"];
+                };
+            };
+            /** @description `CSRF_TOKEN_MISMATCH`: CSRF token mismatch */
+            419: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CsrfTokenMismatchError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -3165,16 +2945,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "INVALID_JSON";
-                            /** @example Malformed JSON body. */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["InvalidJsonError"];
                 };
             };
             /** @description `UNAUTHENTICATED`: Authentication required */
@@ -3183,16 +2954,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -3201,16 +2963,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
                 };
             };
             /** @description `NOT_FOUND`: Resource not found */
@@ -3219,16 +2972,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "NOT_FOUND";
-                            /** @example Resource not found */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["NotFoundError"];
                 };
             };
             /**
@@ -3241,25 +2985,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "INVALID_STATUS_TRANSITION";
-                            /** @example This status change is not allowed */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "EVENT_NOT_PUBLISHABLE";
-                            /** @example This event cannot be published yet */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["InvalidStatusTransitionError"] | components["schemas"]["EventNotPublishableError"];
+                };
+            };
+            /** @description `CSRF_TOKEN_MISMATCH`: CSRF token mismatch */
+            419: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CsrfTokenMismatchError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -3290,16 +3034,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "INVALID_JSON";
-                            /** @example Malformed JSON body. */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["InvalidJsonError"];
                 };
             };
             /** @description `UNAUTHENTICATED`: Authentication required */
@@ -3308,16 +3043,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -3326,16 +3052,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
                 };
             };
             /** @description `NOT_FOUND`: Resource not found */
@@ -3344,16 +3061,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "NOT_FOUND";
-                            /** @example Resource not found */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["NotFoundError"];
                 };
             };
             /** @description `INVALID_STATUS_TRANSITION`: This status change is not allowed */
@@ -3362,16 +3070,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "INVALID_STATUS_TRANSITION";
-                            /** @example This status change is not allowed */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["InvalidStatusTransitionError"];
+                };
+            };
+            /** @description `CSRF_TOKEN_MISMATCH`: CSRF token mismatch */
+            419: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CsrfTokenMismatchError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -3413,16 +3130,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "VALIDATION_ERROR";
-                            /** @example Invalid request data */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ValidationError"];
                 };
             };
             /** @description `UNAUTHENTICATED`: Authentication required */
@@ -3431,16 +3139,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -3449,16 +3148,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -3489,16 +3188,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -3507,16 +3197,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
                 };
             };
             /** @description `NOT_FOUND`: Resource not found */
@@ -3525,16 +3206,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "NOT_FOUND";
-                            /** @example Resource not found */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["NotFoundError"];
                 };
             };
             /**
@@ -3547,25 +3219,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "TICKET_VOID";
-                            /** @example This ticket is void */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "TICKET_PDF_NOT_READY";
-                            /** @example The ticket PDF is still being generated, try again in a moment */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["TicketVoidError"] | components["schemas"]["TicketPdfNotReadyError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -3596,16 +3259,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -3614,16 +3268,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
                 };
             };
             /** @description `NOT_FOUND`: Resource not found */
@@ -3632,16 +3277,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "NOT_FOUND";
-                            /** @example Resource not found */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["NotFoundError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -3683,16 +3328,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "VALIDATION_ERROR";
-                            /** @example Invalid request data */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ValidationError"];
                 };
             };
             /** @description `UNAUTHENTICATED`: Authentication required */
@@ -3701,16 +3337,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -3719,16 +3346,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
                 };
             };
             /** @description `NOT_FOUND`: Resource not found */
@@ -3737,16 +3355,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "NOT_FOUND";
-                            /** @example Resource not found */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["NotFoundError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -3785,25 +3403,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "VALIDATION_ERROR";
-                            /** @example Invalid request data */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "INVALID_JSON";
-                            /** @example Malformed JSON body. */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ValidationError"] | components["schemas"]["InvalidJsonError"];
                 };
             };
             /** @description `UNAUTHENTICATED`: Authentication required */
@@ -3812,16 +3412,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -3830,16 +3421,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
                 };
             };
             /** @description `NOT_FOUND`: Resource not found */
@@ -3848,16 +3430,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "NOT_FOUND";
-                            /** @example Resource not found */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["NotFoundError"];
                 };
             };
             /** @description `EVENT_CLOSED`: A finished or cancelled event cannot be changed */
@@ -3866,16 +3439,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "EVENT_CLOSED";
-                            /** @example A finished or cancelled event cannot be changed */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["EventClosedError"];
+                };
+            };
+            /** @description `CSRF_TOKEN_MISMATCH`: CSRF token mismatch */
+            419: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CsrfTokenMismatchError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -3907,16 +3489,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -3925,16 +3498,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
                 };
             };
             /** @description `NOT_FOUND`: Resource not found */
@@ -3943,16 +3507,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "NOT_FOUND";
-                            /** @example Resource not found */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["NotFoundError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -3982,16 +3546,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -4000,16 +3555,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
                 };
             };
             /** @description `NOT_FOUND`: Resource not found */
@@ -4018,16 +3564,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "NOT_FOUND";
-                            /** @example Resource not found */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["NotFoundError"];
                 };
             };
             /**
@@ -4040,25 +3577,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "EVENT_CLOSED";
-                            /** @example A finished or cancelled event cannot be changed */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "POOL_PROTECTED";
-                            /** @example Ticket pool cannot go below sold and held tickets */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["EventClosedError"] | components["schemas"]["PoolProtectedError"];
+                };
+            };
+            /** @description `CSRF_TOKEN_MISMATCH`: CSRF token mismatch */
+            419: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CsrfTokenMismatchError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -4098,25 +3635,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "VALIDATION_ERROR";
-                            /** @example Invalid request data */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "INVALID_JSON";
-                            /** @example Malformed JSON body. */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ValidationError"] | components["schemas"]["InvalidJsonError"];
                 };
             };
             /** @description `UNAUTHENTICATED`: Authentication required */
@@ -4125,16 +3644,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -4143,16 +3653,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
                 };
             };
             /** @description `NOT_FOUND`: Resource not found */
@@ -4161,16 +3662,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "NOT_FOUND";
-                            /** @example Resource not found */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["NotFoundError"];
                 };
             };
             /**
@@ -4185,34 +3677,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "EVENT_CLOSED";
-                            /** @example A finished or cancelled event cannot be changed */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "POOL_PROTECTED";
-                            /** @example Ticket pool cannot go below sold and held tickets */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "RESERVATION_CONFLICT";
-                            /** @example Too many concurrent reservations, please try again */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["EventClosedError"] | components["schemas"]["PoolProtectedError"] | components["schemas"]["ReservationConflictError"];
+                };
+            };
+            /** @description `CSRF_TOKEN_MISMATCH`: CSRF token mismatch */
+            419: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CsrfTokenMismatchError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -4253,16 +3736,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "VALIDATION_ERROR";
-                            /** @example Invalid request data */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ValidationError"];
                 };
             };
             /** @description `UNAUTHENTICATED`: Authentication required */
@@ -4271,16 +3745,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -4289,16 +3754,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -4329,16 +3794,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "INVALID_JSON";
-                            /** @example Malformed JSON body. */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["InvalidJsonError"];
                 };
             };
             /** @description `UNAUTHENTICATED`: Authentication required */
@@ -4347,16 +3803,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -4365,16 +3812,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
                 };
             };
             /** @description `NOT_FOUND`: Resource not found */
@@ -4383,16 +3821,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "NOT_FOUND";
-                            /** @example Resource not found */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["NotFoundError"];
                 };
             };
             /**
@@ -4407,34 +3836,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "WAITLIST_OFFER_NOT_ACTIVE";
-                            /** @example This waitlist entry has no open offer */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "SALES_CLOSED";
-                            /** @example Tickets for this event are not on sale */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "TICKET_LIMIT_EXCEEDED";
-                            /** @example Ticket limit per person exceeded */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["WaitlistOfferNotActiveError"] | components["schemas"]["SalesClosedError"] | components["schemas"]["TicketLimitExceededError"];
                 };
             };
             /** @description `WAITLIST_OFFER_EXPIRED`: The waitlist offer has expired */
@@ -4443,16 +3845,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "WAITLIST_OFFER_EXPIRED";
-                            /** @example The waitlist offer has expired */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["WaitlistOfferExpiredError"];
+                };
+            };
+            /** @description `CSRF_TOKEN_MISMATCH`: CSRF token mismatch */
+            419: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CsrfTokenMismatchError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -4491,25 +3902,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "VALIDATION_ERROR";
-                            /** @example Invalid request data */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "INVALID_JSON";
-                            /** @example Malformed JSON body. */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ValidationError"] | components["schemas"]["InvalidJsonError"];
                 };
             };
             /** @description `UNAUTHENTICATED`: Authentication required */
@@ -4518,16 +3911,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -4536,16 +3920,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
                 };
             };
             /** @description `NOT_FOUND`: Resource not found */
@@ -4554,16 +3929,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "NOT_FOUND";
-                            /** @example Resource not found */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["NotFoundError"];
                 };
             };
             /**
@@ -4580,43 +3946,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "SALES_CLOSED";
-                            /** @example Tickets for this event are not on sale */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "ALREADY_ON_WAITLIST";
-                            /** @example You are already on the waitlist of this pool */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "WAITLIST_NOT_NEEDED";
-                            /** @example Enough tickets are still available, so they can be bought right away */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    } | {
-                        error: {
-                            /** @enum {string} */
-                            code: "TICKET_LIMIT_EXCEEDED";
-                            /** @example Ticket limit per person exceeded */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["SalesClosedError"] | components["schemas"]["AlreadyOnWaitlistError"] | components["schemas"]["WaitlistNotNeededError"] | components["schemas"]["TicketLimitExceededError"];
+                };
+            };
+            /** @description `CSRF_TOKEN_MISMATCH`: CSRF token mismatch */
+            419: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CsrfTokenMismatchError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };
@@ -4645,16 +3993,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "UNAUTHENTICATED";
-                            /** @example Authentication required */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["UnauthenticatedError"];
                 };
             };
             /** @description `FORBIDDEN`: Insufficient permissions */
@@ -4663,16 +4002,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "FORBIDDEN";
-                            /** @example Insufficient permissions */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["ForbiddenError"];
                 };
             };
             /** @description `NOT_FOUND`: Resource not found */
@@ -4681,16 +4011,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /** @enum {string} */
-                            code: "NOT_FOUND";
-                            /** @example Resource not found */
-                            message: string;
-                            details?: Record<string, never>[];
-                            requestId: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["NotFoundError"];
+                };
+            };
+            /** @description `CSRF_TOKEN_MISMATCH`: CSRF token mismatch */
+            419: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CsrfTokenMismatchError"];
+                };
+            };
+            /** @description `INTERNAL_ERROR`: Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InternalError"];
                 };
             };
         };

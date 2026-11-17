@@ -10,10 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 class CancelOrder
 {
-    public function __construct(
-        private OrderTransition $orderTransition,
-        private ReleaseOrderSeats $releaseOrderSeats,
-    ) {}
+    public function __construct(private ReleaseOrderSeats $releaseOrderSeats) {}
 
     /**
      * The row lock serialises cancelling with paying, so a payment cannot start on a cancelled order.
@@ -30,7 +27,7 @@ class CancelOrder
                 throw new PaymentAlreadyStarted;
             }
 
-            $this->orderTransition->apply($locked, OrderStatus::Cancelled);
+            $locked->transitionTo(OrderStatus::Cancelled);
             $this->releaseOrderSeats->handle($locked->id);
         });
     }
@@ -48,7 +45,7 @@ class CancelOrder
                 return;
             }
 
-            $this->orderTransition->apply($locked, OrderStatus::Cancelled);
+            $locked->transitionTo(OrderStatus::Cancelled);
             $this->releaseOrderSeats->handle($locked->id);
         });
     }

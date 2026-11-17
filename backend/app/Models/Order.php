@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\InvoiceType;
 use App\Enums\OrderStatus;
+use App\Exceptions\Domain\InvalidStatusTransition;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -33,6 +34,21 @@ class Order extends Model
             'expires_at' => 'immutable_datetime',
             'seats_released_at' => 'immutable_datetime',
         ];
+    }
+
+    /**
+     * Every caller holds the row lock on this order, so the status checked here cannot change
+     * before the update.
+     *
+     * @throws InvalidStatusTransition
+     */
+    public function transitionTo(OrderStatus $status): void
+    {
+        if (! $this->status->canTransitionTo($status)) {
+            throw new InvalidStatusTransition;
+        }
+
+        $this->update(['status' => $status]);
     }
 
     /**

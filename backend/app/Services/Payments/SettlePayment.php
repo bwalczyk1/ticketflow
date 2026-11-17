@@ -10,7 +10,6 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\TicketType;
-use App\Services\Orders\OrderTransition;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -18,10 +17,7 @@ use Illuminate\Support\Facades\DB;
  */
 class SettlePayment
 {
-    public function __construct(
-        private OrderTransition $orderTransition,
-        private RefundLatePayment $refundLatePayment,
-    ) {}
+    public function __construct(private RefundLatePayment $refundLatePayment) {}
 
     public function succeeded(Payment $payment, ?string $providerRef = null): void
     {
@@ -38,7 +34,7 @@ class SettlePayment
                 return;
             }
 
-            $this->orderTransition->apply($order, OrderStatus::Paid);
+            $order->transitionTo(OrderStatus::Paid);
             $this->moveSeatsToSold($order);
 
             OrderPaid::dispatch($order->id);
@@ -58,7 +54,7 @@ class SettlePayment
                 return;
             }
 
-            $this->orderTransition->apply($order, OrderStatus::Failed);
+            $order->transitionTo(OrderStatus::Failed);
 
             PaymentFailed::dispatch($order->id, $reason);
         });

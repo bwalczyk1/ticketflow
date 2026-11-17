@@ -8,7 +8,6 @@ use App\Exceptions\Domain\OrderNotRefundable;
 use App\Exceptions\Domain\RefundWindowClosed;
 use App\Models\Order;
 use App\Models\Refund;
-use App\Services\Orders\OrderTransition;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -18,8 +17,6 @@ use Illuminate\Support\Facades\DB;
 class StartRefund
 {
     public const EVENT_CANCELLED_REASON = 'Wydarzenie odwołane';
-
-    public function __construct(private OrderTransition $orderTransition) {}
 
     /**
      * @throws OrderNotRefundable
@@ -41,8 +38,8 @@ class StartRefund
     }
 
     /**
-     * The locking read stays first, so a parallel refund waits and then sees REFUNDED. The status
-     * compare-and-set and UNIQUE (order_id) on refunds stay as the last defence.
+     * The locking read stays first, so a parallel refund waits and then sees REFUNDED. UNIQUE
+     * (order_id) on refunds stays as the last defence.
      *
      * @throws OrderNotRefundable
      * @throws RefundWindowClosed
@@ -52,17 +49,17 @@ class StartRefund
         return DB::transaction(function () use ($orderId, $reason, $checkDeadline) {
             $order = Order::query()->whereKey($orderId)->lockForUpdate()->firstOrFail(['id', 'event_id', 'status', 'total']);
 
+            if (! $order->status->canTransitionTo(OrderStatus::Refunded)) {
+                throw new OrderNotRefundable;
+            }
+
             if ($checkDeadline) {
                 $event = $order->event()->firstOrFail(['id', 'starts_at']);
 
                 RefundEligibility::ensureRefundable($order->status, $event->starts_at, now(), config('ticketflow.refund_cutoff_hours'));
             }
 
-            if (! $order->status->canTransitionTo(OrderStatus::Refunded)) {
-                throw new OrderNotRefundable;
-            }
-
-            $this->orderTransition->apply($order, OrderStatus::Refunded);
+            $order->transitionTo(OrderStatus::Refunded);
 
             $refund = $order->refund()->create(['amount' => $order->total, 'reason' => $reason]);
 

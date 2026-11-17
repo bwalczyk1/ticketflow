@@ -7,8 +7,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -16,8 +14,7 @@ import { cn } from '@/lib/utils'
 import type { Role } from '../api/types'
 import { useAuth } from '../features/auth/AuthContext'
 import { ErrorBanner } from './ErrorBanner'
-import { ModeToggle } from './ModeToggle'
-import { useTheme, type Theme } from './ThemeContext'
+import { ModeToggle, ThemeRadioGroup } from './ModeToggle'
 
 interface NavItem {
   to: string
@@ -45,7 +42,6 @@ function navLinkClass({ isActive }: { isActive: boolean }) {
 export function Layout() {
   const { user, isLoading, logout } = useAuth()
   const logoutMutation = useMutation({ mutationFn: logout })
-  const { theme, setTheme } = useTheme()
 
   const navItems = NAV_ITEMS.filter(
     (item) => !item.roles || (user && item.roles.includes(user.role)),
@@ -129,11 +125,7 @@ export function Layout() {
 
               <DropdownMenuSeparator />
               <DropdownMenuLabel>Motyw</DropdownMenuLabel>
-              <DropdownMenuRadioGroup value={theme} onValueChange={(value) => setTheme(value as Theme)}>
-                <DropdownMenuRadioItem value="light">Jasny</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="dark">Ciemny</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="system">Systemowy</DropdownMenuRadioItem>
-              </DropdownMenuRadioGroup>
+              <ThemeRadioGroup />
 
               {user && (
                 <>

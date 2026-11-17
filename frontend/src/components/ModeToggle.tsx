@@ -9,9 +9,20 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useTheme, type Theme } from './ThemeContext'
 
-export function ModeToggle() {
+/** The light / dark / system choice, for any dropdown menu. */
+export function ThemeRadioGroup() {
   const { theme, setTheme } = useTheme()
 
+  return (
+    <DropdownMenuRadioGroup value={theme} onValueChange={(value) => setTheme(value as Theme)}>
+      <DropdownMenuRadioItem value="light">Jasny</DropdownMenuRadioItem>
+      <DropdownMenuRadioItem value="dark">Ciemny</DropdownMenuRadioItem>
+      <DropdownMenuRadioItem value="system">Systemowy</DropdownMenuRadioItem>
+    </DropdownMenuRadioGroup>
+  )
+}
+
+export function ModeToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -23,11 +34,7 @@ export function ModeToggle() {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end">
-        <DropdownMenuRadioGroup value={theme} onValueChange={(value) => setTheme(value as Theme)}>
-          <DropdownMenuRadioItem value="light">Jasny</DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="dark">Ciemny</DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="system">Systemowy</DropdownMenuRadioItem>
-        </DropdownMenuRadioGroup>
+        <ThemeRadioGroup />
       </DropdownMenuContent>
     </DropdownMenu>
   )

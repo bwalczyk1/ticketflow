@@ -28,19 +28,9 @@ interface EventGroup {
 
 /** Keeps the order of the list, so the event of the newest ticket comes first. */
 function groupByEvent(tickets: Ticket[]): EventGroup[] {
-  const groups = new Map<number, EventGroup>()
+  const groups = Map.groupBy(tickets, (ticket) => ticket.event.id)
 
-  for (const ticket of tickets) {
-    const group = groups.get(ticket.event.id)
-
-    if (group) {
-      group.tickets.push(ticket)
-    } else {
-      groups.set(ticket.event.id, { event: ticket.event, tickets: [ticket] })
-    }
-  }
-
-  return [...groups.values()]
+  return [...groups.values()].map((group) => ({ event: group[0].event, tickets: group }))
 }
 
 interface TicketActionsProps {

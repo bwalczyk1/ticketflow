@@ -19,8 +19,6 @@ class CatalogController extends Controller
      * List published events that have not started yet.
      *
      * `price_max` is in grosz, like all prices in the API.
-     *
-     * @unauthenticated
      */
     public function index(ListCatalogEventsRequest $request): array
     {
@@ -38,8 +36,6 @@ class CatalogController extends Controller
      * Show a published event with its ticket types and their availability, also after it started.
      *
      * A signed-in attendee (session or bearer token) also gets `purchaseLimit`.
-     *
-     * @unauthenticated
      */
     public function show(Request $request, string $id, TicketLimit $ticketLimit): EventDetailsResource
     {

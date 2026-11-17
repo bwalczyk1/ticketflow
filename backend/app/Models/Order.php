@@ -100,14 +100,6 @@ class Order extends Model
     }
 
     /**
-     * @return HasMany<Invoice, $this>
-     */
-    public function invoices(): HasMany
-    {
-        return $this->hasMany(Invoice::class);
-    }
-
-    /**
      * The original invoice, without the corrections issued for a refund.
      *
      * @return HasOne<Invoice, $this>

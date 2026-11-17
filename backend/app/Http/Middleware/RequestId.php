@@ -14,7 +14,6 @@ class RequestId
     {
         $requestId = (string) Str::uuid();
 
-        $request->attributes->set('requestId', $requestId);
         Context::add('requestId', $requestId);
 
         $response = $next($request);

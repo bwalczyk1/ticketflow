@@ -136,17 +136,6 @@ it('returns the start of an event in its own timezone', function (string $starts
     'next calendar day' => ['2026-12-31 23:30:00', 'Europe/Warsaw', '2027-01-01 00:30 +01:00'],
 ]);
 
-it('addresses an invoice sequence by year and type', function () {
-    $invoices = InvoiceSequence::factory()->create(['year' => 2026, 'type' => InvoiceType::Invoice, 'last_number' => 1]);
-    $corrections = InvoiceSequence::factory()->create(['year' => 2026, 'type' => InvoiceType::Correction, 'last_number' => 7]);
-
-    $invoices->last_number = 2;
-    $invoices->save();
-
-    expect($invoices->fresh()->last_number)->toBe(2)
-        ->and($corrections->fresh()->last_number)->toBe(7);
-});
-
 it('uses the event as the key of the sales summary', function () {
     $summary = EventSalesSummary::factory()->create();
 

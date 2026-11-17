@@ -15,10 +15,15 @@ class ErrorResponse
      */
     public static function make(int $status, string $code, string $message): Response
     {
+        $detail = (new ObjectType)
+            ->addProperty('field', new StringType)
+            ->addProperty('message', new StringType)
+            ->setRequired(['field', 'message']);
+
         $error = (new ObjectType)
             ->addProperty('code', (new StringType)->enum([$code]))
             ->addProperty('message', (new StringType)->example($message))
-            ->addProperty('details', (new ArrayType)->setItems(new ObjectType))
+            ->addProperty('details', (new ArrayType)->setItems($detail))
             ->addProperty('requestId', new StringType)
             ->setRequired(['code', 'message', 'requestId']);
 

@@ -88,6 +88,35 @@ it('documents 403 on every route behind a role check', function () {
     }
 });
 
+it('documents 419 on every state-changing route and 500 on every route', function () {
+    $spec = $this->getJson('/docs/api.json')->assertOk()->json();
+
+    foreach (apiRoutes() as $route) {
+        foreach (routeMethods($route) as $method) {
+            $path = substr($route->uri(), 3);
+            $csrf = in_array($method, ['post', 'put', 'patch', 'delete'], true) ? ['CSRF_TOKEN_MISMATCH'] : [];
+
+            expect(specErrorCodes($spec, $method, $path, 419))->toBe($csrf, "{$method} {$route->uri()}")
+                ->and(specErrorCodes($spec, $method, $path, 500))->toBe(['INTERNAL_ERROR'], "{$method} {$route->uri()}");
+        }
+    }
+});
+
+it('documents error details as a list of fields with their messages', function () {
+    $spec = $this->getJson('/docs/api.json')->assertOk()->json();
+
+    $error = $spec['paths']['/auth/register']['post']['responses'][400]['content']['application/json']['schema']['anyOf'][0]['properties']['error'];
+
+    expect($error['properties']['details'])->toBe([
+        'type' => 'array',
+        'items' => [
+            'type' => 'object',
+            'properties' => ['field' => ['type' => 'string'], 'message' => ['type' => 'string']],
+            'required' => ['field', 'message'],
+        ],
+    ]);
+});
+
 it('documents INVALID_JSON next to validation errors on requests with a body', function (string $method, string $path, array $codes) {
     $spec = $this->getJson('/docs/api.json')->assertOk()->json();
 

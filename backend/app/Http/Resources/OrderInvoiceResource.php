@@ -4,7 +4,6 @@ namespace App\Http\Resources;
 
 use App\Models\Invoice;
 use App\Services\Documents\InvoiceNumbering;
-use App\Support\ApiDate;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -30,7 +29,7 @@ class OrderInvoiceResource extends JsonResource
              *
              * @format date-time
              */
-            'issuedAt' => ApiDate::format($this->created_at),
+            'issuedAt' => $this->created_at?->toIso8601ZuluString(),
         ];
     }
 }

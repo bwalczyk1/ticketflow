@@ -4,7 +4,6 @@ namespace App\Http\Resources;
 
 use App\Enums\WaitlistStatus;
 use App\Models\WaitlistEntry;
-use App\Support\ApiDate;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -35,7 +34,7 @@ class WaitlistEntryResource extends JsonResource
              *
              * @format date-time
              */
-            'offeredUntil' => ApiDate::format($this->offered_until),
+            'offeredUntil' => $this->offered_until?->toIso8601ZuluString(),
             /**
              * The order an accepted offer became.
              *
@@ -55,14 +54,14 @@ class WaitlistEntryResource extends JsonResource
                  *
                  * @format date-time
                  */
-                'startsAt' => ApiDate::format($this->ticketType->event->starts_at),
+                'startsAt' => $this->ticketType->event->starts_at?->toIso8601ZuluString(),
             ],
             /**
              * @var string
              *
              * @format date-time
              */
-            'createdAt' => ApiDate::format($this->created_at),
+            'createdAt' => $this->created_at?->toIso8601ZuluString(),
         ];
     }
 }

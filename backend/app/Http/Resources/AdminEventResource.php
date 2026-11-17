@@ -3,7 +3,6 @@
 namespace App\Http\Resources;
 
 use App\Models\Event;
-use App\Support\ApiDate;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -25,8 +24,8 @@ class AdminEventResource extends JsonResource
             'city' => $this->city,
             'category' => $this->category,
             'timezone' => $this->timezone,
-            'startsAt' => ApiDate::format($this->starts_at),
-            'endsAt' => ApiDate::format($this->ends_at),
+            'startsAt' => $this->starts_at?->toIso8601ZuluString(),
+            'endsAt' => $this->ends_at?->toIso8601ZuluString(),
             'organizer' => new UserResource($this->organizer),
         ];
     }

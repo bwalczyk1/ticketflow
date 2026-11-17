@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Minus, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -7,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import type { TicketType } from '../../api/types'
 import { ConfirmDialog } from '../../components/ConfirmButton'
 import { ErrorBanner } from '../../components/ErrorBanner'
+import { QuantityPicker } from '../../components/QuantityPicker'
 import { eventsKey } from '../catalog/catalogApi'
 import { fetchAllEntries, joinWaitlist, leaveWaitlist, waitlistKey } from './waitlistApi'
 
@@ -112,37 +112,13 @@ export function WaitlistJoin({ ticketType, allowance }: WaitlistJoinProps) {
         </p>
 
         <div className="flex flex-wrap items-center gap-2">
-          <div
-            className="flex items-center gap-2"
-            role="group"
-            aria-label={`Liczba biletów na liście: ${ticketType.name}`}
-          >
-            <Button
-              variant="outline"
-              size="icon-sm"
-              type="button"
-              aria-label="Mniej"
-              disabled={selected <= 1}
-              onClick={() => setQuantity(selected - 1)}
-            >
-              <Minus />
-            </Button>
-
-            <span className="w-6 text-center font-medium tabular-nums" aria-live="polite">
-              {selected}
-            </span>
-
-            <Button
-              variant="outline"
-              size="icon-sm"
-              type="button"
-              aria-label="Więcej"
-              disabled={selected >= allowance}
-              onClick={() => setQuantity(selected + 1)}
-            >
-              <Plus />
-            </Button>
-          </div>
+          <QuantityPicker
+            label={`Liczba biletów na liście: ${ticketType.name}`}
+            value={selected}
+            min={1}
+            max={allowance}
+            onChange={setQuantity}
+          />
 
           <Button size="sm" type="button" disabled={joinMutation.isPending} onClick={() => joinMutation.mutate()}>
             Zapisz się na listę oczekujących

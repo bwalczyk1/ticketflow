@@ -6,7 +6,7 @@ import type { Order } from '../../api/types'
 import { ConfirmButton } from '../../components/ConfirmButton'
 import { formatPrice } from '../../lib/money'
 import { OrderStatusBadge } from './OrderStatusBadge'
-import { formatCountdown } from './useCountdown'
+import { formatCountdown } from '../../lib/time'
 
 interface ReservationCardProps {
   order: Order

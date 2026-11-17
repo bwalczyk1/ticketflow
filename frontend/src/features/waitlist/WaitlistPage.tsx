@@ -24,7 +24,7 @@ import { formatPrice } from '../../lib/money'
 import { usePageParam, useStatusParam, type StatusFilter } from '../../lib/urlParams'
 import { eventsKey } from '../catalog/catalogApi'
 import { ordersKey } from '../checkout/checkoutApi'
-import { formatCountdown, useNow } from '../checkout/useCountdown'
+import { formatCountdown, useNow } from '../../lib/time'
 import { acceptOffer, fetchWaitlist, leaveWaitlist, waitlistKey } from './waitlistApi'
 import { WaitlistStatusBadge } from './WaitlistStatusBadge'
 

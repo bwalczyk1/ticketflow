@@ -13,7 +13,7 @@ import { useAuth } from '../auth/AuthContext'
 import { eventsKey } from '../catalog/catalogApi'
 import { createOrder, ordersKey } from './checkoutApi'
 import { WaitlistJoin } from '../waitlist/WaitlistJoin'
-import { useNow } from './useCountdown'
+import { useNow } from '../../lib/time'
 
 interface TicketSelectionProps {
   event: EventDetails

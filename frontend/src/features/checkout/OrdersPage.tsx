@@ -21,7 +21,7 @@ import { usePageParam } from '../../lib/urlParams'
 import { fetchOrders, ordersKey } from './checkoutApi'
 import { isReservationActive } from './orderState'
 import { OrderStatusBadge } from './OrderStatusBadge'
-import { useNow } from './useCountdown'
+import { useNow } from '../../lib/time'
 
 function OrderAction({ order, now }: { order: Order; now: number }) {
   const isActive = isReservationActive(order, now)

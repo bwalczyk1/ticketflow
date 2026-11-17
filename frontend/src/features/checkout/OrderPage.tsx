@@ -16,7 +16,7 @@ import { OrderRefund } from './OrderRefund'
 import { ExpiringNotice, OrderOutcome } from './OrderOutcome'
 import { getOrderWait, isHoldOver } from './orderState'
 import { ReservationCard } from './ReservationCard'
-import { useNow } from './useCountdown'
+import { useNow } from '../../lib/time'
 
 // The general text speaks of events; on this page the code means the order moved on.
 const ORDER_ERRORS = {

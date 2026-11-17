@@ -1,12 +1,15 @@
-export type Role = 'ADMIN' | 'ORGANIZER' | 'ATTENDEE'
+/**
+ * Short names for the types generated from docs/openapi.json (`npm run api:types`).
+ * Regenerate them after the API changes; the compiler then shows where the UI no longer fits.
+ */
+import type { components } from './schema'
 
-export interface User {
-  id: number
-  name: string
-  email: string
-  role: Role
-}
+type Schemas = components['schemas']
 
+export type Role = Schemas['Role']
+export type User = Schemas['UserResource']
+
+/** The list envelope every paginated endpoint returns. */
 export interface Paginated<T> {
   data: T[]
   meta: {
@@ -17,6 +20,10 @@ export interface Paginated<T> {
   }
 }
 
+/**
+ * Written by hand: the docs describe `details` only as a list of objects, while the API
+ * always sends `{ field, message }` pairs there.
+ */
 export interface FieldError {
   field: string
   message: string
@@ -31,181 +38,44 @@ export interface ApiErrorBody {
   }
 }
 
-export type EventStatus = 'DRAFT' | 'PUBLISHED' | 'FINISHED' | 'CANCELLED'
+export type EventStatus = Schemas['EventStatus']
 
 /** A ticket type as the public catalog shows it. Prices are integer grosze. */
-export interface TicketType {
-  id: number
-  name: string
-  price: number
-  available: number
-}
+export type TicketType = Schemas['TicketTypeResource']
 
 /** A ticket type with the sales counters only its organizer sees. */
-export interface ManagedTicketType extends TicketType {
-  quantity: number
-  sold: number
-  held: number
-}
+export type ManagedTicketType = Schemas['TicketTypeManagementResource']
 
-export interface CatalogEvent {
-  id: number
-  title: string
-  description: string
-  venue: string
-  city: string
-  category: string
-  timezone: string
-  startsAt: string
-  endsAt: string
-  status: EventStatus
-  ticketTypes?: TicketType[]
-}
+export type CatalogEvent = Schemas['EventResource']
 
 /** GET /api/events/{id}: the catalog event with the signed-in attendee's purchase limit. */
-export interface EventDetails extends CatalogEvent {
-  /** Null for guests and users who are not attendees. */
-  purchaseLimit: PurchaseLimit | null
-}
+export type EventDetails = Schemas['EventDetailsResource']
 
 /** How many tickets the attendee may hold for one event and how many they already have. */
-export interface PurchaseLimit {
-  max: number
-  used: number
-}
+export type PurchaseLimit = NonNullable<EventDetails['purchaseLimit']>
 
-export interface ManagedEvent extends Omit<CatalogEvent, 'ticketTypes'> {
-  ticketTypes?: ManagedTicketType[]
-}
+export type ManagedEvent = Schemas['EventManagementResource']
 
-export type OrderStatus = 'PENDING' | 'PAID' | 'EXPIRED' | 'FAILED' | 'CANCELLED' | 'REFUNDED'
+export type OrderStatus = Schemas['OrderStatus']
+export type Order = Schemas['OrderResource']
+export type RefundStatus = Schemas['RefundStatus']
 
-export type PaymentStatus = 'PENDING' | 'SUCCEEDED' | 'FAILED'
+export type TicketStatus = Schemas['TicketStatus']
+export type Ticket = Schemas['TicketResource']
 
-export interface OrderItem {
-  ticketTypeId: number
-  name: string
-  quantity: number
-  /** Integer grosze. */
-  unitPrice: number
-}
+export type WaitlistStatus = Schemas['WaitlistStatus']
+export type WaitlistEntry = Schemas['WaitlistEntryResource']
 
-export interface Order {
-  id: number
-  status: OrderStatus
-  /** Integer grosze. */
-  total: number
-  expiresAt: string
-  createdAt: string
-  /** Null until the payment is started. */
-  paymentStatus: PaymentStatus | null
-  event: {
-    id: number
-    title: string
-    venue: string
-    city: string
-    timezone: string
-    startsAt: string
-  }
-  items: OrderItem[]
-  /** Null until the invoice is issued. */
-  invoice: Invoice | null
-  /** Set only while the order is PAID: the last moment a refund is accepted. */
-  refundableUntil: string | null
-  /** Null until a refund is requested. */
-  refund: Refund | null
-  /** Null until the correction invoice is issued. */
-  correctionInvoice: Invoice | null
-}
+export type CheckedInTicket = Schemas['CheckedInTicketResource']
 
-export type RefundStatus = 'PENDING' | 'SUCCEEDED' | 'FAILED'
+export type SalesSummary = Schemas['TicketSalesResource']
 
-export interface Refund {
-  status: RefundStatus
-  /** Integer grosze. */
-  amount: number
-  reason: string | null
-  createdAt: string
-}
+export type AdminEvent = Schemas['AdminEventResource']
 
-export interface Invoice {
-  number: string
-  issuedAt: string
-}
-
-export type TicketStatus = 'VALID' | 'USED' | 'VOID'
-
-export interface Ticket {
-  id: number
-  code: string
-  status: TicketStatus
-  /** The ticket's number within its order item, starting at 1. */
-  position: number
-  checkedInAt: string | null
-  /** False until the PDF has been generated in the background. */
-  pdfReady: boolean
-  orderId: number
-  ticketType: {
-    id: number
-    name: string
-  }
-  event: Order['event']
-}
-
-export type WaitlistStatus = 'WAITING' | 'OFFERED' | 'CONVERTED' | 'EXPIRED' | 'CANCELLED'
-
-export interface WaitlistEntry {
-  id: number
-  status: WaitlistStatus
-  quantity: number
-  /** Place in the queue, null once the entry is no longer waiting. */
-  position: number | null
-  /** Until when an offered entry can be bought. */
-  offeredUntil: string | null
-  orderId: number | null
-  ticketType: {
-    id: number
-    name: string
-    /** Integer grosze. */
-    price: number
-  }
-  event: {
-    id: number
-    title: string
-    startsAt: string
-  }
-  createdAt: string
-}
-
-export interface CheckedInTicket {
-  id: number
-  code: string
-  status: 'USED'
-  checkedInAt: string
-  ticketTypeName: string
-  holderName: string
-}
-
-export interface SalesSummary {
-  eventId: number
-  ticketsSold: number
-  /** Integer grosze. */
-  revenue: number
-  /** Integer grosze. */
-  refunds: number
-  checkedIn: number
-  updatedAt: string | null
-}
-
-export interface AdminEvent {
-  id: number
-  title: string
-  status: EventStatus
-  venue: string
-  city: string
-  category: string
-  timezone: string
-  startsAt: string
-  endsAt: string
-  organizer: User
-}
+// Request bodies.
+export type LoginPayload = Schemas['LoginRequest']
+export type RegisterPayload = Schemas['RegisterRequest']
+export type EventPayload = Schemas['StoreEventRequest']
+/** Prices in grosze. */
+export type TicketTypePayload = Schemas['StoreTicketTypeRequest']
+export type OrderItemInput = Schemas['StoreOrderRequest']['items'][number]

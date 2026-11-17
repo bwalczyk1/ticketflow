@@ -1,27 +1,19 @@
 import { api } from '../../api/client'
-import type { EventStatus, ManagedEvent, ManagedTicketType, Paginated, SalesSummary } from '../../api/types'
+import type {
+  EventPayload,
+  EventStatus,
+  ManagedEvent,
+  ManagedTicketType,
+  Paginated,
+  SalesSummary,
+  TicketTypePayload,
+} from '../../api/types'
+
+export type { EventPayload, TicketTypePayload }
 
 export const PAGE_SIZE = 10
 
 export const organizerKey = ['organizer']
-
-export interface EventPayload {
-  title: string
-  description: string
-  venue: string
-  city: string
-  category: string
-  timezone: string
-  startsAt: string
-  endsAt: string
-}
-
-export interface TicketTypePayload {
-  name: string
-  /** Grosze. */
-  price: number
-  quantity: number
-}
 
 const BASE = '/api/organizer/events'
 

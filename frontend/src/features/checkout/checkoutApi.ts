@@ -1,5 +1,5 @@
 import { api, downloadFile } from '../../api/client'
-import type { Order, Paginated } from '../../api/types'
+import type { Order, OrderItemInput, Paginated } from '../../api/types'
 
 export const ordersKey = ['orders']
 
@@ -9,11 +9,6 @@ export function orderDetailsKey(id: number | string) {
 }
 
 const ORDERS_PAGE_SIZE = 10
-
-interface OrderItemInput {
-  ticketTypeId: number
-  quantity: number
-}
 
 export function createOrder(eventId: number, items: OrderItemInput[]): Promise<Order> {
   return api.post<Order>('/api/orders', { eventId, items })

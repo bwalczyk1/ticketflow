@@ -9,14 +9,12 @@ use App\Http\Requests\Waitlist\ListWaitlistRequest;
 use App\Http\Resources\OrderResource;
 use App\Http\Resources\WaitlistEntryResource;
 use App\Models\TicketType;
-use App\Models\WaitlistEntry;
 use App\Services\Orders\CustomerOrders;
 use App\Services\Waitlist\AcceptWaitlistOffer;
 use App\Services\Waitlist\JoinWaitlist;
 use App\Services\Waitlist\LeaveWaitlist;
 use App\Services\Waitlist\WaitlistEntries;
 use App\Support\Pagination;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -67,10 +65,8 @@ class WaitlistController extends Controller
     {
         $entry = $this->entries->find($id);
 
-        // Another user's entry answers 404 like an order, because its existence is already information.
-        if (Gate::denies('view', $entry)) {
-            throw (new ModelNotFoundException)->setModel(WaitlistEntry::class, [$id]);
-        }
+        // Another user's entry answers 404 like an order, see WaitlistEntryPolicy.
+        Gate::authorize('view', $entry);
 
         $order = $acceptOffer->handle($request->user(), $entry->id);
 

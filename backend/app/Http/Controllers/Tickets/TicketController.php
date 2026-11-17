@@ -50,9 +50,7 @@ class TicketController extends Controller
     {
         $ticket = $this->tickets->find($id);
 
-        if (Gate::denies('view', $ticket)) {
-            throw (new ModelNotFoundException)->setModel(Ticket::class, [$id]);
-        }
+        Gate::authorize('view', $ticket);
 
         return Storage::disk('local')->download(
             $this->tickets->pdfPath($ticket),

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import type { TicketType } from '../../api/types'
-import { ConfirmDialog } from '../../components/ConfirmButton'
+import { ConfirmButton } from '../../components/ConfirmButton'
 import { ErrorBanner } from '../../components/ErrorBanner'
 import { QuantityPicker } from '../../components/QuantityPicker'
 import { eventsKey } from '../catalog/catalogApi'
@@ -20,7 +20,6 @@ interface WaitlistJoinProps {
 export function WaitlistJoin({ ticketType, allowance }: WaitlistJoinProps) {
   const queryClient = useQueryClient()
   const [quantity, setQuantity] = useState(1)
-  const [isLeaving, setIsLeaving] = useState(false)
   const selected = Math.min(quantity, allowance)
 
   const { data } = useQuery({ queryKey: [...waitlistKey, 'all'], queryFn: fetchAllEntries })
@@ -71,22 +70,12 @@ export function WaitlistJoin({ ticketType, allowance }: WaitlistJoinProps) {
             </Link>
           </p>
 
-          <Button
-            variant="outline"
-            size="sm"
-            type="button"
-            disabled={leaveMutation.isPending}
-            onClick={() => setIsLeaving(true)}
-          >
-            Wypisz się
-          </Button>
-
-          <ConfirmDialog
-            open={isLeaving}
-            onOpenChange={setIsLeaving}
+          <ConfirmButton
             label="Wypisz się"
             title="Wypisać się z listy oczekujących?"
             description={`Stracisz swoje miejsce w kolejce na pulę „${ticketType.name}”.`}
+            variant="outline"
+            disabled={leaveMutation.isPending}
             onConfirm={() => leaveMutation.mutate()}
           />
         </div>

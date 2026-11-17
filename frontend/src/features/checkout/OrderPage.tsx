@@ -9,7 +9,7 @@ import { BackLink } from '../../components/BackLink'
 import { ErrorBanner } from '../../components/ErrorBanner'
 import { LoadingPage, NotFoundPage } from '../../components/StatusPages'
 import { eventsKey } from '../catalog/catalogApi'
-import { cancelOrder, fetchOrder, ordersKey, payOrder } from './checkoutApi'
+import { cancelOrder, fetchOrder, orderDetailsKey, ordersKey, payOrder } from './checkoutApi'
 import { OrderDocuments } from './OrderDocuments'
 import { OrderItemsCard } from './OrderItemsCard'
 import { OrderRefund } from './OrderRefund'
@@ -29,7 +29,7 @@ export function OrderPage() {
   const { id = '' } = useParams()
   const queryClient = useQueryClient()
   const now = useNow()
-  const orderKey = [...ordersKey, 'details', id]
+  const orderKey = orderDetailsKey(id)
 
   const { data: order, error, isPending } = useQuery({
     queryKey: orderKey,

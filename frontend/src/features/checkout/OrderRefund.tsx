@@ -24,7 +24,7 @@ import { formatDateTime } from '../../lib/dates'
 import { formatPrice } from '../../lib/money'
 import { eventsKey } from '../catalog/catalogApi'
 import { ticketsKey } from '../tickets/ticketsApi'
-import { downloadCorrectionInvoice, ordersKey, refundOrder } from './checkoutApi'
+import { downloadCorrectionInvoice, orderDetailsKey, ordersKey, refundOrder } from './checkoutApi'
 import { isRefundOpen } from './orderState'
 
 const REFUND_STATUS_LABELS: Record<RefundStatus, string> = {
@@ -99,10 +99,10 @@ export function OrderRefund({ order, now }: OrderRefundProps) {
   const refundMutation = useMutation({
     mutationFn: (reason: string) => refundOrder(order.id, reason),
     onSuccess: (updated) => {
-      queryClient.setQueryData([...ordersKey, 'details', String(order.id)], updated)
+      queryClient.setQueryData(orderDetailsKey(order.id), updated)
       toast.success('Zlecono zwrot biletów.')
     },
-    onError: () => queryClient.invalidateQueries({ queryKey: [...ordersKey, 'details', String(order.id)] }),
+    onError: () => queryClient.invalidateQueries({ queryKey: orderDetailsKey(order.id) }),
     onSettled: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: ordersKey }),

@@ -3,6 +3,11 @@ import type { Order, Paginated } from '../../api/types'
 
 export const ordersKey = ['orders']
 
+/** The id comes from the URL as a string, so numbers are turned into strings to match. */
+export function orderDetailsKey(id: number | string) {
+  return [...ordersKey, 'details', String(id)]
+}
+
 const ORDERS_PAGE_SIZE = 10
 
 interface OrderItemInput {

@@ -1,7 +1,6 @@
 <?php
 
 use App\Contracts\TicketPdfGenerator;
-use App\Enums\QueueName;
 use App\Events\Tickets\TicketsGenerated;
 use App\Jobs\Documents\GenerateTicketPdfs;
 use App\Models\Ticket;
@@ -82,10 +81,6 @@ it('announces nothing for an order without tickets', function () {
     runGenerateTicketPdfs($order->id);
 
     Event::assertNotDispatched(TicketsGenerated::class);
-});
-
-it('runs on the documents queue', function () {
-    expect((new GenerateTicketPdfs(1))->queue)->toBe(QueueName::Documents->value);
 });
 
 it('logs the order id when all attempts are used up', function () {

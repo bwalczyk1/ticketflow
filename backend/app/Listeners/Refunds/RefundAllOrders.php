@@ -9,18 +9,15 @@ use App\Jobs\Refunds\RefundOrder;
 use App\Models\Order;
 use App\Services\Orders\CancelOrder;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\Attributes\Queue;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
+#[Queue(QueueName::Refunds)]
 class RefundAllOrders implements ShouldQueue
 {
     public function __construct(private CancelOrder $cancelOrder) {}
-
-    public function viaQueue(): string
-    {
-        return QueueName::Refunds->value;
-    }
 
     /**
      * Pending orders are cancelled here, because they have no money to return. Every paid order

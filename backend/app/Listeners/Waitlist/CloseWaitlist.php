@@ -6,17 +6,14 @@ use App\Enums\QueueName;
 use App\Events\Catalog\EventCancelled;
 use App\Services\Waitlist\CloseEventWaitlist;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\Attributes\Queue;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
+#[Queue(QueueName::Waitlist)]
 class CloseWaitlist implements ShouldQueue
 {
     public function __construct(private CloseEventWaitlist $closeEventWaitlist) {}
-
-    public function viaQueue(): string
-    {
-        return QueueName::Waitlist->value;
-    }
 
     public function handle(EventCancelled $event): void
     {

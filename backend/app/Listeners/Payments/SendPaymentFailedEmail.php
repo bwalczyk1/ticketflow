@@ -9,18 +9,15 @@ use App\Mail\PaymentFailedMail;
 use App\Models\Order;
 use App\Services\Notifications\NotificationLedger;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\Attributes\Queue;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
 
+#[Queue(QueueName::Mail)]
 class SendPaymentFailedEmail implements ShouldQueue
 {
     public function __construct(private NotificationLedger $ledger) {}
-
-    public function viaQueue(): string
-    {
-        return QueueName::Mail->value;
-    }
 
     /**
      * The ledger key order:{id}:payment-failed lets the e-mail out once, however often the job runs.

@@ -6,17 +6,14 @@ use App\Enums\QueueName;
 use App\Events\Orders\SeatsReleased;
 use App\Services\Waitlist\WaitlistOffers;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\Attributes\Queue;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
+#[Queue(QueueName::Waitlist)]
 class OfferSeatsToWaitlist implements ShouldQueue
 {
     public function __construct(private WaitlistOffers $waitlistOffers) {}
-
-    public function viaQueue(): string
-    {
-        return QueueName::Waitlist->value;
-    }
 
     /**
      * Seats released by an order are offered already in the releasing transaction. This listener

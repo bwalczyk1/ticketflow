@@ -11,11 +11,13 @@ use App\Models\Invoice;
 use App\Models\Order;
 use App\Services\Documents\InvoiceNumberAllocator;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\Attributes\Queue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
+#[Queue(QueueName::Documents)]
 class IssueCorrectionInvoice implements ShouldQueue
 {
     use InteractsWithQueue;
@@ -36,11 +38,6 @@ class IssueCorrectionInvoice implements ShouldQueue
         private InvoiceNumberAllocator $allocator,
         private InvoicePdfGenerator $pdfs,
     ) {}
-
-    public function viaQueue(): string
-    {
-        return QueueName::Documents->value;
-    }
 
     /**
      * Works like IssueInvoice: the correction is saved before its PDF, so a retry after a failed

@@ -10,17 +10,14 @@ use App\Models\Order;
 use App\Models\Ticket;
 use App\Services\Tickets\SalesSummary;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\Attributes\Queue;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
+#[Queue(QueueName::Stats)]
 class UpdateSalesSummary implements ShouldQueue
 {
     public function __construct(private SalesSummary $salesSummary) {}
-
-    public function viaQueue(): string
-    {
-        return QueueName::Stats->value;
-    }
 
     public function handle(OrderPaid|OrderRefunded|TicketCheckedIn $event): void
     {

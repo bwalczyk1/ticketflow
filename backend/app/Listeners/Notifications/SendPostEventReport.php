@@ -10,18 +10,15 @@ use App\Models\Event;
 use App\Services\Notifications\NotificationLedger;
 use App\Services\Tickets\SalesSummary;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\Attributes\Queue;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
 
+#[Queue(QueueName::Notifications)]
 class SendPostEventReport implements ShouldQueue
 {
     public function __construct(private NotificationLedger $ledger, private SalesSummary $salesSummary) {}
-
-    public function viaQueue(): string
-    {
-        return QueueName::Notifications->value;
-    }
 
     /**
      * The summary is counted again from the source first, because the listeners that keep it

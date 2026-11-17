@@ -9,20 +9,19 @@ use App\Models\OrderItem;
 use App\Models\Ticket;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\Queue;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
  * Dispatched by IssueTickets once the tickets exist, so the PDFs never race with ticket issuing.
  */
+#[Queue(QueueName::Documents)]
 class GenerateTicketPdfs implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public readonly int $orderId)
-    {
-        $this->onQueue(QueueName::Documents->value);
-    }
+    public function __construct(public readonly int $orderId) {}
 
     /**
      * A ticket with a pdf_path is skipped, so a retry only finishes what is missing. The event goes

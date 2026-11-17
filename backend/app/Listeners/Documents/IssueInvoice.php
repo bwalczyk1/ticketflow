@@ -11,10 +11,12 @@ use App\Models\Invoice;
 use App\Models\Order;
 use App\Services\Documents\InvoiceNumberAllocator;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\Attributes\Queue;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
+#[Queue(QueueName::Documents)]
 class IssueInvoice implements ShouldQueue
 {
     /**
@@ -28,11 +30,6 @@ class IssueInvoice implements ShouldQueue
         private InvoiceNumberAllocator $allocator,
         private InvoicePdfGenerator $pdfs,
     ) {}
-
-    public function viaQueue(): string
-    {
-        return QueueName::Documents->value;
-    }
 
     /**
      * The invoice is saved before its PDF, so a retry after a failed PDF reuses the number it got.

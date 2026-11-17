@@ -10,21 +10,18 @@ use App\Events\Orders\OrderPlaced;
 use App\Exceptions\Domain\PaymentDeclined;
 use App\Models\Payment;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\Attributes\Queue;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
+#[Queue(QueueName::Payments)]
 class ProcessPayment implements ShouldQueue
 {
     public function __construct(
         private PaymentGateway $gateway,
         private PaymentResultHandler $results,
     ) {}
-
-    public function viaQueue(): string
-    {
-        return QueueName::Payments->value;
-    }
 
     /**
      * A second job of the same order is dropped, because the first one is doing its work and a

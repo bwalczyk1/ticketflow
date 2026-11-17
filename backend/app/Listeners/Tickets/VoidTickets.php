@@ -6,17 +6,14 @@ use App\Enums\QueueName;
 use App\Events\Refunds\OrderRefunded;
 use App\Services\Tickets\VoidOrderTickets;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\Attributes\Queue;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
+#[Queue(QueueName::Tickets)]
 class VoidTickets implements ShouldQueue
 {
     public function __construct(private VoidOrderTickets $voidOrderTickets) {}
-
-    public function viaQueue(): string
-    {
-        return QueueName::Tickets->value;
-    }
 
     public function handle(OrderRefunded $event): void
     {

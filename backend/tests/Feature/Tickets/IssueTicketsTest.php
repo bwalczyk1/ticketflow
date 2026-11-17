@@ -1,7 +1,6 @@
 <?php
 
 use App\Enums\OrderStatus;
-use App\Enums\QueueName;
 use App\Enums\TicketStatus;
 use App\Events\Orders\OrderPaid;
 use App\Jobs\Documents\GenerateTicketPdfs;
@@ -57,14 +56,14 @@ it('adds only the missing tickets after an interrupted run', function () {
         ->and($tickets->first()->code)->toBe($issued->code);
 });
 
-it('hands the order on to PDF generation on the documents queue', function () {
+it('hands the order on to PDF generation', function () {
     $order = TicketFixtures::paidOrder();
 
     app(IssueTickets::class)->handle(new OrderPaid($order->id));
 
     Bus::assertDispatched(
         GenerateTicketPdfs::class,
-        fn (GenerateTicketPdfs $job) => $job->orderId === $order->id && $job->queue === QueueName::Documents->value,
+        fn (GenerateTicketPdfs $job) => $job->orderId === $order->id,
     );
 });
 

@@ -4,6 +4,7 @@ const GENERIC_MESSAGE = 'Coś poszło nie tak. Spróbuj ponownie.'
 
 const ERROR_MESSAGES: Record<string, string> = {
   VALIDATION_ERROR: 'Popraw zaznaczone pola formularza.',
+  INVALID_JSON: 'Serwer nie mógł odczytać wysłanych danych. Odśwież stronę i spróbuj ponownie.',
   UNAUTHENTICATED: 'Zaloguj się, aby kontynuować.',
   INVALID_CREDENTIALS: 'Nieprawidłowy e-mail lub hasło.',
   FORBIDDEN: 'Nie masz uprawnień do tej operacji.',
@@ -16,7 +17,6 @@ const ERROR_MESSAGES: Record<string, string> = {
   RESERVATION_EXPIRED: 'Rezerwacja wygasła. Wybierz bilety jeszcze raz.',
   PAYMENT_ALREADY_STARTED: 'Płatność za to zamówienie została już rozpoczęta.',
   SALES_CLOSED: 'Sprzedaż biletów na to wydarzenie jest zamknięta.',
-  REFUND_NOT_ALLOWED: 'Zwrot jest możliwy tylko do 48 godzin przed wydarzeniem.',
   TICKET_ALREADY_USED: 'Ten bilet został już wykorzystany.',
   POOL_PROTECTED: 'Nie można zmniejszyć puli poniżej liczby sprzedanych i zablokowanych biletów.',
   EVENT_HAS_SALES: 'Nie można usunąć wydarzenia, na które sprzedano lub zablokowano bilety.',

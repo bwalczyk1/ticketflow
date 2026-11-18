@@ -46,4 +46,9 @@ class WaitlistEntryFactory extends Factory
             'offered_until' => now()->subMinute(),
         ]);
     }
+
+    public function cancelled(): static
+    {
+        return $this->state(['status' => WaitlistStatus::Cancelled]);
+    }
 }

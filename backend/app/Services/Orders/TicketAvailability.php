@@ -36,12 +36,17 @@ class TicketAvailability
         }
     }
 
+    public static function isOnSale(EventStatus $status, CarbonInterface $startsAt, CarbonInterface $now): bool
+    {
+        return $status === EventStatus::Published && $now < $startsAt;
+    }
+
     /**
      * @throws SalesClosed
      */
     public static function ensureOnSale(EventStatus $status, CarbonInterface $startsAt, CarbonInterface $now): void
     {
-        if ($status !== EventStatus::Published || $now >= $startsAt) {
+        if (! self::isOnSale($status, $startsAt, $now)) {
             throw new SalesClosed;
         }
     }

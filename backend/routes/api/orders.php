@@ -11,6 +11,8 @@ Route::middleware(['auth:sanctum', 'role:ATTENDEE'])
         Route::post('/', [OrderController::class, 'store']);
         Route::get('{id}', [OrderController::class, 'show']);
         Route::get('{id}/invoice', [OrderController::class, 'invoice']);
+        Route::get('{id}/correction-invoice', [OrderController::class, 'correctionInvoice']);
         Route::post('{id}/pay', [OrderController::class, 'pay']);
         Route::post('{id}/cancel', [OrderController::class, 'cancel']);
+        Route::post('{id}/refund', [OrderController::class, 'refund']);
     });

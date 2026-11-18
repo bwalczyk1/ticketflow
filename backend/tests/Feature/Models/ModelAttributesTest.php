@@ -61,12 +61,13 @@ dataset('factory states', [
     'used ticket' => [fn () => Ticket::factory()->used()->create()->status, TicketStatus::Used],
     'void ticket' => [fn () => Ticket::factory()->void()->create()->status, TicketStatus::Void],
     'pending refund' => [fn () => Refund::factory()->create()->status, RefundStatus::Pending],
-    'completed refund' => [fn () => Refund::factory()->completed()->create()->status, RefundStatus::Completed],
+    'succeeded refund' => [fn () => Refund::factory()->succeeded()->create()->status, RefundStatus::Succeeded],
     'failed refund' => [fn () => Refund::factory()->failed()->create()->status, RefundStatus::Failed],
     'waiting entry' => [fn () => WaitlistEntry::factory()->create()->status, WaitlistStatus::Waiting],
     'offered entry' => [fn () => WaitlistEntry::factory()->offered()->create()->status, WaitlistStatus::Offered],
     'converted entry' => [fn () => WaitlistEntry::factory()->converted()->create()->status, WaitlistStatus::Converted],
     'expired entry' => [fn () => WaitlistEntry::factory()->expired()->create()->status, WaitlistStatus::Expired],
+    'cancelled entry' => [fn () => WaitlistEntry::factory()->cancelled()->create()->status, WaitlistStatus::Cancelled],
     'invoice' => [fn () => Invoice::factory()->create()->type, InvoiceType::Invoice],
 ]);
 

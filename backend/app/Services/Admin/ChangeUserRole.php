@@ -5,9 +5,14 @@ namespace App\Services\Admin;
 use App\Enums\Role;
 use App\Exceptions\Domain\OwnAdminRoleProtected;
 use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class ChangeUserRole
 {
+    /**
+     * @throws ModelNotFoundException
+     * @throws OwnAdminRoleProtected
+     */
     public function handle(User $admin, string $userId, Role $role): User
     {
         $user = User::findOrFail($userId, ['id', 'name', 'email', 'role']);

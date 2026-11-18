@@ -18,4 +18,13 @@ class InvoiceNumbering
     {
         return $lastNumber + 1;
     }
+
+    /**
+     * Numbers restart every year, so only the number and the year together identify an invoice.
+     * The order number/year is the Polish convention and matches the PDF.
+     */
+    public static function label(int $year, int $number): string
+    {
+        return "{$number}/{$year}";
+    }
 }

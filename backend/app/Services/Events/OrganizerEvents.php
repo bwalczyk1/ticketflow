@@ -42,6 +42,7 @@ class OrganizerEvents
     {
         $event = new Event($data);
 
+        EventPublication::ensureStartsInFuture($event->starts_at, now()->toImmutable());
         EventPublication::ensureDatesInOrder($event->starts_at, $event->ends_at);
 
         $organizer->organizedEvents()->save($event);
@@ -60,6 +61,10 @@ class OrganizerEvents
         EventPublication::ensureEditable($event->status);
 
         $event->fill($data);
+
+        if ($event->isDirty('starts_at')) {
+            EventPublication::ensureStartsInFuture($event->starts_at, now()->toImmutable());
+        }
 
         EventPublication::ensureDatesInOrder($event->starts_at, $event->ends_at);
 

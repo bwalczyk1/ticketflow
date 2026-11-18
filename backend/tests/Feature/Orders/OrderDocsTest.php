@@ -34,7 +34,7 @@ it('documents the conflicts of the purchase endpoints', function (string $method
     expect(orderErrorCodes($this->spec, $method, $path, 409))->toEqualCanonicalizing($codes);
 })->with([
     ['post', '/orders', ['SALES_CLOSED', 'TICKET_LIMIT_EXCEEDED', 'TICKETS_SOLD_OUT', 'RESERVATION_CONFLICT']],
-    ['post', '/orders/{id}/pay', ['PAYMENT_ALREADY_STARTED', 'INVALID_STATUS_TRANSITION', 'SALES_CLOSED']],
+    ['post', '/orders/{id}/pay', ['PAYMENT_ALREADY_STARTED', 'ORDER_NOT_PAYABLE', 'SALES_CLOSED']],
     ['post', '/orders/{id}/cancel', ['PAYMENT_ALREADY_STARTED', 'INVALID_STATUS_TRANSITION']],
 ]);
 
@@ -71,6 +71,24 @@ it('documents camelCase order fields and the request body', function () {
         ->toHaveKeys(['id', 'status', 'total', 'expiresAt', 'createdAt', 'paymentStatus', 'event', 'items'])
         ->and($this->spec['paths']['/orders']['post']['requestBody']['content']['application/json']['schema']['properties'] ?? $this->spec['components']['schemas']['StoreOrderRequest']['properties'])
         ->toHaveKeys(['eventId', 'items']);
+});
+
+it('documents the invoice download', function () {
+    $operation = $this->spec['paths']['/orders/{id}/invoice']['get'];
+
+    expect($operation['responses'][200]['content'])->toHaveKey('application/pdf')
+        ->and(orderErrorCodes($this->spec, 'get', '/orders/{id}/invoice', 404))->toContain('NOT_FOUND', 'INVOICE_NOT_FOUND')
+        ->and(orderErrorCodes($this->spec, 'get', '/orders/{id}/invoice', 401))->toContain('UNAUTHENTICATED');
+});
+
+it('documents the invoice of an order as a nullable object', function () {
+    $invoice = $this->spec['components']['schemas']['OrderResource']['properties']['invoice'];
+    $schema = collect($invoice['anyOf'] ?? [$invoice])->firstWhere('$ref');
+
+    expect(collect($invoice['anyOf'] ?? [])->pluck('type'))->toContain('null')
+        ->and($schema['$ref'])->toBe('#/components/schemas/OrderInvoiceResource')
+        ->and($this->spec['components']['schemas']['OrderInvoiceResource']['properties'])->toHaveKeys(['number', 'issuedAt'])
+        ->and($this->spec['components']['schemas']['OrderInvoiceResource']['properties']['issuedAt']['format'])->toBe('date-time');
 });
 
 it('documents order ids in the path as integers', function () {

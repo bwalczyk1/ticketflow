@@ -2,17 +2,14 @@
 
 namespace App\Services\Orders;
 
-use App\Enums\OrderStatus;
 use App\Exceptions\Domain\ReservationConflict;
 use App\Exceptions\Domain\SalesClosed;
 use App\Exceptions\Domain\TicketLimitExceeded;
 use App\Exceptions\Domain\TicketsSoldOut;
 use App\Models\Event;
 use App\Models\Order;
-use App\Models\OrderItem;
 use App\Models\TicketType;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
@@ -22,6 +19,8 @@ use Illuminate\Support\Sleep;
 class ReserveTickets
 {
     private const MYSQL_DEADLOCK = 1213;
+
+    public function __construct(private TicketLimit $ticketLimit) {}
 
     /**
      * The loop wraps the whole transaction: under REPEATABLE READ a retry inside one transaction
@@ -78,7 +77,7 @@ class ReserveTickets
 
         TicketAvailability::ensureWithinLimit(
             array_sum(array_column($items, 'quantity')),
-            $this->activeTickets($user, $event),
+            $this->ticketLimit->used($user->id, $event->id),
             config('ticketflow.ticket_limit_per_person'),
         );
 
@@ -107,20 +106,6 @@ class ReserveTickets
         }
 
         return $ticketTypes;
-    }
-
-    /**
-     * Tickets of orders that still count as bought or being bought. A pending order past its
-     * expires_at counts too: it holds seats until released and its payment may still succeed.
-     */
-    private function activeTickets(User $user, Event $event): int
-    {
-        return (int) OrderItem::query()
-            ->whereHas('order', fn (Builder $orders) => $orders
-                ->where('user_id', $user->id)
-                ->where('event_id', $event->id)
-                ->whereIn('status', [OrderStatus::Pending, OrderStatus::Paid]))
-            ->sum('quantity');
     }
 
     /**

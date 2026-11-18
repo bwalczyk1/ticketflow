@@ -109,6 +109,15 @@ it('documents camelCase event fields', function () {
         ->toHaveKeys(['timezone', 'startsAt', 'endsAt', 'ticketTypes']);
 });
 
+it('documents the purchase limit of the event details as a nullable object', function () {
+    $schema = $this->spec['paths']['/events/{id}']['get']['responses'][200]['content']['application/json']['schema'];
+    $details = $this->spec['components']['schemas'][str_replace('#/components/schemas/', '', $schema['$ref'])];
+
+    expect($details['properties']['purchaseLimit']['type'])->toBe(['object', 'null'])
+        ->and($details['properties']['purchaseLimit']['properties'])->toBe(['max' => ['type' => 'integer'], 'used' => ['type' => 'integer']])
+        ->and($details['required'])->toContain('purchaseLimit');
+});
+
 it('documents event dates as required date-time strings', function (string $resource) {
     $startsAt = $this->spec['components']['schemas'][$resource]['properties']['startsAt'];
 

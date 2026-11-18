@@ -42,6 +42,19 @@ class EventPublication
     }
 
     /**
+     * Checked only for a start that is being set, so an event that already started can still
+     * have its other fields edited.
+     *
+     * @throws InvalidEventDates
+     */
+    public static function ensureStartsInFuture(CarbonImmutable $startsAt, CarbonImmutable $now): void
+    {
+        if ($startsAt <= $now) {
+            throw new InvalidEventDates('startsAt', 'validation.event_starts_in_future');
+        }
+    }
+
+    /**
      * @throws InvalidEventDates
      */
     public static function ensureDatesInOrder(CarbonImmutable $startsAt, CarbonImmutable $endsAt): void

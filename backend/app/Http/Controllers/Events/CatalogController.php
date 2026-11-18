@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Events;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Events\ListCatalogEventsRequest;
+use App\Http\Resources\EventDetailsResource;
 use App\Http\Resources\EventResource;
 use App\Services\Events\EventCatalog;
+use App\Services\Orders\TicketLimit;
 use App\Support\Pagination;
+use Illuminate\Http\Request;
 
 class CatalogController extends Controller
 {
@@ -34,10 +37,14 @@ class CatalogController extends Controller
     /**
      * Show a published event with its ticket types and their availability, also after it started.
      *
+     * A signed-in attendee (session or bearer token) also gets `purchaseLimit`.
+     *
      * @unauthenticated
      */
-    public function show(string $id): EventResource
+    public function show(Request $request, string $id, TicketLimit $ticketLimit): EventDetailsResource
     {
-        return new EventResource($this->catalog->find($id));
+        $event = $this->catalog->find($id);
+
+        return new EventDetailsResource($event, $ticketLimit->forViewer($request->user('sanctum'), $event->id));
     }
 }

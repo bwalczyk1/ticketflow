@@ -30,3 +30,38 @@ export interface ApiErrorBody {
     requestId?: string
   }
 }
+
+export type EventStatus = 'DRAFT' | 'PUBLISHED' | 'FINISHED' | 'CANCELLED'
+
+/** A ticket type as the public catalog shows it. Prices are integer grosze. */
+export interface TicketType {
+  id: number
+  name: string
+  price: number
+  available: number
+}
+
+/** A ticket type with the sales counters only its organizer sees. */
+export interface ManagedTicketType extends TicketType {
+  quantity: number
+  sold: number
+  held: number
+}
+
+export interface CatalogEvent {
+  id: number
+  title: string
+  description: string
+  venue: string
+  city: string
+  category: string
+  timezone: string
+  startsAt: string
+  endsAt: string
+  status: EventStatus
+  ticketTypes?: TicketType[]
+}
+
+export interface ManagedEvent extends Omit<CatalogEvent, 'ticketTypes'> {
+  ticketTypes?: ManagedTicketType[]
+}

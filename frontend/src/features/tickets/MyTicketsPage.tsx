@@ -18,7 +18,7 @@ import { EmptyList, Pagination } from '../../components/Pagination'
 import { LoadingPage, RefreshingArea } from '../../components/StatusPages'
 import { formatDateTime } from '../../lib/dates'
 import { usePageParam } from '../../lib/urlParams'
-import { downloadTicketPdf, fetchTickets, ticketsKey } from './ticketsApi'
+import { downloadTicketPdf, fetchTickets, isPdfAvailable, isPdfPending, ticketsKey } from './ticketsApi'
 import { TicketStatusBadge } from './TicketStatusBadge'
 
 interface EventGroup {
@@ -42,16 +42,14 @@ interface TicketActionsProps {
 function TicketActions({ ticket, busy, onDownload }: TicketActionsProps) {
   return (
     <div className="flex flex-wrap items-center gap-2 md:justify-end">
-      {ticket.status === 'VALID' && ticket.pdfReady && (
+      {isPdfAvailable(ticket) && (
         <Button variant="outline" size="sm" type="button" disabled={busy} onClick={() => onDownload(ticket)}>
           {busy ? <LoaderCircle className="animate-spin" /> : <Download />}
           Pobierz PDF
         </Button>
       )}
 
-      {ticket.status === 'VALID' && !ticket.pdfReady && (
-        <span className="text-sm text-muted-foreground">Przygotowujemy PDF…</span>
-      )}
+      {isPdfPending(ticket) && <span className="text-sm text-muted-foreground">Przygotowujemy PDF…</span>}
 
       <Button variant="ghost" size="sm" asChild>
         <Link to={`/orders/${ticket.orderId}`}>Zamówienie #{ticket.orderId}</Link>

@@ -14,11 +14,20 @@ interface ReservationCardProps {
   isPaying: boolean
   isBusy: boolean
   onPay: () => void
+  onCancelOpen: () => void
   onCancel: () => void
 }
 
 /** The side card of a pending order: the countdown and the pay and cancel buttons. */
-export function ReservationCard({ order, now, isPaying, isBusy, onPay, onCancel }: ReservationCardProps) {
+export function ReservationCard({
+  order,
+  now,
+  isPaying,
+  isBusy,
+  onPay,
+  onCancelOpen,
+  onCancel,
+}: ReservationCardProps) {
   const expiresAt = Date.parse(order.expiresAt)
   const holdLength = expiresAt - Date.parse(order.createdAt)
   const remaining = Math.max(0, expiresAt - now)
@@ -56,7 +65,7 @@ export function ReservationCard({ order, now, isPaying, isBusy, onPay, onCancel 
               Zapłać {formatPrice(order.total)}
             </Button>
 
-            <CancelOrderDialog disabled={isBusy} onConfirm={onCancel} />
+            <CancelOrderDialog disabled={isBusy} onOpen={onCancelOpen} onConfirm={onCancel} />
           </div>
         )}
 

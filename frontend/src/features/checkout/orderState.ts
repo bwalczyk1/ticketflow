@@ -19,6 +19,29 @@ export function isHoldOver(order: Order, now: number): boolean {
   )
 }
 
+/**
+ * What the order page waits for: the payment result, the scheduler expiring the hold,
+ * or the invoice that is issued in the background after the payment.
+ */
+export type OrderWait = 'payment' | 'expiry' | 'invoice'
+
+export function getOrderWait(order: Order, now: number): OrderWait | null {
+  if (isPaymentInProgress(order)) {
+    return 'payment'
+  }
+
+  if (order.status === 'PENDING' && isHoldOver(order, now)) {
+    return 'expiry'
+  }
+
+  // Undefined means a backend without invoices, so there is nothing to wait for.
+  if (order.status === 'PAID' && order.invoice === null) {
+    return 'invoice'
+  }
+
+  return null
+}
+
 /** A reservation that can still be paid for or cancelled. */
 export function isReservationActive(order: Order, now: number): boolean {
   return order.status === 'PENDING' && order.paymentStatus === null && !isHoldOver(order, now)

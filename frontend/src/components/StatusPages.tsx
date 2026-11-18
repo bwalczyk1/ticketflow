@@ -1,7 +1,9 @@
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PAGE_TITLE } from '@/lib/styles'
+import { cn } from '@/lib/utils'
 
 interface PlaceholderPageProps {
   title: string
@@ -19,6 +21,15 @@ export function LoadingPage() {
       <p className="text-sm text-muted-foreground">Ładowanie…</p>
       <Skeleton className="h-8 w-2/3 max-w-sm" />
       <Skeleton className="h-24 w-full" />
+    </div>
+  )
+}
+
+/** Dims the previous results while the next ones load, so they do not look current. */
+export function RefreshingArea({ active, children }: { active: boolean; children: ReactNode }) {
+  return (
+    <div aria-busy={active} className={cn('transition-opacity', active && 'pointer-events-none opacity-50')}>
+      {children}
     </div>
   )
 }

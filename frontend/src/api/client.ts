@@ -79,6 +79,34 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   return response.json()
 }
 
+function fileNameFrom(response: Response, fallback: string): string {
+  const disposition = response.headers.get('Content-Disposition') ?? ''
+  const match = disposition.match(/filename="?([^";]+)"?/)
+
+  return match ? match[1] : fallback
+}
+
+/**
+ * Downloads a file through fetch, so the session cookie goes along and an API error
+ * becomes an ApiError instead of a JSON page in a new tab.
+ */
+export async function downloadFile(path: string, fallbackName: string): Promise<void> {
+  const response = await send(path, {})
+
+  if (!response.ok) {
+    throw await toApiError(response)
+  }
+
+  const url = URL.createObjectURL(await response.blob())
+  const link = document.createElement('a')
+
+  link.href = url
+  link.download = fileNameFrom(response, fallbackName)
+  link.click()
+  // Freed a moment later, once the browser has started the download.
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
 export const api = {
   get: <T>(path: string, query?: QueryParams) => request<T>(withQuery(path, query)),
   post: <T>(path: string, body?: unknown) => request<T>(path, { method: 'POST', body }),

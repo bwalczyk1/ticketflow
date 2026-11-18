@@ -36,7 +36,7 @@ export function RegisterPage() {
       <CardContent>
         <ErrorBanner error={mutation.error} />
 
-        <form className="grid gap-4" onSubmit={handleSubmit}>
+        <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
           <FormField
             label="Imię i nazwisko"
             name="name"

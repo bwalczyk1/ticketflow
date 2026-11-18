@@ -14,7 +14,7 @@ import { PAGE_TITLE } from '@/lib/styles'
 import type { Order } from '../../api/types'
 import { ErrorBanner } from '../../components/ErrorBanner'
 import { Pagination } from '../../components/Pagination'
-import { LoadingPage } from '../../components/StatusPages'
+import { LoadingPage, RefreshingArea } from '../../components/StatusPages'
 import { formatDateTime } from '../../lib/dates'
 import { formatPrice } from '../../lib/money'
 import { fetchOrders, ordersKey } from './checkoutApi'
@@ -41,7 +41,7 @@ export function OrdersPage() {
   const [params, setParams] = useSearchParams()
   const page = Number(params.get('page')) || 1
 
-  const { data, error, isPending } = useQuery({
+  const { data, error, isPending, isPlaceholderData } = useQuery({
     queryKey: [...ordersKey, 'list', page],
     queryFn: () => fetchOrders(page),
     staleTime: 0,
@@ -60,81 +60,83 @@ export function OrdersPage() {
 
       {isPending && !error && <LoadingPage />}
 
-      {data && data.data.length === 0 && (
-        <p className="text-muted-foreground">
-          Nie masz jeszcze zamówień.{' '}
-          <Link className="underline" to="/">
-            Wybierz wydarzenie
-          </Link>
-        </p>
-      )}
+      <RefreshingArea active={isPlaceholderData}>
+        {data && data.data.length === 0 && (
+          <p className="text-muted-foreground">
+            Nie masz jeszcze zamówień.{' '}
+            <Link className="underline" to="/">
+              Wybierz wydarzenie
+            </Link>
+          </p>
+        )}
 
-      {data && data.data.length > 0 && (
-        <>
-          <div className="hidden rounded-xl border md:block">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="pl-4">Zamówienie</TableHead>
-                  <TableHead>Wydarzenie</TableHead>
-                  <TableHead>Złożone</TableHead>
-                  <TableHead className="text-right">Kwota</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="pr-4 text-right">Akcje</TableHead>
-                </TableRow>
-              </TableHeader>
-
-              <TableBody>
-                {data.data.map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="pl-4 font-medium">#{order.id}</TableCell>
-                    <TableCell className="whitespace-normal">
-                      <p className="font-medium">{order.event.title}</p>
-                      <p className="text-sm text-muted-foreground">{itemsSummary(order)}</p>
-                    </TableCell>
-                    <TableCell>{formatDateTime(order.createdAt)}</TableCell>
-                    <TableCell className="text-right">{formatPrice(order.total)}</TableCell>
-                    <TableCell>
-                      <OrderStatusBadge status={order.status} />
-                    </TableCell>
-                    <TableCell className="pr-4 text-right">
-                      <OrderAction order={order} now={now} />
-                    </TableCell>
+        {data && data.data.length > 0 && (
+          <>
+            <div className="hidden rounded-xl border md:block">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="pl-4">Zamówienie</TableHead>
+                    <TableHead>Wydarzenie</TableHead>
+                    <TableHead>Złożone</TableHead>
+                    <TableHead className="text-right">Kwota</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="pr-4 text-right">Akcje</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                </TableHeader>
 
-          <ul className="grid gap-3 md:hidden">
-            {data.data.map((order) => (
-              <li key={order.id}>
-                <Card className="py-4">
-                  <CardContent className="grid gap-3 px-4">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="font-medium">Zamówienie #{order.id}</span>
-                      <OrderStatusBadge status={order.status} />
-                    </div>
+                <TableBody>
+                  {data.data.map((order) => (
+                    <TableRow key={order.id}>
+                      <TableCell className="pl-4 font-medium">#{order.id}</TableCell>
+                      <TableCell className="whitespace-normal">
+                        <p className="font-medium">{order.event.title}</p>
+                        <p className="text-sm text-muted-foreground">{itemsSummary(order)}</p>
+                      </TableCell>
+                      <TableCell>{formatDateTime(order.createdAt)}</TableCell>
+                      <TableCell className="text-right">{formatPrice(order.total)}</TableCell>
+                      <TableCell>
+                        <OrderStatusBadge status={order.status} />
+                      </TableCell>
+                      <TableCell className="pr-4 text-right">
+                        <OrderAction order={order} now={now} />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
 
-                    <div>
-                      <p className="font-medium break-words">{order.event.title}</p>
-                      <p className="text-sm text-muted-foreground">{itemsSummary(order)}</p>
-                      <p className="text-sm text-muted-foreground">{formatDateTime(order.createdAt)}</p>
-                    </div>
+            <ul className="grid gap-3 md:hidden">
+              {data.data.map((order) => (
+                <li key={order.id}>
+                  <Card className="py-4">
+                    <CardContent className="grid gap-3 px-4">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="font-medium">Zamówienie #{order.id}</span>
+                        <OrderStatusBadge status={order.status} />
+                      </div>
 
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-semibold">{formatPrice(order.total)}</span>
-                      <OrderAction order={order} now={now} />
-                    </div>
-                  </CardContent>
-                </Card>
-              </li>
-            ))}
-          </ul>
+                      <div>
+                        <p className="font-medium break-words">{order.event.title}</p>
+                        <p className="text-sm text-muted-foreground">{itemsSummary(order)}</p>
+                        <p className="text-sm text-muted-foreground">{formatDateTime(order.createdAt)}</p>
+                      </div>
 
-          <Pagination meta={data.meta} onPageChange={changePage} />
-        </>
-      )}
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-semibold">{formatPrice(order.total)}</span>
+                        <OrderAction order={order} now={now} />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </li>
+              ))}
+            </ul>
+
+            <Pagination meta={data.meta} onPageChange={changePage} />
+          </>
+        )}
+      </RefreshingArea>
     </section>
   )
 }

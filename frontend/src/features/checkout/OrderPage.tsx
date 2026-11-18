@@ -12,45 +12,64 @@ import { ErrorBanner } from '../../components/ErrorBanner'
 import { LoadingPage, NotFoundPage } from '../../components/StatusPages'
 import { eventsKey } from '../catalog/catalogApi'
 import { cancelOrder, fetchOrder, ordersKey, payOrder } from './checkoutApi'
+import { OrderDocuments } from './OrderDocuments'
 import { OrderItemsCard } from './OrderItemsCard'
-import { OrderOutcome } from './OrderOutcome'
-import { isHoldOver, isPaymentInProgress } from './orderState'
+import { ExpiringNotice, OrderOutcome } from './OrderOutcome'
+import { getOrderWait, isHoldOver, type OrderWait } from './orderState'
 import { ReservationCard } from './ReservationCard'
 import { useNow } from './useCountdown'
 
-const POLL_INTERVAL_MS = 1500
-const POLL_TIMEOUT_MS = 30_000
+// The general text speaks of events; on this page the code means the order moved on.
+const ORDER_ERRORS = {
+  INVALID_STATUS_TRANSITION: 'Tego zamówienia nie można już zmienić. Odśwież stronę, aby zobaczyć jego status.',
+}
+
+/** How often and how long the page asks for the order while it waits for the server. */
+const POLLING: Record<OrderWait, { interval: number; timeout: number }> = {
+  payment: { interval: 1500, timeout: 30_000 },
+  // The scheduler expires holds once a minute, so this waits for up to two ticks.
+  expiry: { interval: 5000, timeout: 120_000 },
+  invoice: { interval: 3000, timeout: 60_000 },
+}
 
 export function OrderPage() {
   const { id = '' } = useParams()
   const queryClient = useQueryClient()
   const now = useNow()
-  const [pollingTimedOut, setPollingTimedOut] = useState(false)
+  const [timedOutWait, setTimedOutWait] = useState<OrderWait | null>(null)
   const orderKey = [...ordersKey, 'details', id]
 
   const { data: order, error, isPending } = useQuery({
     queryKey: orderKey,
     queryFn: () => fetchOrder(id),
     staleTime: 0,
-    // Polling runs only while a payment waits for its result, and React Query stops it on unmount.
+    // Polling runs only while the page waits for the server, and React Query stops it on unmount.
     refetchInterval: (query) => {
       const current = query.state.data
+      const currentWait = current ? getOrderWait(current, Date.now()) : null
 
-      return current && isPaymentInProgress(current) && !pollingTimedOut ? POLL_INTERVAL_MS : false
+      return currentWait && currentWait !== timedOutWait ? POLLING[currentWait].interval : false
     },
   })
 
-  const isPaying = order ? isPaymentInProgress(order) : false
+  const wait = order ? getOrderWait(order, now) : null
+  const isPaying = wait === 'payment'
+  const pollingTimedOut = wait !== null && wait === timedOutWait
 
   useEffect(() => {
-    if (!isPaying || pollingTimedOut) {
+    if (!wait || wait === timedOutWait) {
       return
     }
 
-    const timer = setTimeout(() => setPollingTimedOut(true), POLL_TIMEOUT_MS)
+    const timer = setTimeout(() => setTimedOutWait(wait), POLLING[wait].timeout)
 
     return () => clearTimeout(timer)
-  }, [isPaying, pollingTimedOut])
+  }, [wait, timedOutWait])
+
+  function checkAgain() {
+    setTimedOutWait(null)
+    queryClient.invalidateQueries({ queryKey: orderKey })
+  }
 
   function handleSettled() {
     queryClient.invalidateQueries({ queryKey: eventsKey })
@@ -60,7 +79,7 @@ export function OrderPage() {
   const payMutation = useMutation({
     mutationFn: () => payOrder(Number(id)),
     onSuccess: (updated: Order) => {
-      setPollingTimedOut(false)
+      setTimedOutWait(null)
       queryClient.setQueryData(orderKey, updated)
     },
     onError: () => queryClient.invalidateQueries({ queryKey: orderKey }),
@@ -86,8 +105,7 @@ export function OrderPage() {
     return <LoadingPage />
   }
 
-  const isHoldEnded = isHoldOver(order, now)
-  const isReservationOpen = order.status === 'PENDING' && !isHoldEnded
+  const isReservationOpen = order.status === 'PENDING' && !isHoldOver(order, now)
 
   return (
     <section>
@@ -95,12 +113,14 @@ export function OrderPage() {
 
       <h1 className={`${PAGE_TITLE} mb-6`}>Zamówienie #{order.id}</h1>
 
-      <ErrorBanner error={payMutation.error} />
-      <ErrorBanner error={cancelMutation.error} />
+      <ErrorBanner error={payMutation.error} messages={ORDER_ERRORS} />
+      <ErrorBanner error={cancelMutation.error} messages={ORDER_ERRORS} />
 
       <div className="grid items-start gap-6 lg:grid-cols-[1fr_22rem]">
         <div className="grid gap-4">
           <OrderItemsCard order={order} />
+
+          {order.status === 'PAID' && <OrderDocuments order={order} />}
 
           {isPaying && !pollingTimedOut && (
             <Alert role="status">
@@ -116,7 +136,7 @@ export function OrderPage() {
               <AlertTitle>Płatność trwa dłużej niż zwykle</AlertTitle>
               <AlertDescription>
                 Nie mamy jeszcze wyniku. Nie płać drugi raz, tylko sprawdź status za chwilę.
-                <Button className="mt-3" variant="outline" size="sm" type="button" onClick={() => setPollingTimedOut(false)}>
+                <Button className="mt-3" variant="outline" size="sm" type="button" onClick={checkAgain}>
                   Sprawdź ponownie
                 </Button>
               </AlertDescription>
@@ -124,18 +144,24 @@ export function OrderPage() {
           )}
         </div>
 
-        {isReservationOpen ? (
+        {isReservationOpen && (
           <ReservationCard
             order={order}
             now={now}
             isPaying={isPaying}
             isBusy={payMutation.isPending || cancelMutation.isPending}
             onPay={() => payMutation.mutate()}
+            onCancelOpen={() => {
+              payMutation.reset()
+              cancelMutation.reset()
+            }}
             onCancel={() => cancelMutation.mutate()}
           />
-        ) : (
-          <OrderOutcome order={order} isExpired={isHoldEnded} />
         )}
+
+        {wait === 'expiry' && <ExpiringNotice timedOut={pollingTimedOut} onCheckAgain={checkAgain} />}
+
+        {!isReservationOpen && wait !== 'expiry' && <OrderOutcome order={order} />}
       </div>
     </section>
   )

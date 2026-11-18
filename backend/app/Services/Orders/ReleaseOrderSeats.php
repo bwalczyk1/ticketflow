@@ -9,6 +9,7 @@ use App\Models\Event;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\TicketType;
+use App\Services\Waitlist\WaitlistOffers;
 use Illuminate\Support\Facades\DB;
 
 class ReleaseOrderSeats
@@ -17,6 +18,8 @@ class ReleaseOrderSeats
      * Statuses that gave up their held seats. Paid and refunded orders keep them in sold, not in held.
      */
     private const RELEASING_STATUSES = [OrderStatus::Expired, OrderStatus::Failed, OrderStatus::Cancelled];
+
+    public function __construct(private WaitlistOffers $waitlistOffers) {}
 
     /**
      * Gives back the held seats of an order that ended without a payment.
@@ -36,8 +39,10 @@ class ReleaseOrderSeats
 
     /**
      * Compare-and-set on seats_released_at in one transaction with the pool decrement, so several
-     * events about the same order, or a retried job, give the seats back only once. Seats of a
-     * cancelled event are not offered to the waitlist, because nobody can buy them any more.
+     * events about the same order, or a retried job, give the seats back only once. The waitlist
+     * gets its offers in the same transaction, so released seats someone waits for never become
+     * free for a normal purchase in between. Seats of a cancelled event are not offered to the
+     * waitlist, because nobody can buy them any more.
      *
      * @param  list<OrderStatus>  $statuses
      * @param  'held'|'sold'  $column
@@ -65,6 +70,8 @@ class ReleaseOrderSeats
                     ->decrement($column, $item->quantity, ['version' => DB::raw('version + 1')]);
 
                 if ($offerToWaitlist) {
+                    $this->waitlistOffers->offerFreeSeats($item->ticket_type_id);
+
                     SeatsReleased::dispatch($item->ticket_type_id, $item->quantity);
                 }
             }

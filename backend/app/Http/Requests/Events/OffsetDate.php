@@ -15,7 +15,7 @@ class OffsetDate implements ValidationRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if (! is_string($value) || preg_match(self::PATTERN, $value) !== 1) {
-            $fail('The :attribute must be an ISO 8601 date with an offset or Z.');
+            $fail('validation.offset_date')->translate();
         }
     }
 }

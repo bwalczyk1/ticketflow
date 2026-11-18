@@ -1,7 +1,8 @@
-# Entity relationship diagram
+# Diagram ERD
 
-Generated tables of the framework (`sessions`, `cache`, `jobs`, `personal_access_tokens`, ...) are left out.
-Money is stored in integer grosze. All dates are `DATETIME` in UTC.
+Tabele frameworka (`sessions`, `cache`, `jobs`, `personal_access_tokens` itd.) są pominięte.
+Kwoty są przechowywane jako liczby całkowite w groszach. Wszystkie daty to `DATETIME` w UTC.
+Statusy i role są zabezpieczone ograniczeniami `CHECK` w bazie; opis w cudzysłowie przy kolumnie to dozwolone wartości.
 
 ```mermaid
 erDiagram
@@ -13,6 +14,7 @@ erDiagram
     events ||--o| event_sales_summaries : "summarized by"
     ticket_types ||--o{ order_items : "ordered as"
     ticket_types ||--o{ waitlist_entries : "waited for"
+    orders ||--o| waitlist_entries : "created from offer"
     orders ||--|{ order_items : contains
     orders ||--o| payments : "paid by"
     orders ||--o| refunds : "refunded by"
@@ -111,8 +113,8 @@ erDiagram
         bigint id PK
         bigint order_id FK,UK
         int amount
-        varchar reason
-        varchar status "PENDING, COMPLETED, FAILED"
+        varchar reason "nullable, up to 500 characters"
+        varchar status "PENDING, SUCCEEDED, FAILED"
         datetime created_at
         datetime updated_at
     }
@@ -142,8 +144,9 @@ erDiagram
         bigint user_id FK "UK with ticket_type_id and active_key"
         bigint ticket_type_id FK
         int quantity
-        varchar status "WAITING, OFFERED, CONVERTED, EXPIRED"
+        varchar status "WAITING, OFFERED, CONVERTED, EXPIRED, CANCELLED"
         datetime offered_until
+        bigint order_id FK "order created from the accepted offer"
         tinyint active_key "generated: 1 while active, otherwise NULL"
         datetime created_at
         datetime updated_at
@@ -166,15 +169,15 @@ erDiagram
     }
 ```
 
-`invoice_sequences` has no foreign keys: it is the counter behind `invoices.number`, one row per year and type.
+`invoice_sequences` nie ma kluczy obcych: to licznik numeracji dla `invoices.number`, jeden wiersz na rok i typ.
 
-## Delete rules
+## Reguły usuwania
 
-| Foreign key | On delete | Why |
+| Klucz obcy | ON DELETE | Dlaczego |
 |---|---|---|
-| `events.organizer_id`, `orders.user_id`, `orders.event_id`, `waitlist_entries.user_id` | `RESTRICT` | sales history stays |
-| `order_items.ticket_type_id`, `tickets.order_item_id` | `RESTRICT` | sold tickets stay |
-| `payments.order_id`, `refunds.order_id`, `invoices.*` | `RESTRICT` | financial records stay |
-| `ticket_types.event_id` | `CASCADE` | an event without sales can be removed with its pools |
-| `order_items.order_id` | `CASCADE` | items of an order without tickets go with it |
-| `waitlist_entries.ticket_type_id`, `event_sales_summaries.event_id` | `CASCADE` | derived data without sales value |
+| `events.organizer_id`, `orders.user_id`, `orders.event_id`, `waitlist_entries.user_id`, `waitlist_entries.order_id` | `RESTRICT` | historia sprzedaży zostaje |
+| `order_items.ticket_type_id`, `tickets.order_item_id` | `RESTRICT` | sprzedane bilety zostają |
+| `payments.order_id`, `refunds.order_id`, `invoices.*` | `RESTRICT` | dokumenty finansowe zostają |
+| `ticket_types.event_id` | `CASCADE` | wydarzenie bez sprzedaży można usunąć razem z pulami |
+| `order_items.order_id` | `CASCADE` | pozycje zamówienia bez biletów znikają razem z nim |
+| `waitlist_entries.ticket_type_id`, `event_sales_summaries.event_id` | `CASCADE` | dane pochodne, bez wartości historycznej |

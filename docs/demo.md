@@ -8,7 +8,7 @@ Scenariusz używa wyłącznie istniejących funkcji, komend i danych z seedera. 
 
    ```sh
    docker compose exec -T app php artisan migrate:fresh --seed --force
-   docker compose exec redis redis-cli FLUSHALL
+   docker compose exec -T redis redis-cli FLUSHALL
    docker compose restart horizon mailpit
    ```
 
@@ -54,9 +54,9 @@ Powiedz jednym zdaniem: platforma sprzedaży biletów, Laravel plus React, a pł
 Okno zwykłe, http://localhost:8080/login, konto `olivia@ticketflow.test`.
 
 1. Z menu wybierz **Moje wydarzenia**, kliknij **Nowe wydarzenie**.
-2. Wpisz: tytuł `Demo Night`, opis dowolny, miejsce `Klub Studio`, miasto `Krakow`, kategoria `concert`, strefa czasowa `Europe/Warsaw`.
+2. Wpisz: tytuł `Demo Night`, opis dowolny, miejsce `Klub Studio`, miasto `Krakow`, kategoria `concert`; strefa czasowa jest już ustawiona na `Europe/Warsaw`.
 3. **Początek**: dzisiejsza data, godzina za około godzinę. **Koniec**: dzisiejsza data, 3 godziny po początku (lub następny dzień, gdy zbliża się północ). Zapisz.
-4. Wydarzenie jest w szkicu, a aplikacja przenosi na stronę z pulami biletów (komunikat „Dodaj pule biletów"). Dodaj pulę: nazwa `Standard`, cena `50`, ilość `100`.
+4. Wydarzenie jest w szkicu, a aplikacja przenosi na stronę z pulami biletów (komunikat „Utworzono wydarzenie „Demo Night”. Dodaj pule biletów.”). Dodaj pulę: nazwa `Standard`, cena `50`, ilość `100`.
 5. Wróć do **Moje wydarzenia**, w menu „⋯” przy `Demo Night` wybierz **Opublikuj**.
 
 Oczekiwany wynik: komunikat „Opublikowano wydarzenie „Demo Night””, status wydarzenia `Opublikowane`.
@@ -67,14 +67,14 @@ Dlaczego dzisiaj: check-in (krok 6) działa tylko w dniu wydarzenia liczonym w j
 
 Okno prywatne, http://localhost:8080/login, konto `anna@ticketflow.test`.
 
-1. Na liście wydarzeń otwórz **Krakow Jazz Night**, wybierz 1 bilet `Standard`, **Kup bilety**. Zamówienie ma status `PENDING` z odliczaniem 15 minut. Kliknij **Zapłać**. Po chwili (symulowana płatność trwa 1-3 sekundy w tle) status zmienia się na `PAID`. To zamówienie posłuży do zwrotu w kroku 5.
+1. Na liście wydarzeń otwórz **Krakow Jazz Night**, wybierz 1 bilet `Standard`, **Kup bilety**. Zamówienie czeka na płatność („Oczekuje na płatność”) z odliczaniem 15 minut. Kliknij **Zapłać**. Po chwili (symulowana płatność trwa 1-3 sekundy w tle, strona sprawdza wynik sama) pojawia się „Płatność przyjęta” (w API status `PAID`). To zamówienie posłuży do zwrotu w kroku 5.
 2. Wróć do listy, otwórz **Demo Night**, wybierz 1 bilet `Standard`, **Kup bilety**, **Zapłać**. To zamówienie posłuży do check-inu w kroku 6.
 
-Oczekiwany wynik: oba zamówienia w statusie `PAID`, na stronie zamówienia pojawia się faktura do pobrania.
+Oczekiwany wynik: oba zamówienia „Opłacone” na liście **Moje zamówienia**, na stronie zamówienia bilet i faktura do pobrania.
 
 ### 3. Horizon, Mailpit i PDF biletu (1:50-2:30)
 
-1. Karta **Horizon**, widok **Dashboard** i **Recent Jobs**: widać joby `ProcessPayment` (kolejka `payments`), `IssueTickets` (`tickets`), `GenerateTicketPdfs` i `IssueInvoice` (`documents`), `UpdateSalesSummary` (`stats`), `NotifyOrganizer` (`notifications`) oraz `SendTicketsEmail` (`mail`). Zwróć uwagę, że jedno zdarzenie `OrderPaid` uruchomiło kilka niezależnych listenerów na osobnych kolejkach.
+1. Karta **Horizon**, widok **Dashboard** i **Completed Jobs**: widać joby `ProcessPayment` (kolejka `payments`), `IssueTickets` (`tickets`), `GenerateTicketPdfs` i `IssueInvoice` (`documents`), `UpdateSalesSummary` (`stats`), `NotifyOrganizer` (`notifications`) oraz `SendTicketsEmail` (`mail`). Zwróć uwagę, że jedno zdarzenie `OrderPaid` uruchomiło kilka niezależnych listenerów na osobnych kolejkach.
 2. Karta **Mailpit**: wiadomości `Twoje bilety: Krakow Jazz Night` i `Twoje bilety: Demo Night` (do Anny) oraz `Nowe zamówienie: …` (do organizatora Olivii).
 3. Okno uczestnika, **Moje bilety**: kliknij **Pobierz PDF** przy bilecie `Demo Night`. Pokaż w PDF kod QR i kod biletu. Skopiuj kod tekstowy biletu z tabeli (przyda się w kroku 6).
 
@@ -86,15 +86,15 @@ W terminalu:
 ./scripts/oversell.sh
 ```
 
-Skrypt tworzy tymczasowe wydarzenie z pulą 5 biletów, wysyła 20 równoległych żądań rezerwacji od 20 użytkowników i sprawdza stan bazy zapytaniami SQL, a na końcu sam sprząta dane. Oczekiwany wynik: w sekcji `answers` kilka odpowiedzi `201` (nie więcej niż 5 biletów) i reszta `409` z kodem `TICKETS_SOLD_OUT` (brak miejsc) lub `RESERVATION_CONFLICT` (konflikt optimistic locking po wyczerpaniu prób), a na końcu `All checks passed`. Powiedz, że nigdy nie sprzedano więcej niż pula i że chroni to także `CHECK` w bazie.
+Skrypt tworzy tymczasowe wydarzenie z pulą 5 biletów, wysyła 20 równoległych żądań rezerwacji od 20 użytkowników i sprawdza stan bazy zapytaniami SQL, a na końcu sam sprząta dane. Oczekiwany wynik: w sekcji `answers` scenariusza 1 dokładnie 5 odpowiedzi `201` (pula to 5 biletów) i reszta `409` z kodem `TICKETS_SOLD_OUT` (brak miejsc) lub `RESERVATION_CONFLICT` (konflikt optimistic locking po wyczerpaniu prób), a na końcu `All checks passed`. Scenariusz 2 pokazuje limit 6 biletów na osobę: z 10 równoległych żądań jednej osoby przechodzi 6 (`201`), a 4 kończą się `409 TICKET_LIMIT_EXCEEDED`. Powiedz, że nigdy nie sprzedano więcej niż pula i że chroni to także `CHECK` w bazie.
 
-Wariant z interfejsu, jeśli wolisz pokazać to w przeglądarce: w oknie uczestnika `anna@ticketflow.test` otwórz **Laravel Krakow Meetup** (pula 5 biletów) i nie klikaj jeszcze zakupu; w trzecim oknie prywatnym zaloguj się jako `adam@ticketflow.test`, kup 5 biletów (rezerwacja `PENDING` trzyma je 15 minut); wróć do okna Anny i kup 1 bilet na nieodświeżonej stronie. Dostaniesz błąd 409 `TICKETS_SOLD_OUT`. Wariant jest dłuższy, więc skrypt jest domyślnym wyborem.
+Wariant z interfejsu, jeśli wolisz pokazać to w przeglądarce: w oknie uczestnika `anna@ticketflow.test` otwórz **Laravel Krakow Meetup** (pula 5 biletów) i nie klikaj jeszcze zakupu; w trzecim oknie prywatnym zaloguj się jako `adam@ticketflow.test`, kup 5 biletów (rezerwacja `PENDING` trzyma je 15 minut); wróć do okna Anny i kup 1 bilet na nieodświeżonej stronie. Zobaczysz komunikat „Bilety z tej puli zostały wyprzedane.” (API: 409 `TICKETS_SOLD_OUT`), a pula zmieni się na „Wyprzedane” z zapisem na listę oczekujących. Wariant jest dłuższy, więc skrypt jest domyślnym wyborem.
 
 ### 5. Zwrot (3:00-3:25)
 
-Okno uczestnika, **Moje zamówienia**, zamówienie na `Krakow Jazz Night` (wydarzenie za 14 dni, więc okno 48 godzin jest otwarte): **Zwróć bilety**, w oknie dialogowym potwierdź.
+Okno uczestnika, **Moje zamówienia**, przy zamówieniu na `Krakow Jazz Night` kliknij **Szczegóły** (wydarzenie za 14 dni, więc okno 48 godzin jest otwarte), potem **Zwróć bilety** i potwierdź w oknie dialogowym.
 
-Oczekiwany wynik: komunikat „Zlecono zwrot biletów”, po chwili status zamówienia `REFUNDED`, zwrot `SUCCEEDED`, bilety unieważnione (`VOID`), dostępna faktura korygująca. W Horizonie widać listenery `OrderRefunded`: `RefundPayment`, `VoidTickets`, `ReleaseRefundedSeats`, `IssueCorrectionInvoice`, `UpdateSalesSummary`, `SendRefundEmail`; w Mailpit przychodzi `Zwrot za zamówienie: Krakow Jazz Night`.
+Oczekiwany wynik: komunikat „Zlecono zwrot biletów.”, po chwili „Zwrot zrealizowany” i „Zamówienie zwrócone” (w API `REFUNDED` / `SUCCEEDED`), bilety „Unieważniony” (`VOID`) na **Moje bilety**, dostępna faktura korygująca. W Horizonie widać listenery `OrderRefunded`: `RefundPayment`, `VoidTickets`, `ReleaseRefundedSeats`, `IssueCorrectionInvoice`, `UpdateSalesSummary`, `SendRefundEmail`; w Mailpit przychodzi `Zwrot za zamówienie: Krakow Jazz Night`.
 
 Opcjonalnie (5 sekund): przy zamówieniu na `Demo Night` zamiast przycisku zwrotu jest informacja, że zwrot jest możliwy tylko do 48 godzin przed wydarzeniem (przez API to 409 `REFUND_WINDOW_CLOSED`).
 
@@ -116,9 +116,9 @@ W terminalu:
 docker compose exec -T app php artisan ticketflow:simulate-traffic --orders=100
 ```
 
-Komenda tworzy kupujących i składa zamówienia przez prawdziwe serwisy, a po wydrukowaniu tabeli wyników (`Payment started`, `TICKETS_SOLD_OUT` itd.) wraca natychmiast. Płatności przetwarza Horizon w tle. Od razu przełącz się na kartę Horizona: na **Dashboard** rośnie liczba jobów na minutę, a kolejka `payments` ma największy backlog, bo każda płatność trwa 1-3 sekundy i ma 2 procesy robocze. Pokaż **Metrics** i **Recent Jobs**; po kilkudziesięciu sekundach backlog maleje, a skrzynka Mailpit zapełnia się mailami.
+Komenda tworzy kupujących i składa zamówienia przez prawdziwe serwisy, a po wydrukowaniu tabeli wyników (`Payment started`, `TICKETS_SOLD_OUT` itd.) wraca natychmiast. Płatności przetwarza Horizon w tle. Od razu przełącz się na kartę Horizona: na **Dashboard** w tabeli „Current Workload” kolejka `payments` ma największy backlog (kilkadziesiąt jobów, „Wait” około minuty), bo każda płatność trwa 1-3 sekundy i ma 2 procesy robocze, a „Jobs Past Hour” rośnie. Pokaż **Pending Jobs** i **Completed Jobs**; po kilkudziesięciu sekundach backlog maleje, a skrzynka Mailpit zapełnia się mailami. Nie opieraj się na „Jobs Per Minute” ani na wykresach w **Metrics**: zależą od okresowych migawek (`horizon:snapshot`), których harmonogram nie zawiera, więc pokazują zera.
 
-Domyślne `--orders=500` jest dobre do dłuższego pokazu: opróżnienie kolejki płatności zajmuje wtedy kilka minut, co w nagraniu 3-5 minut jest zbyt długie. Przy `--orders=100` kolejka opróżnia się w około 1-2 minuty.
+Przy `--orders=100` kolejka płatności opróżnia się w około 90 sekund (zmierzone). Domyślne `--orders=500` jest dobre do dłuższego pokazu, ale opróżnienie trwa wtedy kilka minut, co w nagraniu 3-5 minut jest zbyt długie.
 
 Po nagraniu wróć do czystego stanu procedurą z sekcji „Przygotowanie”, bo symulacja wyprzedaje część pul i tworzy użytkowników `traffic-…@traffic.ticketflow.test`.
 

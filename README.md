@@ -64,7 +64,7 @@ Gdy `http://localhost:8080` odpowiada (Vite potrzebuje chwili po starcie), aplik
 | Zatrzymać stos (dane zostają) | `docker compose down` |
 | Uruchomić ponownie | `docker compose up -d` |
 | Wyczyścić dane i zacząć od nowa | `docker compose down -v`, usunąć `.env`, uruchomić `./scripts/setup.sh` |
-| Tylko odtworzyć dane demo na działającym stosie | `docker compose exec -T app php artisan migrate:fresh --seed --force`, potem `docker compose exec redis redis-cli FLUSHALL` (czyści sesje i statystyki Horizona) i `docker compose restart mailpit` (czyści skrzynkę) |
+| Tylko odtworzyć dane demo na działającym stosie | `docker compose exec -T app php artisan migrate:fresh --seed --force`, potem `docker compose exec -T redis redis-cli FLUSHALL` (czyści sesje i statystyki Horizona) i `docker compose restart mailpit` (czyści skrzynkę) |
 
 ## Adresy
 
@@ -84,6 +84,8 @@ Specyfikacja jest zapisana także w [docs/openapi.json](docs/openapi.json) (adre
 ```sh
 docker compose exec -T app php artisan scramble:export --stdout > docs/openapi.json
 ```
+
+Komenda wypisuje na stderr ostrzeżenia Scramble `PD001` o zbędnych adnotacjach `@var`; są nieszkodliwe, a plik wynikowy jest poprawny.
 
 Frontend generuje z niego typy (`npm run api:types` w `frontend/`), więc rozjazd kontraktu wychodzi przy kompilacji.
 

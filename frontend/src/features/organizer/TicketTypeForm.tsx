@@ -7,6 +7,7 @@ import type { ManagedTicketType } from '../../api/types'
 import { ErrorBanner } from '../../components/ErrorBanner'
 import { FormField } from '../../components/FormField'
 import { groszeToPln, plnToGrosze } from '../../lib/money'
+import { useVisibleErrors } from '../../lib/useVisibleErrors'
 import { eventsKey } from '../catalog/catalogApi'
 import {
   createTicketType,
@@ -44,10 +45,14 @@ export function TicketTypeForm({ eventId, ticketType, onSubmitStart, onDone }: T
     },
   })
 
-  const fieldErrors = { ...getFieldErrors(mutation.error), ...clientErrors }
+  const { errors: fieldErrors, markEdited, resetEdited } = useVisibleErrors({
+    ...getFieldErrors(mutation.error),
+    ...clientErrors,
+  })
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    resetEdited()
     onSubmitStart?.()
 
     const form = new FormData(event.currentTarget)
@@ -73,7 +78,7 @@ export function TicketTypeForm({ eventId, ticketType, onSubmitStart, onDone }: T
   }
 
   return (
-    <form noValidate onSubmit={handleSubmit}>
+    <form noValidate onChange={markEdited} onSubmit={handleSubmit}>
       <ErrorBanner error={mutation.error} />
 
       <div className="grid items-start gap-4 sm:grid-cols-3">

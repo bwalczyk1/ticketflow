@@ -7,16 +7,18 @@ import { PAGE_TITLE } from '@/lib/styles'
 import { getFieldErrors } from '../../api/errors'
 import { ErrorBanner } from '../../components/ErrorBanner'
 import { FormField } from '../../components/FormField'
+import { useVisibleErrors } from '../../lib/useVisibleErrors'
 import { useAuth } from './AuthContext'
 
 export function LoginPage() {
   const { login } = useAuth()
   const location = useLocation()
   const mutation = useMutation({ mutationFn: login })
-  const fieldErrors = getFieldErrors(mutation.error)
+  const { errors: fieldErrors, markEdited, resetEdited } = useVisibleErrors(getFieldErrors(mutation.error))
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    resetEdited()
 
     const form = new FormData(event.currentTarget)
 
@@ -35,7 +37,7 @@ export function LoginPage() {
       <CardContent>
         <ErrorBanner error={mutation.error} />
 
-        <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+        <form className="grid gap-4" noValidate onChange={markEdited} onSubmit={handleSubmit}>
           <FormField
             label="E-mail"
             name="email"

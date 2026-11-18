@@ -13,6 +13,7 @@ import { LoadingPage, NotFoundPage } from '../../components/StatusPages'
 import { TextAreaField } from '../../components/TextAreaField'
 import { CATEGORY_SUGGESTIONS } from '../../lib/categories'
 import { isValidTimeZone, utcIsoToZonedLocal, zonedLocalToUtcIso } from '../../lib/dates'
+import { useVisibleErrors } from '../../lib/useVisibleErrors'
 import { eventsKey } from '../catalog/catalogApi'
 import { getAllowedActions } from './allowedActions'
 import {
@@ -52,11 +53,15 @@ function EventForm({ event }: EventFormProps) {
     },
   })
 
-  const fieldErrors = { ...getFieldErrors(mutation.error), ...clientErrors }
+  const { errors: fieldErrors, markEdited, resetEdited } = useVisibleErrors({
+    ...getFieldErrors(mutation.error),
+    ...clientErrors,
+  })
   const timeZone = event?.timezone ?? DEFAULT_TIME_ZONE
 
   function handleSubmit(submitEvent: FormEvent<HTMLFormElement>) {
     submitEvent.preventDefault()
+    resetEdited()
 
     const form = new FormData(submitEvent.currentTarget)
     const text = (name: string) => String(form.get(name) ?? '').trim()
@@ -109,7 +114,7 @@ function EventForm({ event }: EventFormProps) {
       <CardContent>
         <ErrorBanner error={mutation.error} />
 
-        <form className="grid gap-4 sm:grid-cols-2" noValidate onSubmit={handleSubmit}>
+        <form className="grid gap-4 sm:grid-cols-2" noValidate onChange={markEdited} onSubmit={handleSubmit}>
           <div className="sm:col-span-2">
             <FormField
               label="Tytuł"

@@ -72,6 +72,10 @@ it('returns 401 without authentication', function () {
     assertErrorEnvelope($this->getJson('/api/probe/auth'), 401, 'UNAUTHENTICATED');
 });
 
+it('returns 401 to a guest that does not ask for JSON', function (string $path) {
+    assertErrorEnvelope($this->get($path, ['Accept' => 'text/html']), 401, 'UNAUTHENTICATED');
+})->with(['/api/probe/auth', '/api/me', '/api/tickets/1/pdf']);
+
 it('returns 403 for a wrong role', function () {
     $this->actingAs(User::factory()->create());
 

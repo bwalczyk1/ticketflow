@@ -14,10 +14,12 @@ use Illuminate\Support\Facades\Storage;
 function ticketForEvent(array $event = [], array $user = []): Ticket
 {
     $event = Event::factory()->create($event);
+
     $order = Order::factory()->paid()->create([
         'event_id' => $event->id,
         'user_id' => User::factory()->create($user)->id,
     ]);
+
     $ticketType = TicketType::factory()->create(['event_id' => $event->id, 'name' => 'Płyta główna']);
     $item = OrderItem::factory()->create(['order_id' => $order->id, 'ticket_type_id' => $ticketType->id]);
 
@@ -57,6 +59,7 @@ it('writes through a temporary file and rename', function () {
     $mock->shouldReceive('put')->once()
         ->withArgs(fn (string $path) => $path !== "tickets/{$ticket->code}.pdf" && str_ends_with($path, '.tmp'))
         ->andReturnUsing(fn (string $path, string $contents) => $disk->put($path, $contents));
+
     $mock->shouldReceive('move')->once()
         ->withArgs(fn (string $from, string $to) => str_ends_with($from, '.tmp') && $to === "tickets/{$ticket->code}.pdf")
         ->andReturnUsing(fn (string $from, string $to) => $disk->move($from, $to));
@@ -81,6 +84,7 @@ it('contains a QR code of the ticket code', function () {
 
 it('shows the start time from localStartsAt', function () {
     Storage::fake('local');
+
     $ticket = ticketForEvent([
         'starts_at' => '2026-12-01 18:00:00',
         'timezone' => 'Europe/Warsaw',

@@ -15,11 +15,13 @@ use Illuminate\Support\Facades\Storage;
 function invoiceForOrder(array $invoice = []): Invoice
 {
     $event = Event::factory()->create(['title' => 'Koncert Żółć']);
+
     $order = Order::factory()->paid()->create([
         'event_id' => $event->id,
         'user_id' => User::factory()->create(['name' => 'Zażółć Gęślą', 'email' => 'zazolc@example.com'])->id,
         'total' => 25000,
     ]);
+
     $vip = TicketType::factory()->create(['event_id' => $event->id, 'name' => 'Strefa VIP', 'price' => 15000]);
     $standard = TicketType::factory()->create(['event_id' => $event->id, 'name' => 'Płyta', 'price' => 5000]);
 

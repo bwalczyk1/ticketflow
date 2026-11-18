@@ -1,3 +1,4 @@
+import { Badge } from '@/components/ui/badge'
 import type { EventStatus } from '../../api/types'
 
 const STATUS_LABELS: Record<EventStatus, string> = {
@@ -7,6 +8,13 @@ const STATUS_LABELS: Record<EventStatus, string> = {
   CANCELLED: 'Odwołane',
 }
 
+const STATUS_VARIANTS = {
+  DRAFT: 'secondary',
+  PUBLISHED: 'default',
+  FINISHED: 'outline',
+  CANCELLED: 'destructive',
+} as const satisfies Record<EventStatus, string>
+
 export function StatusBadge({ status }: { status: EventStatus }) {
-  return <span className={`badge badge--${status.toLowerCase()}`}>{STATUS_LABELS[status]}</span>
+  return <Badge variant={STATUS_VARIANTS[status]}>{STATUS_LABELS[status]}</Badge>
 }

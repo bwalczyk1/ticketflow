@@ -1,3 +1,10 @@
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  Pagination as PaginationNav,
+  PaginationContent,
+  PaginationItem,
+} from '@/components/ui/pagination'
 import type { Paginated } from '../api/types'
 
 interface PaginationProps {
@@ -11,28 +18,36 @@ export function Pagination({ meta, onPageChange }: PaginationProps) {
   }
 
   return (
-    <nav className="pagination" aria-label="Paginacja">
-      <button
-        className="button button--secondary"
-        type="button"
-        disabled={meta.page <= 1}
-        onClick={() => onPageChange(meta.page - 1)}
-      >
-        Poprzednia
-      </button>
+    <PaginationNav aria-label="Paginacja" className="mt-6">
+      <PaginationContent>
+        <PaginationItem>
+          <Button
+            variant="ghost"
+            type="button"
+            disabled={meta.page <= 1}
+            onClick={() => onPageChange(meta.page - 1)}
+          >
+            <ChevronLeft />
+            Poprzednia
+          </Button>
+        </PaginationItem>
 
-      <span className="muted">
-        Strona {meta.page} z {meta.totalPages}
-      </span>
+        <PaginationItem className="px-2 text-sm text-muted-foreground">
+          Strona {meta.page} z {meta.totalPages}
+        </PaginationItem>
 
-      <button
-        className="button button--secondary"
-        type="button"
-        disabled={meta.page >= meta.totalPages}
-        onClick={() => onPageChange(meta.page + 1)}
-      >
-        Następna
-      </button>
-    </nav>
+        <PaginationItem>
+          <Button
+            variant="ghost"
+            type="button"
+            disabled={meta.page >= meta.totalPages}
+            onClick={() => onPageChange(meta.page + 1)}
+          >
+            Następna
+            <ChevronRight />
+          </Button>
+        </PaginationItem>
+      </PaginationContent>
+    </PaginationNav>
   )
 }

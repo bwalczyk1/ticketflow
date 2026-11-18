@@ -9,7 +9,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { ErrorBanner } from '../../components/ErrorBanner'
-import { Pagination } from '../../components/Pagination'
+import { EmptyList, Pagination } from '../../components/Pagination'
 import { LoadingPage, RefreshingArea } from '../../components/StatusPages'
 import { formatDateTime } from '../../lib/dates'
 import { usePageParam } from '../../lib/urlParams'
@@ -32,7 +32,11 @@ export function AdminEvents() {
       {isPending && !error && <LoadingPage />}
 
       <RefreshingArea active={isPlaceholderData}>
-        {data && data.data.length === 0 && <p className="text-muted-foreground">Nie ma jeszcze żadnych wydarzeń.</p>}
+        {data && data.data.length === 0 && (
+          <EmptyList meta={data.meta} onPageChange={changePage}>
+            <p className="text-muted-foreground">Nie ma jeszcze żadnych wydarzeń.</p>
+          </EmptyList>
+        )}
 
         {data && data.data.length > 0 && (
           <>

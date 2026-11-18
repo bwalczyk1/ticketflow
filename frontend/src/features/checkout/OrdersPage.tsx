@@ -13,7 +13,7 @@ import {
 import { PAGE_TITLE } from '@/lib/styles'
 import type { Order } from '../../api/types'
 import { ErrorBanner } from '../../components/ErrorBanner'
-import { Pagination } from '../../components/Pagination'
+import { EmptyList, Pagination } from '../../components/Pagination'
 import { LoadingPage, RefreshingArea } from '../../components/StatusPages'
 import { formatDateTime } from '../../lib/dates'
 import { formatPrice } from '../../lib/money'
@@ -58,12 +58,14 @@ export function OrdersPage() {
 
       <RefreshingArea active={isPlaceholderData}>
         {data && data.data.length === 0 && (
-          <p className="text-muted-foreground">
-            Nie masz jeszcze zamówień.{' '}
-            <Link className="underline" to="/">
-              Wybierz wydarzenie
-            </Link>
-          </p>
+          <EmptyList meta={data.meta} onPageChange={changePage}>
+            <p className="text-muted-foreground">
+              Nie masz jeszcze zamówień.{' '}
+              <Link className="underline" to="/">
+                Wybierz wydarzenie
+              </Link>
+            </p>
+          </EmptyList>
         )}
 
         {data && data.data.length > 0 && (

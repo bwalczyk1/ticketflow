@@ -16,7 +16,7 @@ import { PAGE_TITLE } from '@/lib/styles'
 import type { WaitlistEntry, WaitlistStatus } from '../../api/types'
 import { ConfirmDialog } from '../../components/ConfirmButton'
 import { ErrorBanner } from '../../components/ErrorBanner'
-import { Pagination } from '../../components/Pagination'
+import { EmptyList, Pagination } from '../../components/Pagination'
 import { LoadingPage, RefreshingArea } from '../../components/StatusPages'
 import { StatusTabs } from '../../components/StatusTabs'
 import { formatDateTime } from '../../lib/dates'
@@ -156,13 +156,15 @@ export function WaitlistPage() {
 
       <RefreshingArea active={isPlaceholderData}>
         {data && data.data.length === 0 && (
-          <p className="text-muted-foreground">
-            Nie czekasz na żadne bilety. Gdy pula będzie wyprzedana, zapiszesz się na listę na stronie{' '}
-            <Link className="underline" to="/">
-              wydarzenia
-            </Link>
-            .
-          </p>
+          <EmptyList meta={data.meta} onPageChange={changePage}>
+            <p className="text-muted-foreground">
+              Nie czekasz na żadne bilety. Gdy pula będzie wyprzedana, zapiszesz się na listę na stronie{' '}
+              <Link className="underline" to="/">
+                wydarzenia
+              </Link>
+              .
+            </p>
+          </EmptyList>
         )}
 
         {data && data.data.length > 0 && (

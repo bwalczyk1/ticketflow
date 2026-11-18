@@ -18,7 +18,7 @@ import type { Role, User } from '../../api/types'
 import { ConfirmDialog } from '../../components/ConfirmButton'
 import { ErrorBanner } from '../../components/ErrorBanner'
 import { FormField } from '../../components/FormField'
-import { Pagination } from '../../components/Pagination'
+import { EmptyList, Pagination } from '../../components/Pagination'
 import { LoadingPage, RefreshingArea } from '../../components/StatusPages'
 import { usePageParam } from '../../lib/urlParams'
 import { useAuth } from '../auth/AuthContext'
@@ -151,7 +151,9 @@ export function AdminUsers() {
 
       <RefreshingArea active={isPlaceholderData}>
         {data && data.data.length === 0 && (
-          <p className="text-muted-foreground">Nie znaleziono użytkowników spełniających kryteria.</p>
+          <EmptyList meta={data.meta} onPageChange={changePage}>
+            <p className="text-muted-foreground">Nie znaleziono użytkowników spełniających kryteria.</p>
+          </EmptyList>
         )}
 
         {data && data.data.length > 0 && (

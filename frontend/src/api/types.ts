@@ -65,3 +65,35 @@ export interface CatalogEvent {
 export interface ManagedEvent extends Omit<CatalogEvent, 'ticketTypes'> {
   ticketTypes?: ManagedTicketType[]
 }
+
+export type OrderStatus = 'PENDING' | 'PAID' | 'EXPIRED' | 'FAILED' | 'CANCELLED'
+
+export type PaymentStatus = 'PENDING' | 'SUCCEEDED' | 'FAILED'
+
+export interface OrderItem {
+  ticketTypeId: number
+  name: string
+  quantity: number
+  /** Integer grosze. */
+  unitPrice: number
+}
+
+export interface Order {
+  id: number
+  status: OrderStatus
+  /** Integer grosze. */
+  total: number
+  expiresAt: string
+  createdAt: string
+  /** Null until the payment is started. */
+  paymentStatus: PaymentStatus | null
+  event: {
+    id: number
+    title: string
+    venue: string
+    city: string
+    timezone: string
+    startsAt: string
+  }
+  items: OrderItem[]
+}

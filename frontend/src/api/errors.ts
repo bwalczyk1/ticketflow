@@ -14,6 +14,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   RESERVATION_CONFLICT: 'Zbyt duży ruch przy tej puli biletów. Spróbuj ponownie.',
   TICKET_LIMIT_EXCEEDED: 'Przekroczono limit biletów na jedno wydarzenie.',
   RESERVATION_EXPIRED: 'Rezerwacja wygasła. Wybierz bilety jeszcze raz.',
+  PAYMENT_ALREADY_STARTED: 'Płatność za to zamówienie została już rozpoczęta.',
   SALES_CLOSED: 'Sprzedaż biletów na to wydarzenie jest zamknięta.',
   REFUND_NOT_ALLOWED: 'Zwrot jest możliwy tylko do 48 godzin przed wydarzeniem.',
   TICKET_ALREADY_USED: 'Ten bilet został już wykorzystany.',

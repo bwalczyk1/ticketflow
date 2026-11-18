@@ -23,3 +23,6 @@ Schedule::command('ticketflow:reconcile-orders')->everyFiveMinutes();
 Schedule::command('ticketflow:expire-waitlist-offers')->everyMinute();
 Schedule::command('ticketflow:send-event-reminders')->hourly();
 Schedule::command('model:prune')->daily();
+
+// Fills the Metrics charts and "Jobs Per Minute" in Horizon.
+Schedule::command('horizon:snapshot')->everyFiveMinutes();

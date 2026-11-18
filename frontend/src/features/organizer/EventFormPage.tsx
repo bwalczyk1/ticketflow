@@ -25,6 +25,8 @@ import {
 
 const DEFAULT_TIME_ZONE = 'Europe/Warsaw'
 
+const SKIPPED_HOUR_MESSAGE = 'Ta godzina nie istnieje w wybranej strefie (zmiana czasu).'
+
 interface EventFormProps {
   event?: ManagedEvent
 }
@@ -59,26 +61,34 @@ function EventForm({ event }: EventFormProps) {
     const form = new FormData(submitEvent.currentTarget)
     const text = (name: string) => String(form.get(name) ?? '').trim()
     const zone = text('timezone')
+    const isZoneValid = isValidTimeZone(zone)
     const errors: Record<string, string> = {}
 
-    if (!isValidTimeZone(zone)) {
+    if (!isZoneValid) {
       errors.timezone = 'Podaj poprawną strefę czasową, np. Europe/Warsaw.'
     }
 
-    const startsAt = errors.timezone ? null : zonedLocalToUtcIso(text('startsAt'), zone)
-    const endsAt = errors.timezone ? null : zonedLocalToUtcIso(text('endsAt'), zone)
+    // An empty date is sent as it is, so the API answers with its usual "required" message.
+    function toUtc(name: string): string | null {
+      const local = text(name)
 
-    if (!errors.timezone && !startsAt) {
-      errors.startsAt = 'Podaj datę. Ta godzina nie istnieje w wybranej strefie (zmiana czasu).'
+      return local === '' || !isZoneValid ? local : zonedLocalToUtcIso(local, zone)
     }
 
-    if (!errors.timezone && !endsAt) {
-      errors.endsAt = 'Podaj datę. Ta godzina nie istnieje w wybranej strefie (zmiana czasu).'
+    const startsAt = toUtc('startsAt')
+    const endsAt = toUtc('endsAt')
+
+    if (startsAt === null) {
+      errors.startsAt = SKIPPED_HOUR_MESSAGE
+    }
+
+    if (endsAt === null) {
+      errors.endsAt = SKIPPED_HOUR_MESSAGE
     }
 
     setClientErrors(errors)
 
-    if (Object.keys(errors).length > 0 || !startsAt || !endsAt) {
+    if (Object.keys(errors).length > 0 || startsAt === null || endsAt === null) {
       return
     }
 

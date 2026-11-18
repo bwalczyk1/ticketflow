@@ -14,11 +14,11 @@ export function LoginPage() {
   const { login } = useAuth()
   const location = useLocation()
   const mutation = useMutation({ mutationFn: login })
-  const { errors: fieldErrors, markEdited, resetEdited } = useVisibleErrors(getFieldErrors(mutation.error))
+  const { errors: fieldErrors, markEdited, startRequest } = useVisibleErrors(getFieldErrors(mutation.error))
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    resetEdited()
+    startRequest()
 
     const form = new FormData(event.currentTarget)
 

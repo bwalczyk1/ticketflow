@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState, type FormEvent } from 'react'
+import type { FormEvent } from 'react'
 import { toast } from 'sonner'
 import { getFieldErrors } from '../../api/errors'
 import { Button } from '@/components/ui/button'
@@ -27,8 +27,6 @@ interface TicketTypeFormProps {
 
 export function TicketTypeForm({ eventId, ticketType, onSubmitStart, onDone }: TicketTypeFormProps) {
   const queryClient = useQueryClient()
-  const [clientErrors, setClientErrors] = useState<Record<string, string>>({})
-
   const mutation = useMutation({
     mutationFn: (payload: TicketTypePayload) =>
       ticketType
@@ -45,14 +43,15 @@ export function TicketTypeForm({ eventId, ticketType, onSubmitStart, onDone }: T
     },
   })
 
-  const { errors: fieldErrors, markEdited, resetEdited } = useVisibleErrors({
-    ...getFieldErrors(mutation.error),
-    ...clientErrors,
-  })
+  const {
+    errors: fieldErrors,
+    markEdited,
+    setClientErrors,
+    startRequest,
+  } = useVisibleErrors(getFieldErrors(mutation.error))
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    resetEdited()
     onSubmitStart?.()
 
     const form = new FormData(event.currentTarget)
@@ -74,6 +73,7 @@ export function TicketTypeForm({ eventId, ticketType, onSubmitStart, onDone }: T
       return
     }
 
+    startRequest()
     mutation.mutate({ name: String(form.get('name')).trim(), price, quantity })
   }
 

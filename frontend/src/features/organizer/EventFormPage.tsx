@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState, type FormEvent } from 'react'
+import type { FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -35,8 +35,6 @@ interface EventFormProps {
 function EventForm({ event }: EventFormProps) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
-  const [clientErrors, setClientErrors] = useState<Record<string, string>>({})
-
   const mutation = useMutation({
     mutationFn: (payload: EventPayload) =>
       event ? updateEvent(String(event.id), payload) : createEvent(payload),
@@ -53,15 +51,16 @@ function EventForm({ event }: EventFormProps) {
     },
   })
 
-  const { errors: fieldErrors, markEdited, resetEdited } = useVisibleErrors({
-    ...getFieldErrors(mutation.error),
-    ...clientErrors,
-  })
+  const {
+    errors: fieldErrors,
+    markEdited,
+    setClientErrors,
+    startRequest,
+  } = useVisibleErrors(getFieldErrors(mutation.error))
   const timeZone = event?.timezone ?? DEFAULT_TIME_ZONE
 
   function handleSubmit(submitEvent: FormEvent<HTMLFormElement>) {
     submitEvent.preventDefault()
-    resetEdited()
 
     const form = new FormData(submitEvent.currentTarget)
     const text = (name: string) => String(form.get(name) ?? '').trim()
@@ -96,6 +95,8 @@ function EventForm({ event }: EventFormProps) {
     if (Object.keys(errors).length > 0 || startsAt === null || endsAt === null) {
       return
     }
+
+    startRequest()
 
     mutation.mutate({
       title: text('title'),

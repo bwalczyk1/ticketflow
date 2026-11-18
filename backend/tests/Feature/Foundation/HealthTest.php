@@ -5,3 +5,7 @@ it('reports healthy dependencies', function () {
         ->assertOk()
         ->assertExactJson(['status' => 'ok', 'checks' => ['database' => true, 'redis' => true]]);
 });
+
+it('has no second health endpoint besides /api/health', function () {
+    $this->get('/up')->assertNotFound();
+});

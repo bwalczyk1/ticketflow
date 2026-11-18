@@ -180,19 +180,13 @@ it('hides details of unexpected errors', function () {
     expect($response->getContent())->not->toContain('secret detail')->not->toContain('trace');
 });
 
-it('maps database constraint errors without leaking schema details', function () {
-    $response = $this->getJson('/api/probe/duplicate');
-
-    assertErrorEnvelope($response, 409, 'EMAIL_TAKEN');
-    expect($response->getContent())->not->toContain('users_email_unique');
-});
-
-it('maps other constraint errors to 409 without schema details', function (string $path, string $code) {
+it('maps constraint errors to 409 without schema details', function (string $path, string $code) {
     $response = $this->getJson("/api/probe/{$path}");
 
     assertErrorEnvelope($response, 409, $code);
-    expect($response->getContent())->not->toContain('ticket_types')->not->toContain('SQLSTATE');
+    expect($response->getContent())->not->toContain('users_email_unique')->not->toContain('ticket_types')->not->toContain('SQLSTATE');
 })->with([
+    ['duplicate', 'UNIQUE_VIOLATION'],
     ['duplicate-other', 'UNIQUE_VIOLATION'],
     ['referenced', 'FOREIGN_KEY_VIOLATION'],
     ['check', 'CHECK_VIOLATION'],

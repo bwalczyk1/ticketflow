@@ -144,7 +144,7 @@ class ReserveTickets
 
         $order = $user->orders()->create([
             'event_id' => $event->id,
-            'expires_at' => TicketAvailability::holdEndsAt(now(), config('ticketflow.hold_minutes')),
+            'expires_at' => now()->addMinutes(config('ticketflow.hold_minutes')),
             'total' => collect($lines)->sum(fn (array $line) => $line['quantity'] * $line['unit_price']),
         ]);
 

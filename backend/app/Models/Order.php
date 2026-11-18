@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\InvoiceType;
 use App\Enums\OrderStatus;
+use App\Exceptions\Domain\InvalidStatusTransition;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -33,6 +34,21 @@ class Order extends Model
             'expires_at' => 'immutable_datetime',
             'seats_released_at' => 'immutable_datetime',
         ];
+    }
+
+    /**
+     * Every caller holds the row lock on this order, so the status checked here cannot change
+     * before the update.
+     *
+     * @throws InvalidStatusTransition
+     */
+    public function transitionTo(OrderStatus $status): void
+    {
+        if (! $this->status->canTransitionTo($status)) {
+            throw new InvalidStatusTransition;
+        }
+
+        $this->update(['status' => $status]);
     }
 
     /**
@@ -84,14 +100,6 @@ class Order extends Model
     }
 
     /**
-     * @return HasMany<Invoice, $this>
-     */
-    public function invoices(): HasMany
-    {
-        return $this->hasMany(Invoice::class);
-    }
-
-    /**
      * The original invoice, without the corrections issued for a refund.
      *
      * @return HasOne<Invoice, $this>
@@ -99,5 +107,15 @@ class Order extends Model
     public function invoice(): HasOne
     {
         return $this->hasOne(Invoice::class)->where('type', InvoiceType::Invoice);
+    }
+
+    /**
+     * A refund is always for the whole order, so an order has at most one correction.
+     *
+     * @return HasOne<Invoice, $this>
+     */
+    public function correctionInvoice(): HasOne
+    {
+        return $this->hasOne(Invoice::class)->where('type', InvoiceType::Correction);
     }
 }

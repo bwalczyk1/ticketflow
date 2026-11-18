@@ -6,7 +6,6 @@ use App\Enums\EventStatus;
 use App\Exceptions\Domain\SalesClosed;
 use App\Exceptions\Domain\TicketLimitExceeded;
 use App\Exceptions\Domain\TicketsSoldOut;
-use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 
 class TicketAvailability
@@ -36,30 +35,18 @@ class TicketAvailability
         }
     }
 
+    public static function isOnSale(EventStatus $status, CarbonInterface $startsAt, CarbonInterface $now): bool
+    {
+        return $status === EventStatus::Published && $now < $startsAt;
+    }
+
     /**
      * @throws SalesClosed
      */
     public static function ensureOnSale(EventStatus $status, CarbonInterface $startsAt, CarbonInterface $now): void
     {
-        if ($status !== EventStatus::Published || $now >= $startsAt) {
+        if (! self::isOnSale($status, $startsAt, $now)) {
             throw new SalesClosed;
         }
-    }
-
-    /**
-     * Counted in UTC, so a clock change does not shorten or extend the hold.
-     */
-    public static function holdEndsAt(CarbonInterface $now, int $minutes): CarbonImmutable
-    {
-        return $now->toImmutable()->utc()->addMinutes($minutes);
-    }
-
-    /**
-     * The hold is a half-open interval: at the exact second of expires_at it is already over.
-     * Paying and the scheduler both use this rule, so they cannot disagree on the boundary.
-     */
-    public static function holdEnded(CarbonInterface $expiresAt, CarbonInterface $now): bool
-    {
-        return $now >= $expiresAt;
     }
 }

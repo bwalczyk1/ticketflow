@@ -2,27 +2,24 @@
 
 namespace App\Jobs\Documents;
 
-use App\Contracts\TicketPdfGenerator;
 use App\Enums\QueueName;
 use App\Events\Tickets\TicketsGenerated;
 use App\Models\OrderItem;
 use App\Models\Ticket;
+use App\Services\Documents\TicketPdfGenerator;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Facades\Log;
-use Throwable;
+use Illuminate\Queue\Attributes\Queue;
 
 /**
  * Dispatched by IssueTickets once the tickets exist, so the PDFs never race with ticket issuing.
  */
+#[Queue(QueueName::Documents)]
 class GenerateTicketPdfs implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public readonly int $orderId)
-    {
-        $this->onQueue(QueueName::Documents->value);
-    }
+    public function __construct(public readonly int $orderId) {}
 
     /**
      * A ticket with a pdf_path is skipped, so a retry only finishes what is missing. The event goes
@@ -44,10 +41,5 @@ class GenerateTicketPdfs implements ShouldQueue
         }
 
         TicketsGenerated::dispatch($this->orderId);
-    }
-
-    public function failed(Throwable $exception): void
-    {
-        Log::error('Generating ticket PDFs failed', ['order_id' => $this->orderId, 'error' => $exception::class]);
     }
 }

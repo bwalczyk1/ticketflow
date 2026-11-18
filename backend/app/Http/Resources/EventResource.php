@@ -3,7 +3,6 @@
 namespace App\Http\Resources;
 
 use App\Models\Event;
-use App\Support\ApiDate;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -30,13 +29,13 @@ class EventResource extends JsonResource
              *
              * @format date-time
              */
-            'startsAt' => ApiDate::format($this->starts_at),
+            'startsAt' => $this->starts_at?->toIso8601ZuluString(),
             /**
              * @var string
              *
              * @format date-time
              */
-            'endsAt' => ApiDate::format($this->ends_at),
+            'endsAt' => $this->ends_at?->toIso8601ZuluString(),
             'status' => $this->status,
             'ticketTypes' => TicketTypeResource::collection($this->whenLoaded('ticketTypes')),
         ];

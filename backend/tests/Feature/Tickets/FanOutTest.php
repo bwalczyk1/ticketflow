@@ -1,6 +1,5 @@
 <?php
 
-use App\Contracts\PaymentResultHandler;
 use App\Enums\QueueName;
 use App\Enums\TicketStatus;
 use App\Events\Orders\OrderPaid;
@@ -22,6 +21,7 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Ticket;
 use App\Models\TicketType;
+use App\Services\Payments\SettlePayment;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
@@ -85,7 +85,7 @@ it('turns one payment into tickets, PDFs, an invoice, e-mails and statistics', f
     $order = OrderFixtures::holding($pool, 2, attributes: ['total' => 12000]);
     $payment = Payment::factory()->for($order)->create(['amount' => 12000]);
 
-    app(PaymentResultHandler::class)->succeeded($payment, 'ref_1');
+    app(SettlePayment::class)->succeeded($payment, 'ref_1');
 
     $tickets = Ticket::query()->whereHas('orderItem', fn ($items) => $items->where('order_id', $order->id))->get();
     $invoice = Invoice::query()->where('order_id', $order->id)->sole();

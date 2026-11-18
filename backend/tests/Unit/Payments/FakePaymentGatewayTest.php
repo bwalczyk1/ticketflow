@@ -18,18 +18,12 @@ function fakePayment(int $id): Payment
 it('accepts a payment rolled at or above the failure rate', function (float $roll) {
     $gateway = new FakePaymentGateway(0.1, fn () => $roll);
 
-    expect($gateway->startPayment(fakePayment(1))->providerRef)->toStartWith('fake_');
+    expect($gateway->startPayment(fakePayment(1)))->toStartWith('fake_');
 })->with([0.1, 0.5, 0.99]);
 
 it('declines a payment rolled below the failure rate', function (float $roll) {
     (new FakePaymentGateway(0.1, fn () => $roll))->startPayment(fakePayment(1));
 })->with([0.0, 0.09])->throws(PaymentDeclined::class);
-
-it('never asks for a redirect', function () {
-    $gateway = new FakePaymentGateway(0.0);
-
-    expect($gateway->startPayment(fakePayment(1))->redirectUrl)->toBeNull();
-});
 
 it('draws the number for the idempotency key of the payment', function () {
     $keys = [];
@@ -81,7 +75,7 @@ it('gives the same answer when the same payment is started twice', function () {
 
     $outcome = function (int $id) use ($gateway) {
         try {
-            return $gateway->startPayment(fakePayment($id))->providerRef;
+            return $gateway->startPayment(fakePayment($id));
         } catch (PaymentDeclined) {
             return 'declined';
         }

@@ -3,6 +3,7 @@
 use Illuminate\Routing\Route as RouteDefinition;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 
 beforeEach(function () {
     app()->detectEnvironment(fn () => 'local');
@@ -13,12 +14,7 @@ beforeEach(function () {
  */
 function specErrorCodes(array $spec, string $method, string $path, int $status): array
 {
-    $schema = $spec['paths'][$path][$method]['responses'][$status]['content']['application/json']['schema'] ?? [];
-    $variants = $schema['anyOf'] ?? [$schema];
-
-    return collect($variants)
-        ->flatMap(fn (array $variant) => $variant['properties']['error']['properties']['code']['enum'] ?? [])
-        ->all();
+    return errorCodesInSchema($spec, $spec['paths'][$path][$method]['responses'][$status]['content']['application/json']['schema'] ?? []);
 }
 
 /**
@@ -84,6 +80,53 @@ it('documents 403 on every route behind a role check', function () {
     foreach ($protected as $route) {
         foreach (routeMethods($route) as $method) {
             expect(specErrorCodes($spec, $method, substr($route->uri(), 3), 403))->toBe(['FORBIDDEN'], "{$method} {$route->uri()}");
+        }
+    }
+});
+
+it('documents 419 on every state-changing route and 500 on every route', function () {
+    $spec = $this->getJson('/docs/api.json')->assertOk()->json();
+
+    foreach (apiRoutes() as $route) {
+        foreach (routeMethods($route) as $method) {
+            $path = substr($route->uri(), 3);
+            $csrf = in_array($method, ['post', 'put', 'patch', 'delete'], true) ? ['CSRF_TOKEN_MISMATCH'] : [];
+
+            expect(specErrorCodes($spec, $method, $path, 419))->toBe($csrf, "{$method} {$route->uri()}")
+                ->and(specErrorCodes($spec, $method, $path, 500))->toBe(['INTERNAL_ERROR'], "{$method} {$route->uri()}");
+        }
+    }
+});
+
+it('describes the error envelope once and references it from every error response', function () {
+    $spec = $this->getJson('/docs/api.json')->assertOk()->json();
+
+    $schemas = $spec['components']['schemas'];
+
+    expect($schemas['ErrorResponse']['properties']['error']['properties']['details'])
+        ->toBe(['type' => 'array', 'items' => ['$ref' => '#/components/schemas/ErrorDetail']])
+        ->and($schemas['ErrorDetail'])->toBe([
+            'type' => 'object',
+            'properties' => ['field' => ['type' => 'string'], 'message' => ['type' => 'string']],
+            'required' => ['field', 'message'],
+            'title' => 'ErrorDetail',
+        ]);
+
+    foreach ($spec['paths'] as $path => $operations) {
+        foreach ($operations as $method => $operation) {
+            foreach ($operation['responses'] as $status => $response) {
+                if ($status < 400) {
+                    continue;
+                }
+
+                $schema = $response['content']['application/json']['schema'];
+
+                foreach ($schema['anyOf'] ?? [$schema] as $variant) {
+                    $name = Str::after($variant['$ref'] ?? '', '#/components/schemas/');
+
+                    expect($schemas[$name]['allOf'][0] ?? null)->toBe(['$ref' => '#/components/schemas/ErrorResponse'], "{$method} {$path} {$status}");
+                }
+            }
         }
     }
 });

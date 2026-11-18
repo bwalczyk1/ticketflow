@@ -8,11 +8,6 @@ use Illuminate\Validation\Validator;
 
 abstract class ApiFormRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * Unknown fields are an explicit error, instead of being silently dropped by validated().
      */

@@ -10,10 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 class CancelOrder
 {
-    public function __construct(
-        private OrderTransition $orderTransition,
-        private ReleaseOrderSeats $releaseOrderSeats,
-    ) {}
+    public function __construct(private ReleaseOrderSeats $releaseOrderSeats) {}
 
     /**
      * The row lock serialises cancelling with paying, so a payment cannot start on a cancelled order.
@@ -30,7 +27,25 @@ class CancelOrder
                 throw new PaymentAlreadyStarted;
             }
 
-            $this->orderTransition->apply($locked, OrderStatus::Cancelled);
+            $locked->transitionTo(OrderStatus::Cancelled);
+            $this->releaseOrderSeats->handle($locked->id);
+        });
+    }
+
+    /**
+     * An order of a cancelled event is cancelled even while its payment runs: a payment that
+     * succeeds later finds a final order and is refunded by RefundLatePayment.
+     */
+    public function forCancelledEvent(int $orderId): void
+    {
+        DB::transaction(function () use ($orderId) {
+            $locked = Order::query()->whereKey($orderId)->lockForUpdate()->first(['id', 'status']);
+
+            if ($locked?->status !== OrderStatus::Pending) {
+                return;
+            }
+
+            $locked->transitionTo(OrderStatus::Cancelled);
             $this->releaseOrderSeats->handle($locked->id);
         });
     }

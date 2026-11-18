@@ -1,15 +1,12 @@
 <?php
 
 use App\Contracts\PaymentGateway;
-use App\Contracts\PaymentResultHandler;
-use App\Data\PaymentStart;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\QueueName;
 use App\Events\Orders\OrderPaid;
 use App\Events\Orders\OrderPlaced;
 use App\Events\Payments\PaymentFailed;
-use App\Exceptions\Domain\PaymentDeclined;
 use App\Listeners\Payments\ProcessPayment;
 use App\Models\Payment;
 use App\Models\TicketType;
@@ -18,7 +15,6 @@ use App\Services\Payments\FakePaymentGateway;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Tests\Feature\Orders\OrderFixtures;
 
@@ -101,7 +97,7 @@ it('gives the seats back after a declined payment in the whole flow', function (
 it('does not charge twice when the job runs again', function () {
     $gateway = $this->mock(PaymentGateway::class);
 
-    $gateway->shouldReceive('startPayment')->once()->andReturn(new PaymentStart(providerRef: 'ref_1'));
+    $gateway->shouldReceive('startPayment')->once()->andReturn('ref_1');
 
     $listener = app(ProcessPayment::class);
 
@@ -125,18 +121,6 @@ it('leaves at once when the order has no payment', function () {
     app(ProcessPayment::class)->handle(new OrderPlaced($this->order->id));
 });
 
-it('waits for the webhook of a redirect gateway', function () {
-    $this->mock(PaymentGateway::class)
-        ->shouldReceive('startPayment')
-        ->andReturn(new PaymentStart(providerRef: 'cs_1', redirectUrl: 'https://pay.example.com/cs_1'));
-
-    $this->mock(PaymentResultHandler::class)->shouldNotReceive('succeeded');
-
-    app(ProcessPayment::class)->handle(new OrderPlaced($this->order->id));
-
-    expect($this->payment->fresh()->status)->toBe(PaymentStatus::Pending);
-});
-
 it('leaves the payment pending for a retry when the gateway breaks', function () {
     $this->mock(PaymentGateway::class)->shouldReceive('startPayment')->andThrow(new RuntimeException('Gateway is down'));
 
@@ -152,14 +136,4 @@ it('does not run two jobs of one order at once', function () {
 
     expect($middleware[0])->toBeInstanceOf(WithoutOverlapping::class)
         ->and($middleware[0]->key)->toBe('order:7');
-});
-
-it('logs the order id when all attempts are used up', function () {
-    Log::spy();
-
-    app(ProcessPayment::class)->failed(new OrderPlaced(7), new PaymentDeclined);
-
-    Log::shouldHaveReceived('error')
-        ->once()
-        ->withArgs(fn (string $message, array $context) => $context['order_id'] === 7);
 });

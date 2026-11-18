@@ -3,7 +3,6 @@
 namespace App\Http\Resources;
 
 use App\Models\Event;
-use App\Support\ApiDate;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -28,7 +27,7 @@ class OrderEventResource extends JsonResource
              *
              * @format date-time
              */
-            'startsAt' => ApiDate::format($this->starts_at),
+            'startsAt' => $this->starts_at?->toIso8601ZuluString(),
         ];
     }
 }

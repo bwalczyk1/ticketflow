@@ -10,7 +10,6 @@ use App\Models\Order;
 use App\Models\SentNotification;
 use App\Models\User;
 use Illuminate\Events\CallQueuedListener;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
 
@@ -84,14 +83,4 @@ it('runs on the mail queue', function () {
         CallQueuedListener::class,
         fn (CallQueuedListener $job) => $job->class === SendPaymentFailedEmail::class,
     );
-});
-
-it('logs only the order id and the error class when all attempts are used up', function () {
-    Log::spy();
-
-    app(SendPaymentFailedEmail::class)->failed(new PaymentFailed(7, 'Card declined'), new RuntimeException('SMTP is down for buyer@example.com'));
-
-    Log::shouldHaveReceived('error')
-        ->once()
-        ->withArgs(fn (string $message, array $context) => $context === ['order_id' => 7, 'error' => RuntimeException::class]);
 });

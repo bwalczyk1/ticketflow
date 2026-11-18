@@ -11,9 +11,9 @@ it('uses the fake gateway from the configuration', function () {
 });
 
 it('fails clearly for a gateway without an implementation', function () {
-    config(['ticketflow.payment_gateway' => 'stripe']);
+    config(['ticketflow.payment_gateway' => 'cash']);
 
-    expect(fn () => app(PaymentGateway::class))->toThrow(RuntimeException::class, 'stripe');
+    expect(fn () => app(PaymentGateway::class))->toThrow(RuntimeException::class, 'cash');
 });
 
 it('honours FAKE_PAYMENT_FAILURE_RATE', function () {
@@ -21,7 +21,7 @@ it('honours FAKE_PAYMENT_FAILURE_RATE', function () {
 
     config(['ticketflow.fake_failure_rate' => '0']);
 
-    expect(app(PaymentGateway::class)->startPayment($payment)->providerRef)->not->toBeNull();
+    expect(app(PaymentGateway::class)->startPayment($payment))->toStartWith('fake_');
 
     config(['ticketflow.fake_failure_rate' => '1']);
 

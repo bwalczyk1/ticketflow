@@ -1,14 +1,13 @@
 <?php
 
-use App\Contracts\TicketPdfGenerator;
 use App\Models\Event;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Ticket;
 use App\Models\TicketType;
 use App\Models\User;
-use App\Services\Documents\DompdfTicketPdfGenerator;
 use App\Services\Documents\QrCodeImage;
+use App\Services\Documents\TicketPdfGenerator;
 use Illuminate\Support\Facades\Storage;
 
 function ticketForEvent(array $event = [], array $user = []): Ticket
@@ -74,7 +73,7 @@ it('writes through a temporary file and rename', function () {
 it('contains a QR code of the ticket code', function () {
     Storage::fake('local');
     $ticket = ticketForEvent();
-    $generator = app(DompdfTicketPdfGenerator::class);
+    $generator = app(TicketPdfGenerator::class);
 
     $path = $generator->generate($ticket);
 
@@ -93,7 +92,7 @@ it('shows the start time from localStartsAt', function () {
         'city' => 'Kraków',
     ], ['name' => 'Zażółć Gęślą']);
 
-    $html = app(DompdfTicketPdfGenerator::class)->html($ticket);
+    $html = app(TicketPdfGenerator::class)->html($ticket);
 
     expect($html)->toContain('01.12.2026 19:00')
         ->not->toContain('18:00')

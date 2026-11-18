@@ -61,12 +61,13 @@ dataset('factory states', [
     'used ticket' => [fn () => Ticket::factory()->used()->create()->status, TicketStatus::Used],
     'void ticket' => [fn () => Ticket::factory()->void()->create()->status, TicketStatus::Void],
     'pending refund' => [fn () => Refund::factory()->create()->status, RefundStatus::Pending],
-    'completed refund' => [fn () => Refund::factory()->completed()->create()->status, RefundStatus::Completed],
+    'succeeded refund' => [fn () => Refund::factory()->succeeded()->create()->status, RefundStatus::Succeeded],
     'failed refund' => [fn () => Refund::factory()->failed()->create()->status, RefundStatus::Failed],
     'waiting entry' => [fn () => WaitlistEntry::factory()->create()->status, WaitlistStatus::Waiting],
     'offered entry' => [fn () => WaitlistEntry::factory()->offered()->create()->status, WaitlistStatus::Offered],
     'converted entry' => [fn () => WaitlistEntry::factory()->converted()->create()->status, WaitlistStatus::Converted],
     'expired entry' => [fn () => WaitlistEntry::factory()->expired()->create()->status, WaitlistStatus::Expired],
+    'cancelled entry' => [fn () => WaitlistEntry::factory()->cancelled()->create()->status, WaitlistStatus::Cancelled],
     'invoice' => [fn () => Invoice::factory()->create()->type, InvoiceType::Invoice],
 ]);
 
@@ -134,17 +135,6 @@ it('returns the start of an event in its own timezone', function (string $starts
     'another continent' => ['2026-12-01 18:00:00', 'America/New_York', '2026-12-01 13:00 -05:00'],
     'next calendar day' => ['2026-12-31 23:30:00', 'Europe/Warsaw', '2027-01-01 00:30 +01:00'],
 ]);
-
-it('addresses an invoice sequence by year and type', function () {
-    $invoices = InvoiceSequence::factory()->create(['year' => 2026, 'type' => InvoiceType::Invoice, 'last_number' => 1]);
-    $corrections = InvoiceSequence::factory()->create(['year' => 2026, 'type' => InvoiceType::Correction, 'last_number' => 7]);
-
-    $invoices->last_number = 2;
-    $invoices->save();
-
-    expect($invoices->fresh()->last_number)->toBe(2)
-        ->and($corrections->fresh()->last_number)->toBe(7);
-});
 
 it('uses the event as the key of the sales summary', function () {
     $summary = EventSalesSummary::factory()->create();

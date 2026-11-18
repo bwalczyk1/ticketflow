@@ -226,7 +226,7 @@ export function OrderRefund({ order, now }: OrderRefundProps) {
               </div>
             ) : (
               <p className="text-sm text-muted-foreground" role="status">
-                Faktura korygująca zostanie wystawiona po zaksięgowaniu zwrotu.
+                Faktura korygująca pojawi się tutaj, gdy zostanie wystawiona.
               </p>
             )}
           </>

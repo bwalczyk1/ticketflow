@@ -64,7 +64,7 @@ Gdy `http://localhost:8080` odpowiada (Vite potrzebuje chwili po starcie), aplik
 | Zatrzymać stos (dane zostają) | `docker compose down` |
 | Uruchomić ponownie | `docker compose up -d` |
 | Wyczyścić dane i zacząć od nowa | `docker compose down -v`, usunąć `.env`, uruchomić `./scripts/setup.sh` |
-| Tylko odtworzyć dane demo na działającym stosie | `docker compose exec -T app php artisan migrate:fresh --seed --force`, potem `docker compose exec -T redis redis-cli FLUSHALL` (czyści sesje i statystyki Horizona) i `docker compose restart mailpit` (czyści skrzynkę) |
+| Tylko odtworzyć dane demo na działającym stosie | `docker compose exec -T app php artisan migrate:fresh --seed --force`, potem `docker compose exec -T redis redis-cli FLUSHALL` (czyści sesje i statystyki Horizona), potem `docker compose restart horizon mailpit` (Horizon odtwarza swój stan, Mailpit czyści skrzynkę) |
 
 ## Adresy
 
@@ -223,6 +223,7 @@ Definicje są w `backend/routes/console.php`, a wykonuje je kontener `scheduler`
 | `ticketflow:finish-events` | co 5 minut | przenosi wydarzenia po `ends_at` do `FINISHED` i publikuje `EventFinished` (raport) |
 | `ticketflow:reconcile-orders` | co 5 minut | naprawia zamówienia, którym zginęło zdarzenie |
 | `ticketflow:send-event-reminders` | co godzinę | przypomnienia dla wydarzeń za 24-25 godzin |
+| `horizon:snapshot` | co 5 minut | migawki metryk Horizona (wykresy w Metrics, „Jobs Per Minute”) |
 | `model:prune` | codziennie | usuwa stare zamknięte wpisy listy oczekujących i wpisy księgi maili |
 
 Poza harmonogramem są komendy `ticketflow:simulate-traffic --orders=500` (ruch demonstracyjny, patrz [docs/demo.md](docs/demo.md)) i `ticketflow:token`.

@@ -226,7 +226,7 @@ Definicje są w `backend/routes/console.php`, a wykonuje je kontener `scheduler`
 | `horizon:snapshot` | co 5 minut | migawki metryk Horizona (wykresy w Metrics, „Jobs Per Minute”) |
 | `model:prune` | codziennie | usuwa stare zamknięte wpisy listy oczekujących i wpisy księgi maili |
 
-Poza harmonogramem są komendy `ticketflow:simulate-traffic --orders=500` (ruch demonstracyjny, patrz [docs/demo.md](docs/demo.md)) i `ticketflow:token`.
+Poza harmonogramem są komendy `ticketflow:simulate-traffic --orders=500` (ruch demonstracyjny widoczny w Horizonie) i `ticketflow:token`.
 
 ### Przebieg żądania: `POST /api/orders` (rezerwacja biletów)
 
@@ -262,5 +262,4 @@ Aktualny wynik: 1143 testy przechodzą (4370 asercji).
 
 - Model danych (ERD w Mermaid): [docs/erd.md](docs/erd.md)
 - Specyfikacja OpenAPI: [docs/openapi.json](docs/openapi.json), a przy działającej aplikacji http://localhost:8080/docs/api
-- Scenariusz demonstracji na 3-5 minut: [docs/demo.md](docs/demo.md)
 - Nagranie demonstracyjne: link do nagrania – do uzupełnienia

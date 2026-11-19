@@ -14,7 +14,7 @@ const BUSINESS_TIMEZONE = 'Europe/Warsaw';
 function allocateInMemory(array &$counters, InvoiceType $type, CarbonImmutable $at): string
 {
     $key = InvoiceNumbering::yearOf($at, BUSINESS_TIMEZONE).'/'.$type->value;
-    $counters[$key] = InvoiceNumbering::next($counters[$key] ?? 0);
+    $counters[$key] = ($counters[$key] ?? 0) + 1;
 
     return $key.'/'.$counters[$key];
 }

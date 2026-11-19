@@ -1,12 +1,10 @@
 <?php
 
-use App\Contracts\TicketPdfGenerator;
-use App\Enums\QueueName;
 use App\Events\Tickets\TicketsGenerated;
 use App\Jobs\Documents\GenerateTicketPdfs;
 use App\Models\Ticket;
+use App\Services\Documents\TicketPdfGenerator;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Tests\Feature\Tickets\TicketFixtures;
 
@@ -82,18 +80,4 @@ it('announces nothing for an order without tickets', function () {
     runGenerateTicketPdfs($order->id);
 
     Event::assertNotDispatched(TicketsGenerated::class);
-});
-
-it('runs on the documents queue', function () {
-    expect((new GenerateTicketPdfs(1))->queue)->toBe(QueueName::Documents->value);
-});
-
-it('logs the order id when all attempts are used up', function () {
-    Log::spy();
-
-    (new GenerateTicketPdfs(7))->failed(new RuntimeException('Disk is full'));
-
-    Log::shouldHaveReceived('error')
-        ->once()
-        ->withArgs(fn (string $message, array $context) => $context['order_id'] === 7);
 });

@@ -12,11 +12,15 @@ use Illuminate\Support\Str;
 
 /**
  * Scramble reads the errors from the controller code, so it cannot see the ones answered by
- * middleware: 403 from the role check and 400 INVALID_JSON for a body that is not valid JSON.
+ * middleware or by the renderer for any route: 403 from the role check, 400 INVALID_JSON for a
+ * body that is not valid JSON, 419 when a cookie (SPA) request changing state lacks its CSRF
+ * token, and 500 for an unexpected error.
  */
 class MiddlewareErrorResponseExtension extends OperationExtension
 {
     private const BODY_METHODS = ['post', 'put', 'patch'];
+
+    private const STATE_CHANGING_METHODS = ['post', 'put', 'patch', 'delete'];
 
     public function handle(Operation $operation, RouteInfo $routeInfo): void
     {
@@ -30,6 +34,12 @@ class MiddlewareErrorResponseExtension extends OperationExtension
         if (in_array($operation->method, self::BODY_METHODS, true)) {
             $this->addResponse($operation, ErrorResponse::make(400, 'INVALID_JSON', 'Malformed JSON body.'));
         }
+
+        if (in_array($operation->method, self::STATE_CHANGING_METHODS, true)) {
+            $this->addResponse($operation, ErrorResponse::make(419, 'CSRF_TOKEN_MISMATCH', 'CSRF token mismatch'));
+        }
+
+        $this->addResponse($operation, ErrorResponse::make(500, 'INTERNAL_ERROR', 'Internal server error'));
     }
 
     /**

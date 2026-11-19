@@ -9,18 +9,13 @@ use App\Mail\WaitlistOfferMail;
 use App\Models\WaitlistEntry;
 use App\Services\Notifications\NotificationLedger;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Queue\Attributes\Queue;
 use Illuminate\Support\Facades\Mail;
-use Throwable;
 
+#[Queue(QueueName::Mail)]
 class SendWaitlistOfferEmail implements ShouldQueue
 {
     public function __construct(private NotificationLedger $ledger) {}
-
-    public function viaQueue(): string
-    {
-        return QueueName::Mail->value;
-    }
 
     /**
      * An entry is offered seats at most once, so the ledger key waitlist:{id}:offer lets the
@@ -43,10 +38,5 @@ class SendWaitlistOfferEmail implements ShouldQueue
         $this->ledger->once("waitlist:{$entry->id}:offer", function () use ($entry) {
             Mail::to($entry->user)->send(new WaitlistOfferMail($entry));
         });
-    }
-
-    public function failed(WaitlistOfferCreated $event, Throwable $exception): void
-    {
-        Log::error('Sending the waitlist offer e-mail failed', ['waitlist_entry_id' => $event->waitlistEntryId, 'error' => $exception::class]);
     }
 }

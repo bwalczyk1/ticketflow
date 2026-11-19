@@ -54,7 +54,7 @@ class AcceptWaitlistOffer
 
             $order = $user->orders()->create([
                 'event_id' => $event->id,
-                'expires_at' => TicketAvailability::holdEndsAt(now(), config('ticketflow.hold_minutes')),
+                'expires_at' => now()->addMinutes(config('ticketflow.hold_minutes')),
                 'total' => $entry->quantity * $entry->ticketType->price,
             ]);
 
@@ -87,7 +87,8 @@ class AcceptWaitlistOffer
             throw new WaitlistOfferNotActive;
         }
 
-        if (WaitlistQueue::offerEnded($entry->offered_until, now())) {
+        // At the exact second of offered_until the offer is already over, like a seat hold.
+        if ($entry->offered_until->lte(now())) {
             throw new WaitlistOfferExpired;
         }
     }

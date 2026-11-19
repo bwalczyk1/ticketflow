@@ -2,7 +2,6 @@
 
 namespace App\Services\Payments;
 
-use App\Contracts\PaymentResultHandler;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Events\Orders\OrderPaid;
@@ -11,15 +10,14 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\TicketType;
-use App\Services\Orders\OrderTransition;
 use Illuminate\Support\Facades\DB;
 
-class SettlePayment implements PaymentResultHandler
+/**
+ * The single entry for payment results. Both methods are idempotent.
+ */
+class SettlePayment
 {
-    public function __construct(
-        private OrderTransition $orderTransition,
-        private RefundLatePayment $refundLatePayment,
-    ) {}
+    public function __construct(private RefundLatePayment $refundLatePayment) {}
 
     public function succeeded(Payment $payment, ?string $providerRef = null): void
     {
@@ -36,7 +34,7 @@ class SettlePayment implements PaymentResultHandler
                 return;
             }
 
-            $this->orderTransition->apply($order, OrderStatus::Paid);
+            $order->transitionTo(OrderStatus::Paid);
             $this->moveSeatsToSold($order);
 
             OrderPaid::dispatch($order->id);
@@ -56,7 +54,7 @@ class SettlePayment implements PaymentResultHandler
                 return;
             }
 
-            $this->orderTransition->apply($order, OrderStatus::Failed);
+            $order->transitionTo(OrderStatus::Failed);
 
             PaymentFailed::dispatch($order->id, $reason);
         });

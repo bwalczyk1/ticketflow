@@ -2,7 +2,6 @@
 
 namespace App\Exceptions\Domain;
 
-use App\Support\ApiDate;
 use Carbon\CarbonInterface;
 
 class TicketAlreadyUsed extends DomainException
@@ -13,7 +12,7 @@ class TicketAlreadyUsed extends DomainException
      */
     public function __construct(?CarbonInterface $checkedInAt = null, string $message = 'This ticket has already been used')
     {
-        $details = $checkedInAt === null ? [] : [['field' => 'checkedInAt', 'message' => ApiDate::format($checkedInAt)]];
+        $details = $checkedInAt === null ? [] : [['field' => 'checkedInAt', 'message' => $checkedInAt->toIso8601ZuluString()]];
 
         parent::__construct($message, 'TICKET_ALREADY_USED', 409, $details);
     }

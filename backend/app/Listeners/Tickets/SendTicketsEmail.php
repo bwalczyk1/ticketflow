@@ -11,19 +11,14 @@ use App\Models\OrderItem;
 use App\Models\Ticket;
 use App\Services\Notifications\NotificationLedger;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Queue\Attributes\Queue;
 use Illuminate\Support\Facades\Mail;
 use RuntimeException;
-use Throwable;
 
+#[Queue(QueueName::Mail)]
 class SendTicketsEmail implements ShouldQueue
 {
     public function __construct(private NotificationLedger $ledger) {}
-
-    public function viaQueue(): string
-    {
-        return QueueName::Mail->value;
-    }
 
     /**
      * The ledger key order:{id}:tickets lets the e-mail out once. A missing PDF throws, so the
@@ -51,10 +46,5 @@ class SendTicketsEmail implements ShouldQueue
         $this->ledger->once("order:{$order->id}:tickets", function () use ($order, $tickets) {
             Mail::to($order->user)->send(new TicketsMail($order, $tickets));
         });
-    }
-
-    public function failed(TicketsGenerated $event, Throwable $exception): void
-    {
-        Log::error('Sending tickets by e-mail failed', ['order_id' => $event->orderId, 'error' => $exception::class]);
     }
 }

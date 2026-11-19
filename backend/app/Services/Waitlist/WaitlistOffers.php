@@ -85,7 +85,7 @@ class WaitlistOffers
             ->all();
 
         $picked = WaitlistQueue::pick($waiting, TicketAvailability::free($pool->quantity, $pool->sold, $pool->held));
-        $offeredUntil = WaitlistQueue::offerEndsAt(now(), config('ticketflow.waitlist_offer_minutes'));
+        $offeredUntil = now()->addMinutes(config('ticketflow.waitlist_offer_minutes'));
         $offered = [];
         $seats = 0;
 

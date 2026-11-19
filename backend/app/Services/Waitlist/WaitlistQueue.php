@@ -3,8 +3,6 @@
 namespace App\Services\Waitlist;
 
 use App\Exceptions\Domain\WaitlistNotNeeded;
-use Carbon\CarbonImmutable;
-use Carbon\CarbonInterface;
 
 /**
  * The rules of the waitlist, free of the database so they can be tested on their own.
@@ -31,22 +29,6 @@ class WaitlistQueue
         }
 
         return $picked;
-    }
-
-    /**
-     * Counted in UTC, so a clock change does not shorten or extend the offer.
-     */
-    public static function offerEndsAt(CarbonInterface $now, int $minutes): CarbonImmutable
-    {
-        return $now->toImmutable()->utc()->addMinutes($minutes);
-    }
-
-    /**
-     * A half-open interval like the seat hold: at the exact second of offered_until the offer is over.
-     */
-    public static function offerEnded(CarbonInterface $offeredUntil, CarbonInterface $now): bool
-    {
-        return $now >= $offeredUntil;
     }
 
     /**

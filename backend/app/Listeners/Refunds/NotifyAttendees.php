@@ -13,18 +13,13 @@ use App\Services\Notifications\NotificationLedger;
 use App\Services\Refunds\StartRefund;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Queue\Attributes\Queue;
 use Illuminate\Support\Facades\Mail;
-use Throwable;
 
+#[Queue(QueueName::Mail)]
 class NotifyAttendees implements ShouldQueue
 {
     public function __construct(private NotificationLedger $ledger) {}
-
-    public function viaQueue(): string
-    {
-        return QueueName::Mail->value;
-    }
 
     /**
      * It runs next to RefundAllOrders, so an order can be paid or already refunded because of the
@@ -58,10 +53,5 @@ class NotifyAttendees implements ShouldQueue
                 Mail::to($attendee)->send(new EventCancelledMail($cancelled, $attendee, $refundTotal));
             });
         }
-    }
-
-    public function failed(EventCancelled $event, Throwable $exception): void
-    {
-        Log::error('Notifying attendees of a cancelled event failed', ['event_id' => $event->eventId, 'error' => $exception::class]);
     }
 }

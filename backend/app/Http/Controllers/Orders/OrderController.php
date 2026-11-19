@@ -144,7 +144,7 @@ class OrderController extends Controller
     }
 
     /**
-     * Another user's order answers 404, not 403, because its existence is already information.
+     * Another user's order answers 404, see OrderPolicy.
      *
      * @throws ModelNotFoundException
      */
@@ -152,9 +152,7 @@ class OrderController extends Controller
     {
         $order = $this->orders->find($id);
 
-        if (Gate::denies('view', $order)) {
-            throw (new ModelNotFoundException)->setModel(Order::class, [$id]);
-        }
+        Gate::authorize('view', $order);
 
         return $order;
     }

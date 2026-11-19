@@ -2,7 +2,6 @@
 
 namespace App\Listeners\Documents;
 
-use App\Contracts\InvoicePdfGenerator;
 use App\Enums\InvoiceType;
 use App\Enums\OrderStatus;
 use App\Enums\QueueName;
@@ -10,11 +9,12 @@ use App\Events\Orders\OrderPaid;
 use App\Models\Invoice;
 use App\Models\Order;
 use App\Services\Documents\InvoiceNumberAllocator;
+use App\Services\Documents\InvoicePdfGenerator;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\Attributes\Queue;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Throwable;
 
+#[Queue(QueueName::Documents)]
 class IssueInvoice implements ShouldQueue
 {
     /**
@@ -29,11 +29,6 @@ class IssueInvoice implements ShouldQueue
         private InvoicePdfGenerator $pdfs,
     ) {}
 
-    public function viaQueue(): string
-    {
-        return QueueName::Documents->value;
-    }
-
     /**
      * The invoice is saved before its PDF, so a retry after a failed PDF reuses the number it got.
      */
@@ -46,11 +41,6 @@ class IssueInvoice implements ShouldQueue
         }
 
         $invoice->update(['pdf_path' => $this->pdfs->generate($invoice)]);
-    }
-
-    public function failed(OrderPaid $event, Throwable $exception): void
-    {
-        Log::error('Issuing an invoice failed', ['order_id' => $event->orderId, 'error' => $exception::class]);
     }
 
     private function existingInvoice(int $orderId): ?Invoice

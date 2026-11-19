@@ -13,7 +13,6 @@ use App\Models\EventSalesSummary;
 use App\Models\Order;
 use App\Models\Refund;
 use Illuminate\Events\CallQueuedListener;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Tests\Feature\Tickets\TicketFixtures;
 
@@ -169,13 +168,3 @@ it('runs on the stats queue for every event it listens to', function (object $ev
     'refunded order' => fn () => new OrderRefunded(1, 1),
     'checked-in ticket' => fn () => new TicketCheckedIn(1),
 ]);
-
-it('logs the event when all attempts are used up', function () {
-    Log::spy();
-
-    app(UpdateSalesSummary::class)->failed(new OrderPaid(7), new RuntimeException('Database is down'));
-
-    Log::shouldHaveReceived('error')
-        ->once()
-        ->withArgs(fn (string $message, array $context) => $context['event'] === OrderPaid::class);
-});

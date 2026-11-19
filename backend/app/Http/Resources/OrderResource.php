@@ -5,7 +5,6 @@ namespace App\Http\Resources;
 use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Services\Refunds\RefundEligibility;
-use App\Support\ApiDate;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -28,13 +27,13 @@ class OrderResource extends JsonResource
              *
              * @format date-time
              */
-            'expiresAt' => ApiDate::format($this->expires_at),
+            'expiresAt' => $this->expires_at?->toIso8601ZuluString(),
             /**
              * @var string
              *
              * @format date-time
              */
-            'createdAt' => ApiDate::format($this->created_at),
+            'createdAt' => $this->created_at?->toIso8601ZuluString(),
             'paymentStatus' => $this->payment?->status,
             'event' => new OrderEventResource($this->event),
             'items' => OrderItemResource::collection($this->items),
@@ -50,7 +49,7 @@ class OrderResource extends JsonResource
              * @format date-time
              */
             'refundableUntil' => $this->status === OrderStatus::Paid
-                ? ApiDate::format(RefundEligibility::refundableUntil($this->event->starts_at, config('ticketflow.refund_cutoff_hours')))
+                ? RefundEligibility::refundableUntil($this->event->starts_at, config('ticketflow.refund_cutoff_hours'))->toIso8601ZuluString()
                 : null,
             'refund' => $this->refund === null ? null : new OrderRefundResource($this->refund),
             /**

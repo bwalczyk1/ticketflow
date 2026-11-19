@@ -3,7 +3,6 @@
 namespace App\Http\Resources;
 
 use App\Models\Refund;
-use App\Support\ApiDate;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -32,7 +31,7 @@ class OrderRefundResource extends JsonResource
              *
              * @format date-time
              */
-            'createdAt' => ApiDate::format($this->created_at),
+            'createdAt' => $this->created_at?->toIso8601ZuluString(),
         ];
     }
 }

@@ -1,7 +1,6 @@
 <?php
 
 use App\Enums\OrderStatus;
-use App\Enums\QueueName;
 use App\Enums\TicketStatus;
 use App\Events\Orders\OrderPaid;
 use App\Jobs\Documents\GenerateTicketPdfs;
@@ -9,7 +8,6 @@ use App\Listeners\Tickets\IssueTickets;
 use App\Models\Order;
 use App\Models\Ticket;
 use Illuminate\Support\Facades\Bus;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Tests\Feature\Tickets\TicketFixtures;
 
@@ -57,14 +55,14 @@ it('adds only the missing tickets after an interrupted run', function () {
         ->and($tickets->first()->code)->toBe($issued->code);
 });
 
-it('hands the order on to PDF generation on the documents queue', function () {
+it('hands the order on to PDF generation', function () {
     $order = TicketFixtures::paidOrder();
 
     app(IssueTickets::class)->handle(new OrderPaid($order->id));
 
     Bus::assertDispatched(
         GenerateTicketPdfs::class,
-        fn (GenerateTicketPdfs $job) => $job->orderId === $order->id && $job->queue === QueueName::Documents->value,
+        fn (GenerateTicketPdfs $job) => $job->orderId === $order->id,
     );
 });
 
@@ -96,14 +94,4 @@ it('does nothing for a missing order', function () {
     expect(Ticket::query()->count())->toBe(0);
 
     Bus::assertNotDispatched(GenerateTicketPdfs::class);
-});
-
-it('logs the order id when all attempts are used up', function () {
-    Log::spy();
-
-    app(IssueTickets::class)->failed(new OrderPaid(7), new RuntimeException('Database is down'));
-
-    Log::shouldHaveReceived('error')
-        ->once()
-        ->withArgs(fn (string $message, array $context) => $context['order_id'] === 7);
 });

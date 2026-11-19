@@ -10,17 +10,13 @@ beforeEach(function () {
 /**
  * @return list<string>
  */
-function checkInErrorCodes(array $operation, int $status): array
+function checkInErrorCodes(array $spec, array $operation, int $status): array
 {
-    $schema = $operation['responses'][$status]['content']['application/json']['schema'] ?? [];
-
-    return collect($schema['anyOf'] ?? [$schema])
-        ->flatMap(fn (array $variant) => $variant['properties']['error']['properties']['code']['enum'] ?? [])
-        ->all();
+    return errorCodesInSchema($spec, $operation['responses'][$status]['content']['application/json']['schema'] ?? []);
 }
 
 it('documents the errors of the check-in', function (int $status, array $codes) {
-    expect(checkInErrorCodes($this->operation, $status))->toContain(...$codes);
+    expect(checkInErrorCodes($this->spec, $this->operation, $status))->toContain(...$codes);
 })->with([
     [401, ['UNAUTHENTICATED']],
     [403, ['FORBIDDEN']],

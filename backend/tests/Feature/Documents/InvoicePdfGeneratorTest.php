@@ -1,6 +1,5 @@
 <?php
 
-use App\Contracts\InvoicePdfGenerator;
 use App\Enums\InvoiceType;
 use App\Models\Event;
 use App\Models\Invoice;
@@ -9,7 +8,7 @@ use App\Models\OrderItem;
 use App\Models\Refund;
 use App\Models\TicketType;
 use App\Models\User;
-use App\Services\Documents\DompdfInvoicePdfGenerator;
+use App\Services\Documents\InvoicePdfGenerator;
 use Illuminate\Support\Facades\Storage;
 
 function invoiceForOrder(array $invoice = []): Invoice
@@ -51,7 +50,7 @@ it('writes a PDF to invoices/{year}/{type}-{number}.pdf and returns the path', f
 it('shows the order items and the total', function () {
     $invoice = invoiceForOrder();
 
-    $html = app(DompdfInvoicePdfGenerator::class)->html($invoice);
+    $html = app(InvoicePdfGenerator::class)->html($invoice);
 
     expect($html)->toContain('Faktura nr 7/2026', 'Zażółć Gęślą', 'zazolc@example.com', 'Koncert Żółć')
         ->toContain('Strefa VIP', 'Płyta', '150,00 zł', '50,00 zł', '100,00 zł', '250,00 zł');
@@ -62,7 +61,7 @@ it('marks a correction and points to the original invoice', function () {
     $refund = Refund::factory()->create(['order_id' => $original->order_id, 'amount' => 25000]);
     $correction = Invoice::factory()->correction($original, $refund)->create(['year' => 2026, 'number' => 2]);
 
-    $html = app(DompdfInvoicePdfGenerator::class)->html($correction);
+    $html = app(InvoicePdfGenerator::class)->html($correction);
 
     expect($correction->type)->toBe(InvoiceType::Correction)
         ->and($html)->toContain('Faktura korygująca nr 2/2026', 'do faktury nr 7/2026', '-250,00 zł');

@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable(['title', 'description', 'venue', 'city', 'category', 'timezone', 'starts_at', 'ends_at'])]
 class Event extends Model
@@ -58,14 +57,6 @@ class Event extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
-    }
-
-    /**
-     * @return HasOne<EventSalesSummary, $this>
-     */
-    public function salesSummary(): HasOne
-    {
-        return $this->hasOne(EventSalesSummary::class);
     }
 
     /**

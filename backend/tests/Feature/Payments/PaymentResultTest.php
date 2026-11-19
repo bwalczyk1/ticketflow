@@ -1,6 +1,5 @@
 <?php
 
-use App\Contracts\PaymentResultHandler;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Events\Orders\OrderPaid;
@@ -10,6 +9,7 @@ use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\TicketType;
 use App\Services\Payments\RefundLatePayment;
+use App\Services\Payments\SettlePayment;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Tests\Feature\Orders\OrderFixtures;
@@ -18,7 +18,7 @@ beforeEach(function () {
     $this->pool = TicketType::factory()->create(['quantity' => 10]);
     $this->order = OrderFixtures::holding($this->pool, 3);
     $this->payment = Payment::factory()->for($this->order)->create();
-    $this->results = app(PaymentResultHandler::class);
+    $this->results = app(SettlePayment::class);
 });
 
 function endOrder(Order $order, OrderStatus $status): void
@@ -87,7 +87,7 @@ it('does not pay an order in a final state and starts the refund path', function
         ->once()
         ->withArgs(fn (Payment $payment, Order $order) => $payment->is($this->payment) && $order->is($this->order));
 
-    app(PaymentResultHandler::class)->succeeded($this->payment, 'ref_1');
+    app(SettlePayment::class)->succeeded($this->payment, 'ref_1');
 
     expect($this->order->fresh()->status)->toBe($status)
         ->and($this->payment->fresh())
@@ -105,7 +105,7 @@ it('starts the refund path of a late success only once', function () {
 
     $this->mock(RefundLatePayment::class)->shouldReceive('handle')->once();
 
-    $results = app(PaymentResultHandler::class);
+    $results = app(SettlePayment::class);
 
     $results->succeeded($this->payment);
     $results->succeeded($this->payment->fresh());

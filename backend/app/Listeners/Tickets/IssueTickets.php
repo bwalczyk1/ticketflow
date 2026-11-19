@@ -11,18 +11,13 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Ticket;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\Attributes\Queue;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use Throwable;
 
+#[Queue(QueueName::Tickets)]
 class IssueTickets implements ShouldQueue
 {
-    public function viaQueue(): string
-    {
-        return QueueName::Tickets->value;
-    }
-
     /**
      * UNIQUE (order_item_id, position) makes the insert idempotent: a retry adds only the missing
      * tickets and keeps the codes already issued. The PDF job is dispatched on every run, so a crash
@@ -35,11 +30,6 @@ class IssueTickets implements ShouldQueue
         }
 
         GenerateTicketPdfs::dispatch($event->orderId);
-    }
-
-    public function failed(OrderPaid $event, Throwable $exception): void
-    {
-        Log::error('Issuing tickets failed', ['order_id' => $event->orderId, 'error' => $exception::class]);
     }
 
     /**

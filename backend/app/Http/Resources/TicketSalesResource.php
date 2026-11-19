@@ -3,7 +3,6 @@
 namespace App\Http\Resources;
 
 use App\Models\EventSalesSummary;
-use App\Support\ApiDate;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -39,7 +38,7 @@ class TicketSalesResource extends JsonResource
              *
              * @format date-time
              */
-            'updatedAt' => ApiDate::format($this->updated_at),
+            'updatedAt' => $this->updated_at?->toIso8601ZuluString(),
         ];
     }
 }

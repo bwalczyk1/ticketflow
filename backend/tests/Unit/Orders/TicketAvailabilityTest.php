@@ -56,26 +56,3 @@ it('refuses sales outside the sale window', function (EventStatus $status, strin
     'exactly at the start' => [EventStatus::Published, '2026-12-01 19:00:00'],
     'after the start' => [EventStatus::Published, '2026-12-01 19:00:01'],
 ])->throws(SalesClosed::class);
-
-it('sets the hold end the given number of minutes ahead', function () {
-    $now = CarbonImmutable::parse('2026-11-06 12:00:00');
-
-    expect(TicketAvailability::holdEndsAt($now, 15)->toDateTimeString())->toBe('2026-11-06 12:15:00');
-});
-
-it('treats a hold as ended from the exact second of expires_at', function (string $now, bool $ended) {
-    $expiresAt = CarbonImmutable::parse('2026-11-06 12:15:00');
-
-    expect(TicketAvailability::holdEnded($expiresAt, CarbonImmutable::parse($now)))->toBe($ended);
-})->with([
-    'one second before' => ['2026-11-06 12:14:59', false],
-    'exactly on the boundary' => ['2026-11-06 12:15:00', true],
-    'one second after' => ['2026-11-06 12:15:01', true],
-]);
-
-it('measures the hold in absolute time across a clock change', function () {
-    $beforeTheChange = CarbonImmutable::parse('2026-10-25 00:50:00', 'UTC')->setTimezone('Europe/Warsaw');
-
-    expect(TicketAvailability::holdEndsAt($beforeTheChange, 15)->utc()->toDateTimeString())
-        ->toBe('2026-10-25 01:05:00');
-});

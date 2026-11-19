@@ -2,7 +2,6 @@
 
 namespace App\Listeners\Documents;
 
-use App\Contracts\InvoicePdfGenerator;
 use App\Enums\InvoiceType;
 use App\Enums\OrderStatus;
 use App\Enums\QueueName;
@@ -10,12 +9,13 @@ use App\Events\Refunds\OrderRefunded;
 use App\Models\Invoice;
 use App\Models\Order;
 use App\Services\Documents\InvoiceNumberAllocator;
+use App\Services\Documents\InvoicePdfGenerator;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\Attributes\Queue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Throwable;
 
+#[Queue(QueueName::Documents)]
 class IssueCorrectionInvoice implements ShouldQueue
 {
     use InteractsWithQueue;
@@ -36,11 +36,6 @@ class IssueCorrectionInvoice implements ShouldQueue
         private InvoiceNumberAllocator $allocator,
         private InvoicePdfGenerator $pdfs,
     ) {}
-
-    public function viaQueue(): string
-    {
-        return QueueName::Documents->value;
-    }
 
     /**
      * Works like IssueInvoice: the correction is saved before its PDF, so a retry after a failed
@@ -70,11 +65,6 @@ class IssueCorrectionInvoice implements ShouldQueue
         }
 
         $correction->update(['pdf_path' => $this->pdfs->generate($correction)]);
-    }
-
-    public function failed(OrderRefunded $event, Throwable $exception): void
-    {
-        Log::error('Issuing a correction invoice failed', ['order_id' => $event->orderId, 'error' => $exception::class]);
     }
 
     private function existingCorrection(int $refundId): ?Invoice

@@ -30,7 +30,6 @@ it('links events to ticket types, orders and the sales summary', function () {
 
     expect($event->ticketTypes->pluck('id')->all())->toBe([$type->id])
         ->and($event->orders->pluck('id')->all())->toBe([$order->id])
-        ->and($event->salesSummary->is($summary))->toBeTrue()
         ->and($summary->event->is($event))->toBeTrue()
         ->and($type->event->is($event))->toBeTrue();
 });
@@ -47,7 +46,7 @@ it('links orders to items, tickets, payment, refund and invoices', function () {
         ->and($order->tickets->pluck('id')->all())->toBe([$ticket->id])
         ->and($order->payment->is($payment))->toBeTrue()
         ->and($order->refund->is($refund))->toBeTrue()
-        ->and($order->invoices->pluck('id')->all())->toBe([$invoice->id])
+        ->and($order->invoice->is($invoice))->toBeTrue()
         ->and($item->order->is($order))->toBeTrue()
         ->and($item->tickets->pluck('id')->all())->toBe([$ticket->id])
         ->and($ticket->orderItem->is($item))->toBeTrue()

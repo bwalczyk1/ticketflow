@@ -8,7 +8,7 @@ use App\Models\Invoice;
 use App\Models\InvoiceSequence;
 use App\Models\Order;
 use App\Models\Refund;
-use App\Services\Documents\DompdfInvoicePdfGenerator;
+use App\Services\Documents\InvoicePdfGenerator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Storage;
 use Tests\Feature\Tickets\TicketFixtures;
@@ -78,7 +78,7 @@ it('does nothing for an order that is not refunded', function () {
 it('prints negative amounts and the reason on the correction', function () {
     app(IssueCorrectionInvoice::class)->handle($this->event);
 
-    $html = app(DompdfInvoicePdfGenerator::class)->html(correctionsOf($this->order)->sole());
+    $html = app(InvoicePdfGenerator::class)->html(correctionsOf($this->order)->sole());
 
     expect($html)->toContain('Faktura korygująca nr 1/2026', 'do faktury nr 7/2026', 'Powód: Nie mogę przyjść')
         ->toContain('-2', '-100,00 zł');
@@ -89,7 +89,7 @@ it('prints a correction without a reason', function () {
 
     app(IssueCorrectionInvoice::class)->handle($this->event);
 
-    $html = app(DompdfInvoicePdfGenerator::class)->html(correctionsOf($this->order)->sole());
+    $html = app(InvoicePdfGenerator::class)->html(correctionsOf($this->order)->sole());
 
     expect($html)->toContain('Faktura korygująca')->not->toContain('Powód:');
 });

@@ -3,7 +3,6 @@
 namespace App\Http\Resources;
 
 use App\Models\Ticket;
-use App\Support\ApiDate;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -28,7 +27,7 @@ class CheckedInTicketResource extends JsonResource
              *
              * @format date-time
              */
-            'checkedInAt' => ApiDate::format($this->checked_in_at),
+            'checkedInAt' => $this->checked_in_at?->toIso8601ZuluString(),
             'ticketTypeName' => $this->orderItem->ticketType->name,
             'holderName' => $this->orderItem->order->user->name,
         ];

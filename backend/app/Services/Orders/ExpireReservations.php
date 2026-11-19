@@ -16,8 +16,6 @@ class ExpireReservations
      */
     private const PAYMENT_GRACE_MINUTES = 5;
 
-    public function __construct(private OrderTransition $orderTransition) {}
-
     /**
      * @return int the number of expired orders
      */
@@ -48,7 +46,7 @@ class ExpireReservations
                 return false;
             }
 
-            $this->orderTransition->apply($order, OrderStatus::Expired);
+            $order->transitionTo(OrderStatus::Expired);
 
             ReservationExpired::dispatch($order->id);
 

@@ -13,21 +13,18 @@ use App\Services\Notifications\NotificationLedger;
 use Illuminate\Contracts\Queue\ShouldQueueAfterCommit;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Queue\Attributes\Queue;
 use Illuminate\Support\Facades\Mail;
-use Throwable;
 
 /**
  * One reminder for one attendee, queued by SendEventReminders a day before the event.
  */
+#[Queue(QueueName::Mail)]
 class SendEventReminder implements ShouldQueueAfterCommit
 {
     use Queueable;
 
-    public function __construct(public readonly int $eventId, public readonly int $userId)
-    {
-        $this->onQueue(QueueName::Mail->value);
-    }
+    public function __construct(public readonly int $eventId, public readonly int $userId) {}
 
     /**
      * The ledger key event:{id}:reminder:{userId} lets the e-mail out once. A cancelled event or
@@ -57,10 +54,5 @@ class SendEventReminder implements ShouldQueueAfterCommit
         $ledger->once("event:{$event->id}:reminder:{$user->id}", function () use ($event, $user, $ticketCount) {
             Mail::to($user)->send(new EventReminderMail($event, $user, $ticketCount));
         });
-    }
-
-    public function failed(Throwable $exception): void
-    {
-        Log::error('Sending an event reminder failed', ['event_id' => $this->eventId, 'user_id' => $this->userId, 'error' => $exception::class]);
     }
 }

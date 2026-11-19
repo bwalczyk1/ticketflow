@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { PAGE_TITLE } from '@/lib/styles'
 import type { CatalogEvent } from '../../api/types'
 import { ErrorBanner } from '../../components/ErrorBanner'
-import { Pagination } from '../../components/Pagination'
+import { EmptyList, Pagination } from '../../components/Pagination'
 import { LoadingPage, RefreshingArea } from '../../components/StatusPages'
 import { formatDateTime } from '../../lib/dates'
 import { formatPrice, plnToGrosze } from '../../lib/money'
@@ -87,7 +87,9 @@ export function EventListPage() {
 
       <RefreshingArea active={isPlaceholderData}>
         {data && data.data.length === 0 && (
-          <p className="text-muted-foreground">Nie znaleziono wydarzeń pasujących do filtrów.</p>
+          <EmptyList meta={data.meta} onPageChange={changePage}>
+            <p className="text-muted-foreground">Nie znaleziono wydarzeń pasujących do filtrów.</p>
+          </EmptyList>
         )}
 
         {data && data.data.length > 0 && (

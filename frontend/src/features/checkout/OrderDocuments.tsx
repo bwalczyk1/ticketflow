@@ -7,7 +7,7 @@ import type { Order, Ticket } from '../../api/types'
 import { ErrorBanner } from '../../components/ErrorBanner'
 import { formatDateTime } from '../../lib/dates'
 import { TicketStatusBadge } from '../tickets/TicketStatusBadge'
-import { downloadTicketPdf, fetchOrderTickets, ticketsKey } from '../tickets/ticketsApi'
+import { downloadTicketPdf, fetchOrderTickets, isPdfAvailable, isPdfPending, ticketsKey } from '../tickets/ticketsApi'
 import { downloadInvoice } from './checkoutApi'
 
 /** The element "Przejdź do biletów" scrolls to. */
@@ -18,7 +18,7 @@ const TICKETS_POLL_INTERVAL_MS = 3000
 const TICKETS_POLL_LIMIT = 20
 
 function isWaitingForTickets(tickets: Ticket[] | undefined): boolean {
-  return !tickets || tickets.length === 0 || tickets.some((ticket) => !ticket.pdfReady)
+  return !tickets || tickets.length === 0 || tickets.some(isPdfPending)
 }
 
 function DownloadButton({ busy, onClick, label }: { busy: boolean; onClick: () => void; label: string }) {
@@ -80,15 +80,15 @@ export function OrderDocuments({ order }: { order: Order }) {
                   <p className="font-mono text-sm break-all text-muted-foreground">{ticket.code}</p>
                 </div>
 
-                {ticket.pdfReady ? (
+                {isPdfAvailable(ticket) && (
                   <DownloadButton
                     label="Pobierz PDF"
                     busy={ticketMutation.isPending && ticketMutation.variables.id === ticket.id}
                     onClick={() => ticketMutation.mutate(ticket)}
                   />
-                ) : (
-                  <span className="text-sm text-muted-foreground">Przygotowujemy PDF…</span>
                 )}
+
+                {isPdfPending(ticket) && <span className="text-sm text-muted-foreground">Przygotowujemy PDF…</span>}
               </li>
             ))}
           </ul>

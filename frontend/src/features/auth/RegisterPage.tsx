@@ -7,16 +7,18 @@ import { PAGE_TITLE } from '@/lib/styles'
 import { getFieldErrors } from '../../api/errors'
 import { ErrorBanner } from '../../components/ErrorBanner'
 import { FormField } from '../../components/FormField'
+import { useVisibleErrors } from '../../lib/useVisibleErrors'
 import { useAuth } from './AuthContext'
 
 export function RegisterPage() {
   const { register } = useAuth()
   const location = useLocation()
   const mutation = useMutation({ mutationFn: register })
-  const fieldErrors = getFieldErrors(mutation.error)
+  const { errors: fieldErrors, markEdited, startRequest } = useVisibleErrors(getFieldErrors(mutation.error))
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    startRequest()
 
     const form = new FormData(event.currentTarget)
 
@@ -36,7 +38,7 @@ export function RegisterPage() {
       <CardContent>
         <ErrorBanner error={mutation.error} />
 
-        <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
+        <form className="grid gap-4" noValidate onChange={markEdited} onSubmit={handleSubmit}>
           <FormField
             label="Imię i nazwisko"
             name="name"

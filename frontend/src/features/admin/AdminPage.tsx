@@ -19,7 +19,13 @@ export function AdminPage() {
     <section>
       <h1 className={`${PAGE_TITLE} mb-6`}>Panel administratora</h1>
 
-      <Tabs className="mb-4 max-w-full overflow-x-auto" value={view} onValueChange={changeView}>
+      {/* Manual activation: otherwise one click changes the tab twice (mousedown and focus), adding two history entries. */}
+      <Tabs
+        className="mb-4 max-w-full overflow-x-auto"
+        activationMode="manual"
+        value={view}
+        onValueChange={changeView}
+      >
         <TabsList aria-label="Widok">
           <TabsTrigger value="users">Użytkownicy</TabsTrigger>
           <TabsTrigger value="events">Wydarzenia</TabsTrigger>

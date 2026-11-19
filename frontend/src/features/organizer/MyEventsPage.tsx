@@ -17,7 +17,7 @@ import { PAGE_TITLE } from '@/lib/styles'
 import type { EventStatus, ManagedEvent } from '../../api/types'
 import { ConfirmDialog } from '../../components/ConfirmButton'
 import { ErrorBanner } from '../../components/ErrorBanner'
-import { Pagination } from '../../components/Pagination'
+import { EmptyList, Pagination } from '../../components/Pagination'
 import { LoadingPage, RefreshingArea } from '../../components/StatusPages'
 import { StatusTabs } from '../../components/StatusTabs'
 import { eventsKey } from '../catalog/catalogApi'
@@ -137,7 +137,9 @@ export function MyEventsPage() {
 
       <RefreshingArea active={isPlaceholderData}>
         {data && data.data.length === 0 && (
-          <p className="text-muted-foreground">Nie masz jeszcze żadnych wydarzeń w tym widoku.</p>
+          <EmptyList meta={data.meta} onPageChange={changePage}>
+            <p className="text-muted-foreground">Nie masz jeszcze żadnych wydarzeń w tym widoku.</p>
+          </EmptyList>
         )}
 
         {data && data.data.length > 0 && (

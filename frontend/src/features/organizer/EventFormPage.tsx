@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState, type FormEvent } from 'react'
+import type { FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -13,6 +13,7 @@ import { LoadingPage, NotFoundPage } from '../../components/StatusPages'
 import { TextAreaField } from '../../components/TextAreaField'
 import { CATEGORY_SUGGESTIONS } from '../../lib/categories'
 import { isValidTimeZone, utcIsoToZonedLocal, zonedLocalToUtcIso } from '../../lib/dates'
+import { useVisibleErrors } from '../../lib/useVisibleErrors'
 import { eventsKey } from '../catalog/catalogApi'
 import { getAllowedActions } from './allowedActions'
 import {
@@ -25,6 +26,8 @@ import {
 
 const DEFAULT_TIME_ZONE = 'Europe/Warsaw'
 
+const SKIPPED_HOUR_MESSAGE = 'Ta godzina nie istnieje w wybranej strefie (zmiana czasu).'
+
 interface EventFormProps {
   event?: ManagedEvent
 }
@@ -32,8 +35,6 @@ interface EventFormProps {
 function EventForm({ event }: EventFormProps) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
-  const [clientErrors, setClientErrors] = useState<Record<string, string>>({})
-
   const mutation = useMutation({
     mutationFn: (payload: EventPayload) =>
       event ? updateEvent(String(event.id), payload) : createEvent(payload),
@@ -50,7 +51,12 @@ function EventForm({ event }: EventFormProps) {
     },
   })
 
-  const fieldErrors = { ...getFieldErrors(mutation.error), ...clientErrors }
+  const {
+    errors: fieldErrors,
+    markEdited,
+    setClientErrors,
+    startRequest,
+  } = useVisibleErrors(getFieldErrors(mutation.error))
   const timeZone = event?.timezone ?? DEFAULT_TIME_ZONE
 
   function handleSubmit(submitEvent: FormEvent<HTMLFormElement>) {
@@ -59,28 +65,38 @@ function EventForm({ event }: EventFormProps) {
     const form = new FormData(submitEvent.currentTarget)
     const text = (name: string) => String(form.get(name) ?? '').trim()
     const zone = text('timezone')
+    const isZoneValid = isValidTimeZone(zone)
     const errors: Record<string, string> = {}
 
-    if (!isValidTimeZone(zone)) {
+    if (!isZoneValid) {
       errors.timezone = 'Podaj poprawną strefę czasową, np. Europe/Warsaw.'
     }
 
-    const startsAt = errors.timezone ? null : zonedLocalToUtcIso(text('startsAt'), zone)
-    const endsAt = errors.timezone ? null : zonedLocalToUtcIso(text('endsAt'), zone)
+    // An empty date is sent as it is, so the API answers with its usual "required" message.
+    function toUtc(name: string): string | null {
+      const local = text(name)
 
-    if (!errors.timezone && !startsAt) {
-      errors.startsAt = 'Podaj datę. Ta godzina nie istnieje w wybranej strefie (zmiana czasu).'
+      return local === '' || !isZoneValid ? local : zonedLocalToUtcIso(local, zone)
     }
 
-    if (!errors.timezone && !endsAt) {
-      errors.endsAt = 'Podaj datę. Ta godzina nie istnieje w wybranej strefie (zmiana czasu).'
+    const startsAt = toUtc('startsAt')
+    const endsAt = toUtc('endsAt')
+
+    if (startsAt === null) {
+      errors.startsAt = SKIPPED_HOUR_MESSAGE
+    }
+
+    if (endsAt === null) {
+      errors.endsAt = SKIPPED_HOUR_MESSAGE
     }
 
     setClientErrors(errors)
 
-    if (Object.keys(errors).length > 0 || !startsAt || !endsAt) {
+    if (Object.keys(errors).length > 0 || startsAt === null || endsAt === null) {
       return
     }
+
+    startRequest()
 
     mutation.mutate({
       title: text('title'),
@@ -99,7 +115,7 @@ function EventForm({ event }: EventFormProps) {
       <CardContent>
         <ErrorBanner error={mutation.error} />
 
-        <form className="grid gap-4 sm:grid-cols-2" noValidate onSubmit={handleSubmit}>
+        <form className="grid gap-4 sm:grid-cols-2" noValidate onChange={markEdited} onSubmit={handleSubmit}>
           <div className="sm:col-span-2">
             <FormField
               label="Tytuł"

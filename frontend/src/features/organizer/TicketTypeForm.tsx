@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState, type FormEvent } from 'react'
+import type { FormEvent } from 'react'
 import { toast } from 'sonner'
 import { getFieldErrors } from '../../api/errors'
 import { Button } from '@/components/ui/button'
@@ -7,6 +7,7 @@ import type { ManagedTicketType } from '../../api/types'
 import { ErrorBanner } from '../../components/ErrorBanner'
 import { FormField } from '../../components/FormField'
 import { groszeToPln, plnToGrosze } from '../../lib/money'
+import { useVisibleErrors } from '../../lib/useVisibleErrors'
 import { eventsKey } from '../catalog/catalogApi'
 import {
   createTicketType,
@@ -26,8 +27,6 @@ interface TicketTypeFormProps {
 
 export function TicketTypeForm({ eventId, ticketType, onSubmitStart, onDone }: TicketTypeFormProps) {
   const queryClient = useQueryClient()
-  const [clientErrors, setClientErrors] = useState<Record<string, string>>({})
-
   const mutation = useMutation({
     mutationFn: (payload: TicketTypePayload) =>
       ticketType
@@ -44,7 +43,12 @@ export function TicketTypeForm({ eventId, ticketType, onSubmitStart, onDone }: T
     },
   })
 
-  const fieldErrors = { ...getFieldErrors(mutation.error), ...clientErrors }
+  const {
+    errors: fieldErrors,
+    markEdited,
+    setClientErrors,
+    startRequest,
+  } = useVisibleErrors(getFieldErrors(mutation.error))
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -69,11 +73,12 @@ export function TicketTypeForm({ eventId, ticketType, onSubmitStart, onDone }: T
       return
     }
 
+    startRequest()
     mutation.mutate({ name: String(form.get('name')).trim(), price, quantity })
   }
 
   return (
-    <form noValidate onSubmit={handleSubmit}>
+    <form noValidate onChange={markEdited} onSubmit={handleSubmit}>
       <ErrorBanner error={mutation.error} />
 
       <div className="grid items-start gap-4 sm:grid-cols-3">

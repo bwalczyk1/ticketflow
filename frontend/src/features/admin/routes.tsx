@@ -1,6 +1,4 @@
 import type { RouteObject } from 'react-router-dom'
-import { PlaceholderPage } from '../../components/StatusPages'
+import { AdminPage } from './AdminPage'
 
-export const adminRoutes: RouteObject[] = [
-  { path: 'admin', element: <PlaceholderPage title="Użytkownicy" /> },
-]
+export const adminRoutes: RouteObject[] = [{ path: 'admin', element: <AdminPage /> }]

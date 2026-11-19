@@ -7,6 +7,7 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
   EXPIRED: 'Wygasło',
   FAILED: 'Płatność odrzucona',
   CANCELLED: 'Anulowane',
+  REFUNDED: 'Zwrócone',
 }
 
 const STATUS_VARIANTS = {
@@ -15,6 +16,7 @@ const STATUS_VARIANTS = {
   EXPIRED: 'outline',
   FAILED: 'destructive',
   CANCELLED: 'outline',
+  REFUNDED: 'outline',
 } as const satisfies Record<OrderStatus, string>
 
 export function OrderStatusBadge({ status }: { status: OrderStatus }) {

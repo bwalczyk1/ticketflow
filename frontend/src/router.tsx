@@ -9,6 +9,7 @@ import { checkinRoutes } from './features/checkin/routes'
 import { checkoutRoutes } from './features/checkout/routes'
 import { organizerRoutes } from './features/organizer/routes'
 import { ticketsRoutes } from './features/tickets/routes'
+import { waitlistRoutes } from './features/waitlist/routes'
 
 export const router = createBrowserRouter([
   {
@@ -20,7 +21,7 @@ export const router = createBrowserRouter([
       ...authRoutes,
       {
         element: <RequireAuth roles={['ATTENDEE']} />,
-        children: [...checkoutRoutes, ...ticketsRoutes],
+        children: [...checkoutRoutes, ...ticketsRoutes, ...waitlistRoutes],
       },
       {
         element: <RequireAuth roles={['ORGANIZER']} />,

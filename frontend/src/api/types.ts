@@ -77,7 +77,7 @@ export interface ManagedEvent extends Omit<CatalogEvent, 'ticketTypes'> {
   ticketTypes?: ManagedTicketType[]
 }
 
-export type OrderStatus = 'PENDING' | 'PAID' | 'EXPIRED' | 'FAILED' | 'CANCELLED'
+export type OrderStatus = 'PENDING' | 'PAID' | 'EXPIRED' | 'FAILED' | 'CANCELLED' | 'REFUNDED'
 
 export type PaymentStatus = 'PENDING' | 'SUCCEEDED' | 'FAILED'
 
@@ -112,6 +112,26 @@ export interface Order {
    * they are regenerated. Null until the invoice is issued, missing on an older backend.
    */
   invoice?: Invoice | null
+  /**
+   * Hand-written ahead of the refunds backend change; regenerate from the OpenAPI docs once it
+   * lands. Set only while the order is PAID: the last moment a refund is accepted.
+   */
+  refundableUntil?: string | null
+  /** Hand-written ahead of the refunds backend change. Null until a refund is requested. */
+  refund?: Refund | null
+  /** Hand-written ahead of the refunds backend change. Null until the correction is issued. */
+  correctionInvoice?: Invoice | null
+}
+
+export type RefundStatus = 'PENDING' | 'SUCCEEDED' | 'FAILED'
+
+/** Hand-written ahead of the refunds backend change (see `Order.refund`). */
+export interface Refund {
+  status: RefundStatus
+  /** Integer grosze. */
+  amount: number
+  reason: string | null
+  createdAt: string
 }
 
 /** Hand-written ahead of the backend change that adds it (see `Order.invoice`). */
@@ -137,4 +157,64 @@ export interface Ticket {
     name: string
   }
   event: Order['event']
+}
+
+export type WaitlistStatus = 'WAITING' | 'OFFERED' | 'CONVERTED' | 'EXPIRED' | 'CANCELLED'
+
+/** Hand-written ahead of the waitlist backend change; regenerate from the OpenAPI docs once it lands. */
+export interface WaitlistEntry {
+  id: number
+  status: WaitlistStatus
+  quantity: number
+  /** Place in the queue, null once the entry is no longer waiting. */
+  position: number | null
+  /** Until when an offered entry can be bought. */
+  offeredUntil: string | null
+  orderId: number | null
+  ticketType: {
+    id: number
+    name: string
+    /** Integer grosze. */
+    price: number
+  }
+  event: {
+    id: number
+    title: string
+    startsAt: string
+  }
+  createdAt: string
+}
+
+/** Hand-written ahead of the check-in backend change. */
+export interface CheckedInTicket {
+  id: number
+  code: string
+  status: 'USED'
+  checkedInAt: string
+  ticketTypeName: string
+  holderName: string
+}
+
+export interface SalesSummary {
+  eventId: number
+  ticketsSold: number
+  /** Integer grosze. */
+  revenue: number
+  /** Integer grosze. */
+  refunds: number
+  checkedIn: number
+  updatedAt: string | null
+}
+
+export interface AdminEvent {
+  id: number
+  title: string
+  status: EventStatus
+  venue: string
+  city: string
+  category: string
+  timezone: string
+  startsAt: string
+  endsAt: string
+  organizer: User
 }

@@ -14,6 +14,7 @@ import { eventsKey } from '../catalog/catalogApi'
 import { cancelOrder, fetchOrder, ordersKey, payOrder } from './checkoutApi'
 import { OrderDocuments } from './OrderDocuments'
 import { OrderItemsCard } from './OrderItemsCard'
+import { OrderRefund } from './OrderRefund'
 import { ExpiringNotice, OrderOutcome } from './OrderOutcome'
 import { getOrderWait, isHoldOver, type OrderWait } from './orderState'
 import { ReservationCard } from './ReservationCard'
@@ -30,6 +31,8 @@ const POLLING: Record<OrderWait, { interval: number; timeout: number }> = {
   // The scheduler expires holds once a minute, so this waits for up to two ticks.
   expiry: { interval: 5000, timeout: 120_000 },
   invoice: { interval: 3000, timeout: 60_000 },
+  refund: { interval: 2000, timeout: 60_000 },
+  correction: { interval: 3000, timeout: 60_000 },
 }
 
 export function OrderPage() {
@@ -121,6 +124,8 @@ export function OrderPage() {
           <OrderItemsCard order={order} />
 
           {order.status === 'PAID' && <OrderDocuments order={order} />}
+
+          <OrderRefund order={order} now={now} wait={wait} timedOut={pollingTimedOut} onCheckAgain={checkAgain} />
 
           {isPaying && !pollingTimedOut && (
             <Alert role="status">

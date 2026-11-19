@@ -21,9 +21,10 @@ export function isHoldOver(order: Order, now: number): boolean {
 
 /**
  * What the order page waits for: the payment result, the scheduler expiring the hold,
- * or the invoice that is issued in the background after the payment.
+ * the invoice that is issued in the background after the payment, or the refund and
+ * its correction invoice.
  */
-export type OrderWait = 'payment' | 'expiry' | 'invoice'
+export type OrderWait = 'payment' | 'expiry' | 'invoice' | 'refund' | 'correction'
 
 export function getOrderWait(order: Order, now: number): OrderWait | null {
   if (isPaymentInProgress(order)) {
@@ -32,6 +33,15 @@ export function getOrderWait(order: Order, now: number): OrderWait | null {
 
   if (order.status === 'PENDING' && isHoldOver(order, now)) {
     return 'expiry'
+  }
+
+  if (order.refund?.status === 'PENDING') {
+    return 'refund'
+  }
+
+  // Undefined means a backend without refunds, so there is nothing to wait for.
+  if (order.status === 'REFUNDED' && order.correctionInvoice === null) {
+    return 'correction'
   }
 
   // Undefined means a backend without invoices, so there is nothing to wait for.
@@ -45,4 +55,11 @@ export function getOrderWait(order: Order, now: number): OrderWait | null {
 /** A reservation that can still be paid for or cancelled. */
 export function isReservationActive(order: Order, now: number): boolean {
   return order.status === 'PENDING' && order.paymentStatus === null && !isHoldOver(order, now)
+}
+
+/** The refund window is open: the order is paid, no refund is running and the deadline has not passed. */
+export function isRefundOpen(order: Order, now: number): boolean {
+  const deadline = order.refundableUntil ? Date.parse(order.refundableUntil) : 0
+
+  return order.status === 'PAID' && !order.refund && deadline > now
 }

@@ -1,6 +1,4 @@
 import type { RouteObject } from 'react-router-dom'
-import { PlaceholderPage } from '../../components/StatusPages'
+import { MyTicketsPage } from './MyTicketsPage'
 
-export const ticketsRoutes: RouteObject[] = [
-  { path: 'tickets', element: <PlaceholderPage title="Moje bilety" /> },
-]
+export const ticketsRoutes: RouteObject[] = [{ path: 'tickets', element: <MyTicketsPage /> }]

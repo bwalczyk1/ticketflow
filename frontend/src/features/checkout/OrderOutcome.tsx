@@ -37,7 +37,7 @@ function showDocuments() {
   document.getElementById(ORDER_DOCUMENTS_ID)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-/** What the user sees once the order is over: paid, rejected, expired or cancelled. */
+/** What the user sees once the order is over: paid, rejected, expired, cancelled or refunded. */
 export function OrderOutcome({ order }: OrderOutcomeProps) {
   const eventLink = (
     <Button className="mt-3" variant="outline" size="sm" asChild>
@@ -71,6 +71,16 @@ export function OrderOutcome({ order }: OrderOutcomeProps) {
     return (
       <OutcomeAlert title="Rezerwacja anulowana" icon={<CircleAlert />}>
         Miejsca wróciły do puli. Możesz wybrać bilety jeszcze raz.
+        <br />
+        {eventLink}
+      </OutcomeAlert>
+    )
+  }
+
+  if (order.status === 'REFUNDED') {
+    return (
+      <OutcomeAlert title="Zamówienie zwrócone" icon={<CircleAlert />}>
+        Bilety zostały unieważnione, a pieniądze wracają na Twoje konto.
         <br />
         {eventLink}
       </OutcomeAlert>

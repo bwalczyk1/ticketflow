@@ -1,12 +1,12 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Download, LoaderCircle } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import type { Order, Ticket, TicketStatus } from '../../api/types'
+import type { Order, Ticket } from '../../api/types'
 import { ErrorBanner } from '../../components/ErrorBanner'
 import { formatDateTime } from '../../lib/dates'
+import { TicketStatusBadge } from '../tickets/TicketStatusBadge'
 import { downloadTicketPdf, fetchOrderTickets, ticketsKey } from '../tickets/ticketsApi'
 import { downloadInvoice } from './checkoutApi'
 
@@ -16,18 +16,6 @@ export const ORDER_DOCUMENTS_ID = 'order-documents'
 /** Tickets and their PDFs are issued in the background, so the list is polled for about a minute. */
 const TICKETS_POLL_INTERVAL_MS = 3000
 const TICKETS_POLL_LIMIT = 20
-
-const TICKET_STATUS_LABELS: Record<TicketStatus, string> = {
-  VALID: 'Ważny',
-  USED: 'Wykorzystany',
-  VOID: 'Unieważniony',
-}
-
-const TICKET_STATUS_VARIANTS = {
-  VALID: 'default',
-  USED: 'secondary',
-  VOID: 'destructive',
-} as const satisfies Record<TicketStatus, string>
 
 function isWaitingForTickets(tickets: Ticket[] | undefined): boolean {
   return !tickets || tickets.length === 0 || tickets.some((ticket) => !ticket.pdfReady)
@@ -87,7 +75,7 @@ export function OrderDocuments({ order }: { order: Order }) {
                 <div className="min-w-0">
                   <p className="flex flex-wrap items-center gap-2 font-medium">
                     {ticket.ticketType.name} #{ticket.position}
-                    <Badge variant={TICKET_STATUS_VARIANTS[ticket.status]}>{TICKET_STATUS_LABELS[ticket.status]}</Badge>
+                    <TicketStatusBadge status={ticket.status} />
                   </p>
                   <p className="font-mono text-sm break-all text-muted-foreground">{ticket.code}</p>
                 </div>

@@ -36,3 +36,17 @@ export function downloadInvoice(order: Order): Promise<void> {
 export function cancelOrder(id: number): Promise<Order> {
   return api.post<Order>(`/api/orders/${id}/cancel`)
 }
+
+/** 409 ORDER_NOT_REFUNDABLE or REFUND_WINDOW_CLOSED. The refund itself finishes in the background. */
+export function refundOrder(id: number, reason: string): Promise<Order> {
+  return api.post<Order>(`/api/orders/${id}/refund`, reason ? { reason } : {})
+}
+
+/** 404 INVOICE_NOT_FOUND until the correction invoice is issued. */
+export function downloadCorrectionInvoice(order: Order): Promise<void> {
+  const name = order.correctionInvoice
+    ? `faktura-korygujaca-${order.correctionInvoice.number.replaceAll('/', '-')}.pdf`
+    : 'faktura-korygujaca.pdf'
+
+  return downloadFile(`/api/orders/${order.id}/correction-invoice`, name)
+}

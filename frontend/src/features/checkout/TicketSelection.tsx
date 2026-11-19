@@ -12,6 +12,7 @@ import { formatPrice } from '../../lib/money'
 import { useAuth } from '../auth/AuthContext'
 import { eventsKey } from '../catalog/catalogApi'
 import { createOrder, ordersKey } from './checkoutApi'
+import { WaitlistJoin } from '../waitlist/WaitlistJoin'
 import { useNow } from './useCountdown'
 
 /**
@@ -195,6 +196,10 @@ export function TicketSelection({ event }: TicketSelectionProps) {
                       canAddMore={totalQuantity < allowance}
                       onChange={(quantity) => changeQuantity(ticketType.id, quantity)}
                     />
+                  )}
+
+                  {showPickers && ticketType.available === 0 && (
+                    <WaitlistJoin ticketType={ticketType} allowance={allowance} />
                   )}
                 </CardContent>
               </Card>

@@ -1,5 +1,5 @@
 import { api } from '../../api/client'
-import type { CatalogEvent, Paginated } from '../../api/types'
+import type { CatalogEvent, EventDetails, Paginated } from '../../api/types'
 
 export const PAGE_SIZE = 9
 
@@ -21,6 +21,6 @@ export function fetchEvents(filters: CatalogFilters): Promise<Paginated<CatalogE
   return api.get<Paginated<CatalogEvent>>('/api/events', { ...filters, limit: PAGE_SIZE })
 }
 
-export function fetchEvent(id: string): Promise<CatalogEvent> {
-  return api.get<CatalogEvent>(`/api/events/${id}`)
+export function fetchEvent(id: string): Promise<EventDetails> {
+  return api.get<EventDetails>(`/api/events/${id}`)
 }

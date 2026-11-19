@@ -3,10 +3,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import type { Order } from '../../api/types'
+import { ConfirmButton } from '../../components/ConfirmButton'
 import { formatPrice } from '../../lib/money'
-import { CancelOrderDialog } from './CancelOrderDialog'
 import { OrderStatusBadge } from './OrderStatusBadge'
-import { formatCountdown } from './useCountdown'
+import { formatCountdown } from '../../lib/time'
 
 interface ReservationCardProps {
   order: Order
@@ -65,7 +65,17 @@ export function ReservationCard({
               Zapłać {formatPrice(order.total)}
             </Button>
 
-            <CancelOrderDialog disabled={isBusy} onOpen={onCancelOpen} onConfirm={onCancel} />
+            <ConfirmButton
+              label="Anuluj rezerwację"
+              cancelLabel="Wróć"
+              title="Anulować rezerwację?"
+              description="Zablokowane miejsca wrócą do puli od razu, a zamówienia nie da się już opłacić."
+              variant="outline"
+              size="default"
+              disabled={isBusy}
+              onOpen={onCancelOpen}
+              onConfirm={onCancel}
+            />
           </div>
         )}
 

@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Download, LoaderCircle } from 'lucide-react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -14,10 +14,11 @@ import {
 import { PAGE_TITLE } from '@/lib/styles'
 import type { Ticket } from '../../api/types'
 import { ErrorBanner } from '../../components/ErrorBanner'
-import { Pagination } from '../../components/Pagination'
+import { EmptyList, Pagination } from '../../components/Pagination'
 import { LoadingPage, RefreshingArea } from '../../components/StatusPages'
 import { formatDateTime } from '../../lib/dates'
-import { downloadTicketPdf, fetchTickets, ticketsKey } from './ticketsApi'
+import { usePageParam } from '../../lib/urlParams'
+import { downloadTicketPdf, fetchTickets, isPdfAvailable, isPdfPending, ticketsKey } from './ticketsApi'
 import { TicketStatusBadge } from './TicketStatusBadge'
 
 interface EventGroup {
@@ -27,19 +28,9 @@ interface EventGroup {
 
 /** Keeps the order of the list, so the event of the newest ticket comes first. */
 function groupByEvent(tickets: Ticket[]): EventGroup[] {
-  const groups = new Map<number, EventGroup>()
+  const groups = Map.groupBy(tickets, (ticket) => ticket.event.id)
 
-  for (const ticket of tickets) {
-    const group = groups.get(ticket.event.id)
-
-    if (group) {
-      group.tickets.push(ticket)
-    } else {
-      groups.set(ticket.event.id, { event: ticket.event, tickets: [ticket] })
-    }
-  }
-
-  return [...groups.values()]
+  return [...groups.values()].map((group) => ({ event: group[0].event, tickets: group }))
 }
 
 interface TicketActionsProps {
@@ -51,16 +42,14 @@ interface TicketActionsProps {
 function TicketActions({ ticket, busy, onDownload }: TicketActionsProps) {
   return (
     <div className="flex flex-wrap items-center gap-2 md:justify-end">
-      {ticket.status === 'VALID' && ticket.pdfReady && (
+      {isPdfAvailable(ticket) && (
         <Button variant="outline" size="sm" type="button" disabled={busy} onClick={() => onDownload(ticket)}>
           {busy ? <LoaderCircle className="animate-spin" /> : <Download />}
           Pobierz PDF
         </Button>
       )}
 
-      {ticket.status === 'VALID' && !ticket.pdfReady && (
-        <span className="text-sm text-muted-foreground">Przygotowujemy PDF…</span>
-      )}
+      {isPdfPending(ticket) && <span className="text-sm text-muted-foreground">Przygotowujemy PDF…</span>}
 
       <Button variant="ghost" size="sm" asChild>
         <Link to={`/orders/${ticket.orderId}`}>Zamówienie #{ticket.orderId}</Link>
@@ -70,8 +59,7 @@ function TicketActions({ ticket, busy, onDownload }: TicketActionsProps) {
 }
 
 export function MyTicketsPage() {
-  const [params, setParams] = useSearchParams()
-  const page = Number(params.get('page')) || 1
+  const [page, changePage] = usePageParam()
 
   const { data, error, isPending, isPlaceholderData } = useQuery({
     queryKey: [...ticketsKey, 'list', page],
@@ -81,10 +69,6 @@ export function MyTicketsPage() {
   })
 
   const downloadMutation = useMutation({ mutationFn: downloadTicketPdf })
-
-  function changePage(next: number) {
-    setParams({ page: String(next) })
-  }
 
   function isBusy(ticket: Ticket) {
     return downloadMutation.isPending && downloadMutation.variables.id === ticket.id
@@ -101,12 +85,14 @@ export function MyTicketsPage() {
 
       <RefreshingArea active={isPlaceholderData}>
         {data && data.data.length === 0 && (
-          <p className="text-muted-foreground">
-            Nie masz jeszcze biletów.{' '}
-            <Link className="underline" to="/">
-              Wybierz wydarzenie
-            </Link>
-          </p>
+          <EmptyList meta={data.meta} onPageChange={changePage}>
+            <p className="text-muted-foreground">
+              Nie masz jeszcze biletów.{' '}
+              <Link className="underline" to="/">
+                Wybierz wydarzenie
+              </Link>
+            </p>
+          </EmptyList>
         )}
 
         {data && data.data.length > 0 && (

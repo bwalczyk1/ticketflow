@@ -1,15 +1,8 @@
 import { api, fetchCsrfCookie } from '../../api/client'
 import { ApiError } from '../../api/errors'
-import type { User } from '../../api/types'
+import type { LoginPayload, RegisterPayload, User } from '../../api/types'
 
-export interface LoginPayload {
-  email: string
-  password: string
-}
-
-export interface RegisterPayload extends LoginPayload {
-  name: string
-}
+export type { LoginPayload, RegisterPayload }
 
 export const currentUserKey = ['currentUser']
 

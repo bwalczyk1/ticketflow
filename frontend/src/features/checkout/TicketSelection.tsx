@@ -1,69 +1,22 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Minus, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { ApiError } from '../../api/errors'
-import type { CatalogEvent, PurchaseLimit, TicketType } from '../../api/types'
+import type { EventDetails, PurchaseLimit, TicketType } from '../../api/types'
 import { ErrorBanner } from '../../components/ErrorBanner'
+import { QuantityPicker } from '../../components/QuantityPicker'
 import { formatPrice } from '../../lib/money'
 import { useAuth } from '../auth/AuthContext'
 import { eventsKey } from '../catalog/catalogApi'
 import { createOrder, ordersKey } from './checkoutApi'
 import { WaitlistJoin } from '../waitlist/WaitlistJoin'
-import { useNow } from './useCountdown'
-
-/**
- * Used when the API sends no purchase limit. The server enforces the real limit; this only
- * stops the picker from going past it.
- */
-const MAX_TICKETS = 6
+import { useNow } from '../../lib/time'
 
 interface TicketSelectionProps {
-  event: CatalogEvent
-}
-
-interface QuantityPickerProps {
-  ticketType: TicketType
-  quantity: number
-  canAddMore: boolean
-  onChange: (quantity: number) => void
-}
-
-function QuantityPicker({ ticketType, quantity, canAddMore, onChange }: QuantityPickerProps) {
-  const canAdd = canAddMore && quantity < ticketType.available
-
-  return (
-    <div className="flex items-center gap-2" role="group" aria-label={`Liczba biletów: ${ticketType.name}`}>
-      <Button
-        variant="outline"
-        size="icon-sm"
-        type="button"
-        aria-label="Mniej"
-        disabled={quantity === 0}
-        onClick={() => onChange(quantity - 1)}
-      >
-        <Minus />
-      </Button>
-
-      <span className="w-6 text-center font-medium tabular-nums" aria-live="polite">
-        {quantity}
-      </span>
-
-      <Button
-        variant="outline"
-        size="icon-sm"
-        type="button"
-        aria-label="Więcej"
-        disabled={!canAdd}
-        onClick={() => onChange(quantity + 1)}
-      >
-        <Plus />
-      </Button>
-    </div>
-  )
+  event: EventDetails
 }
 
 function limitLabel(limit: PurchaseLimit, allowance: number, selected: number): string {
@@ -108,11 +61,18 @@ export function TicketSelection({ event }: TicketSelectionProps) {
     0,
   )
   const limit = event.purchaseLimit
-  const allowance = limit ? Math.max(0, limit.max - limit.used) : MAX_TICKETS
+  const allowance = limit ? Math.max(0, limit.max - limit.used) : 0
   const canRetry = mutation.error instanceof ApiError && mutation.error.code === 'RESERVATION_CONFLICT'
 
   function changeQuantity(ticketTypeId: number, quantity: number) {
     setQuantities((current) => ({ ...current, [ticketTypeId]: quantity }))
+  }
+
+  /** The pool's stock, or less when the purchase limit leaves fewer tickets. */
+  function maxQuantity(ticketType: TicketType): number {
+    const quantity = quantities[ticketType.id] ?? 0
+
+    return Math.min(ticketType.available, quantity + allowance - totalQuantity)
   }
 
   function renderBuyAction() {
@@ -140,14 +100,7 @@ export function TicketSelection({ event }: TicketSelectionProps) {
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="font-semibold">
-              Razem: {formatPrice(totalPrice)}
-              {!limit && (
-                <span className="ml-2 text-sm font-normal text-muted-foreground">
-                  ({totalQuantity} z {MAX_TICKETS} biletów)
-                </span>
-              )}
-            </p>
+            <p className="font-semibold">Razem: {formatPrice(totalPrice)}</p>
 
             {limit && <p className="text-sm text-muted-foreground">{limitLabel(limit, allowance, totalQuantity)}</p>}
           </div>
@@ -191,9 +144,10 @@ export function TicketSelection({ event }: TicketSelectionProps) {
 
                   {showPickers && (
                     <QuantityPicker
-                      ticketType={ticketType}
-                      quantity={quantities[ticketType.id] ?? 0}
-                      canAddMore={totalQuantity < allowance}
+                      label={`Liczba biletów: ${ticketType.name}`}
+                      value={quantities[ticketType.id] ?? 0}
+                      min={0}
+                      max={maxQuantity(ticketType)}
                       onChange={(quantity) => changeQuantity(ticketType.id, quantity)}
                     />
                   )}

@@ -24,8 +24,8 @@ import { formatDateTime } from '../../lib/dates'
 import { formatPrice } from '../../lib/money'
 import { eventsKey } from '../catalog/catalogApi'
 import { ticketsKey } from '../tickets/ticketsApi'
-import { downloadCorrectionInvoice, ordersKey, refundOrder } from './checkoutApi'
-import { isRefundOpen, type OrderWait } from './orderState'
+import { downloadCorrectionInvoice, orderDetailsKey, ordersKey, refundOrder } from './checkoutApi'
+import { isRefundOpen } from './orderState'
 
 const REFUND_STATUS_LABELS: Record<RefundStatus, string> = {
   PENDING: 'W toku',
@@ -40,10 +40,6 @@ const REFUND_ERRORS = {
 interface OrderRefundProps {
   order: Order
   now: number
-  /** What the page is polling for, to tell a running refund from a stuck one. */
-  wait: OrderWait | null
-  timedOut: boolean
-  onCheckAgain: () => void
 }
 
 interface RefundDialogProps {
@@ -98,15 +94,15 @@ function RefundDialog({ disabled, onOpen, onConfirm }: RefundDialogProps) {
 }
 
 /** The refund button of a paid order, and the refund and its correction invoice once there is one. */
-export function OrderRefund({ order, now, wait, timedOut, onCheckAgain }: OrderRefundProps) {
+export function OrderRefund({ order, now }: OrderRefundProps) {
   const queryClient = useQueryClient()
   const refundMutation = useMutation({
     mutationFn: (reason: string) => refundOrder(order.id, reason),
     onSuccess: (updated) => {
-      queryClient.setQueryData([...ordersKey, 'details', String(order.id)], updated)
+      queryClient.setQueryData(orderDetailsKey(order.id), updated)
       toast.success('Zlecono zwrot biletów.')
     },
-    onError: () => queryClient.invalidateQueries({ queryKey: [...ordersKey, 'details', String(order.id)] }),
+    onError: () => queryClient.invalidateQueries({ queryKey: orderDetailsKey(order.id) }),
     onSettled: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: ordersKey }),
@@ -117,11 +113,6 @@ export function OrderRefund({ order, now, wait, timedOut, onCheckAgain }: OrderR
   const correctionMutation = useMutation({ mutationFn: () => downloadCorrectionInvoice(order) })
   const { refund } = order
   const deadline = order.refundableUntil ? formatDateTime(order.refundableUntil, order.event.timezone) : null
-
-  // An older backend sends neither field, so there is nothing to show.
-  if (order.refundableUntil === undefined && refund === undefined) {
-    return null
-  }
 
   if (isRefundOpen(order, now)) {
     return (
@@ -183,24 +174,11 @@ export function OrderRefund({ order, now, wait, timedOut, onCheckAgain }: OrderR
       <CardContent className="grid gap-4">
         <ErrorBanner error={correctionMutation.error} />
 
-        {refund.status === 'PENDING' && wait === 'refund' && !timedOut && (
+        {refund.status === 'PENDING' && (
           <Alert role="status">
             <LoaderCircle className="animate-spin" />
             <AlertTitle>Zwrot w toku</AlertTitle>
             <AlertDescription>Przetwarzamy zwrot. Strona odświeży się sama.</AlertDescription>
-          </Alert>
-        )}
-
-        {refund.status === 'PENDING' && timedOut && (
-          <Alert role="status">
-            <LoaderCircle />
-            <AlertTitle>Zwrot trwa dłużej niż zwykle</AlertTitle>
-            <AlertDescription>
-              Nie mamy jeszcze wyniku. Sprawdź status za chwilę.
-              <Button className="mt-3" variant="outline" size="sm" type="button" onClick={onCheckAgain}>
-                Sprawdź ponownie
-              </Button>
-            </AlertDescription>
           </Alert>
         )}
 
@@ -248,12 +226,7 @@ export function OrderRefund({ order, now, wait, timedOut, onCheckAgain }: OrderR
               </div>
             ) : (
               <p className="text-sm text-muted-foreground" role="status">
-                Faktura korygująca zostanie wystawiona po zaksięgowaniu zwrotu.
-                {timedOut && wait === 'correction' && (
-                  <Button className="ml-2" variant="outline" size="sm" type="button" onClick={onCheckAgain}>
-                    Sprawdź ponownie
-                  </Button>
-                )}
+                Faktura korygująca pojawi się tutaj, gdy zostanie wystawiona.
               </p>
             )}
           </>
